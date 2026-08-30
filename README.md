@@ -5,6 +5,8 @@
 
 **Año:** 2026
 
+---
+
 ## 👥 Integrantes
 - Arteta, Franco - 95404
 - Barberis, Agustín - 83807
@@ -48,6 +50,7 @@
     │   ├── Trabajos de Investigación Grupal 
     │   └── Resúmenes                        
     │
+    ├── Pautas e Información
     └── README.md                            
 
 ---
@@ -57,7 +60,7 @@
 
 | Ítem                                 | Regla de Nombrado                                        | Ubicación Física                                          |
 |--------------------------------------|----------------------------------------------------------|-----------------------------------------------------------|
-| **Libros**                           | `Libro-<Tema>-<Nombre>.<Extension>`                      | `/Material de Estudio/Material Bibliográfico/<Tema>`      |
+| **Libros**                           | `MDE-Libro-<Tema>-<Nombre>.<Extension>`                  | `/Material de Estudio/Material Bibliográfico/<Tema>`      |
 | **Clases Grabadas**                  | `MDE-Clase-<Nro>-<Nombre>.<Extension>`                   | `/Material de Estudio/Clases grabadas`                    |
 | **TPs Evaluables**                   | `MP-Evaluable-TP<NroTP>-<Nombre>.<Extension>`            | `/Material práctico/Trabajos Evaluables`                  |
 | **TPs No Evaluables**                | `MP-No-Evaluable-TP<NroTP>-<Nombre>.<Extension>`         | `/Material práctico/Trabajos No Evaluables`               |
@@ -71,12 +74,13 @@
 
 ## 🔑 Referencias
 
-| Sigla                 | Significado                                                                 |
-|-----------------------|-----------------------------------------------------------------------------|
-| `<Nombre>`            | Nombre del archivo según figura en la UV (libro, presentación, guía, etc.)  |
-| `<Extension>`         | Extensión del archivo.                                                      |
-| `<NroTP>`             | Número de trabajo Práctico relacionado (Evaluable o No Evaluable).          |
-| `<NroPresentación>`   | Número de cada Presentación tal como figura en la UV.                       |
+| Sigla               | Significado                                                                |
+|---------------------|----------------------------------------------------------------------------|
+| `<Nombre>`          | Nombre del archivo según figura en la UV (libro, presentación, guía, etc.) |
+| `<Extension>`       | Extensión del archivo.                                                     |
+| `<NroTP>`           | Número de trabajo Práctico relacionado (Evaluable o No Evaluable).         |
+| `<NroPresentación>` | Número de cada Presentación tal como figura en la UV.                      |
+| `<Tema>`            | Tema coincidente a alguna carpeta de `Material Bibliográfico`              |
 
 ---
 
