@@ -1,5 +1,5 @@
 
-# 📘 Ingeniería y Calidad de Software - Grupo 01
+# Ingeniería y Calidad de Software - Grupo 01
 
 **Curso:** 4K3
 
@@ -7,7 +7,7 @@
 
 ---
 
-## 👥 Integrantes
+## Integrantes
 - Arteta, Franco - 95404
 - Barberis, Agustín - 83807
 - Bazán, Maria Victoria - 75269
@@ -26,11 +26,10 @@
 
 ---
 
-## 📂 Estructura del Repositorio
+## Estructura del Repositorio
 
     Ing. de Software_4K3_2026_G1/
     ├── Material de Estudio
-    │    ├── Clases grabadas           
     │    └── Material Bibliográfico              
     │           ├── Ing. de Software
     │           ├── Gestión de Configuración de Software
@@ -56,12 +55,11 @@
 ---
 
 
-## 🗂️ Ítems de Configuración
+## Ítems de Configuración
 
 | Ítem                                 | Regla de Nombrado                                        | Ubicación Física                                          |
 |--------------------------------------|----------------------------------------------------------|-----------------------------------------------------------|
 | **Libros**                           | `MDE-Libro-<Tema>-<Nombre>.<Extension>`                  | `/Material de Estudio/Material Bibliográfico/<Tema>`      |
-| **Clases Grabadas**                  | `MDE-Clase-<Nro>-<Nombre>.<Extension>`                   | `/Material de Estudio/Clases grabadas`                    |
 | **TPs Evaluables**                   | `MP-Evaluable-TP<NroTP>-<Nombre>.<Extension>`            | `/Material práctico/Trabajos Evaluables`                  |
 | **TPs No Evaluables**                | `MP-No-Evaluable-TP<NroTP>-<Nombre>.<Extension>`         | `/Material práctico/Trabajos No Evaluables`               |
 | **Guía de Trabajos**                 | `MP-Guia-<Nombre>.<Extension>`                           | `/Material práctico/Guías`                                |
@@ -72,7 +70,7 @@
 
 ---
 
-## 🔑 Referencias
+## Referencias
 
 | Sigla               | Significado                                                                |
 |---------------------|----------------------------------------------------------------------------|
@@ -84,17 +82,17 @@
 
 ---
 
-## 📌 Líneas Base
+## Líneas Base
 
 | Línea Base   | Fecha | Descripción                          |
 |--------------|-------|--------------------------------------|
 | **LB-G01-1** |       | Entrega de TP4 - Herramientas de SCM |
-
-🔖 **Formato de Identificación de Líneas Base**:  
+ 
+**Formato de Identificación de Líneas Base**:  
 LB-G01-`<NroLineaBase>`
 Donde `<NroLineaBase>` es un número entero que comienza en 1 y se incrementa en una unidad.
 
-📅 **Criterio de revisión**:  
+**Criterio de revisión**:  
 Las líneas base se revisan el día de entrega de un TP Evaluable, y en esa instancia se define la
 creación de una nueva línea base.
 
