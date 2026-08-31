@@ -67,6 +67,7 @@
 | **Presentaciones**                   | `MT-Presentación-<NroPresentación>-<Nombre>.<Extension>` | `/Material Teórico/Presentaciones de Clases`              |
 | **Trabajos de Investigación Grupal** | `MT-TIG-<Nro>-<Nombre>.<Extension>`                      | `/Material Teórico/Trabajos de Investigación Grupal`      |
 | **Resúmenes**                        | `MT-Resumen-<Nombre>.<Extension>`                        | `/Material Teórico/Resúmenes`                             |
+| **Pautas**                           | `PEI-<Nombre>.<Extension>`                               | `/Pautas e Informacion`                                   |
 
 ---
 
@@ -93,7 +94,5 @@ LB-G01-`<NroLineaBase>`
 Donde `<NroLineaBase>` es un número entero que comienza en 1 y se incrementa en una unidad.
 
 **Criterio de revisión**:  
-Las líneas base se revisan el día de entrega de un TP Evaluable, y en esa instancia se define la
-creación de una nueva línea base.
-
+Las líneas base se revisan el día de entrega de un TP Evaluable, y en esa instancia se define la creación de una nueva línea base (A definir).
 ---
