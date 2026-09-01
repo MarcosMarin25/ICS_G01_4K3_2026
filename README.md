@@ -117,8 +117,7 @@ Ing. de Software_4K3_2026_G1/
 | `LK`              | Lean y Kanban                                                              |
 | `<Nombre>`/`<Título>`/`<Tema>` | Nombre o titulo del documento                                 |
 | `<Extension>`       | Extensión del archivo.                                                   |
-| `<NroTP>`           | Número de trabajo Práctico relacionado (Evaluable o No Evaluable).       |
-| `<NroPresentación>` | Número de cada Presentación tal como figura en la UV.                    |
+| `<Nro>`             | Número de trabajo Práctico relacionado (Evaluable o No Evaluable).       |
 | `<NroUnidad>`       | Número de unidad según programa de la asignatura                         |
 
 
