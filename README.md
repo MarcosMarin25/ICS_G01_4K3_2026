@@ -97,11 +97,31 @@ Ing. de Software_4K3_2026_G1/
 
 | Sigla               | Significado                                                                |
 |---------------------|----------------------------------------------------------------------------|
-| `<Nombre>`          | Nombre del archivo según figura en la UV (libro, presentación, guía, etc.) |
-| `<Extension>`       | Extensión del archivo.                                                     |
-| `<NroTP>`           | Número de trabajo Práctico relacionado (Evaluable o No Evaluable).         |
-| `<NroPresentación>` | Número de cada Presentación tal como figura en la UV.                      |
-| `<Tema>`            | Tema coincidente a alguna carpeta de `Material Bibliográfico`              |
+| `ICS`             | Ingeniería y Calidad de software                                           |
+| `G1`              | Grupo número 1                                                             |
+| `TP`              | Trabajo Práctico                                                           |
+| `TPNE`            | Trabajo práctico No Evaluable                                              |
+| `TC`              | Trabajo Conceptual                                                         |
+| `TIG`             | Trabajo de Investigación Grupal                                            |
+| `PPT`             | Presentaciones                                                             |
+| `RES`             | Resúmenes                                                                  |
+| `BB`              | Bibliografía                                                               |
+| `GUIA`            | Guía                                                                       |
+| `PAUTA`           | Pauta/Información                                                          |
+| `U`               | Unidad                                                                     |
+| `IS`              | Ingeniería de software                                                     |
+| `GCS`             | Gestión de configuración de software                                       |
+| `TS`              | Testing de Software                                                        |
+| `TDD`             | Test Driven Development                                                    |
+| `AG`              | Agilismo                                                                   |
+| `LK`              | Lean y Kanban                                                              |
+| `<Nombre>`/`<Título>`/`<Tema>` | Nombre o titulo del documento                                 |
+| `<Extension>`       | Extensión del archivo.                                                   |
+| `<NroTP>`           | Número de trabajo Práctico relacionado (Evaluable o No Evaluable).       |
+| `<NroPresentación>` | Número de cada Presentación tal como figura en la UV.                    |
+| `<NroUnidad>`       | Número de unidad según programa de la asignatura                         |
+
+
 
 ---
 
