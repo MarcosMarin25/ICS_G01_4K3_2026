@@ -1,5 +1,5 @@
 
-# ISW_G01_4K3_2026
+# ICS_G01_4K3_2026
 
 **Curso:** 4K3
 
@@ -30,7 +30,7 @@ Este repositorio es utilizado por los integrantes del grupo 1 durante el cursado
 
 ## Estructura del Repositorio
 ```
-Ing. de Software_4K3_2026_G1/
+ICS_G01_4K3_2026
 ├── Material de Estudio
 │   ├── Material Bibliografico
 │   │   ├── Ing. de Software
