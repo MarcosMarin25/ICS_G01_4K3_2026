@@ -74,22 +74,22 @@ ICS_G01_4K3_2026
 ## Ítems de Configuración
 | Ítem | Regla de Nombrado | Ubicación |
 |---|---|---|
-| Bibliografía - Ing. de Software | `ICS_BB_IS_<Titulo>.pdf` | `ISW_G1_4K3_2026\Material de Estudio\Material Bibliografico\Ing. de Software\` |
-| Bibliografía - Gestión de Configuración | `ICS_BB_GCS_<Titulo>.pdf` | `ISW_G1_4K3_2026\Material de Estudio\Material Bibliografico\Gestion de Configuracion de Software\` |
-| Bibliografía - Testing de Software | `ICS_BB_TS_<Titulo>.pdf` | `ISW_G1_4K3_2026\Material de Estudio\Material Bibliografico\Testing de Software\` |
-| Bibliografía - TDD | `ICS_BB_TDD_<Titulo>.pdf` | `ISW_G1_4K3_2026\Material de Estudio\Material Bibliografico\Test Driven Development\` |
-| Bibliografía - Agilismo | `ICS_BB_AG_<Titulo>.pdf` | `ISW_G1_4K3_2026\Material de Estudio\Material Bibliografico\Agilismo\` |
-| Bibliografía - Lean y Kanban | `ICS_BB_LK_<Titulo>.pdf` | `ISW_G1_4K3_2026\Material de Estudio\Material Bibliografico\Lean y Kanban\` |
-| Presentaciones de Clases | `ICS_PPT_U<NroUnidad>_<Tema>.pdf` | `ISW_G1_4K3_2026\Material de Estudio\Presentaciones de Clases\` |
-| Resúmenes | `ICS_RES_U<NroUnidad>_<Tema>.pdf` | `ISW_G1_4K3_2026\Material de Estudio\Resumenes\` |
-| Guías | `ICS_GUIA_<Tema>.pdf` | `ISW_G1_4K3_2026\Material de Estudio\Guias\` |
-| Programa de Asignatura | `ICS_ProgramaAsignatura_2026.pdf` | `ISW_G1_4K3_2026\Programa\` |
-| Templates | `ICS_Template_<Nombre>.[docx\|xlsx]` | `ISW_G1_4K3_2026\Templates\` |
-| Trabajos Conceptuales | `ICS_TC_<Nro>_<Titulo>.pdf` | `ISW_G1_4K3_2026\Trabajos\Trabajos Conceptuales\` |
-| Trabajos Prácticos Evaluables | `ICS_TP_<Nro>_<Titulo>.[pdf\|docx\|xlsx]` | `ISW_G1_4K3_2026\Trabajos\Trabajos Practicos\Evaluables\` |
-| Trabajos Prácticos No Evaluables | `ICS_TPNE_<Nro>_<Titulo>.pdf` | `ISW_G1_4K3_2026\Trabajos\Trabajos Practicos\No Evaluables\` |
-| Trabajos de Investigación Grupal | `ICS_TIG_<Titulo>.pdf` | `ISW_G1_4K3_2026\Trabajos\Trabajos de Investigacion Grupal\` |
-| Pautas e Información | `ICS_PAUTA_<Nombre>.pdf` | `ISW_G1_4K3_2026\Pautas e Informacion\` |
+| Bibliografía - Ing. de Software | `ICS_BB_IS_<Titulo>.pdf` | `ICS_G01_4K3_2026\Material de Estudio\Material Bibliografico\Ing. de Software\` |
+| Bibliografía - Gestión de Configuración | `ICS_BB_GCS_<Titulo>.pdf` | `ICS_G01_4K3_2026\Material de Estudio\Material Bibliografico\Gestion de Configuracion de Software\` |
+| Bibliografía - Testing de Software | `ICS_BB_TS_<Titulo>.pdf` | `ICS_G01_4K3_2026\Material de Estudio\Material Bibliografico\Testing de Software\` |
+| Bibliografía - TDD | `ICS_BB_TDD_<Titulo>.pdf` | `ICS_G01_4K3_2026\Material de Estudio\Material Bibliografico\Test Driven Development\` |
+| Bibliografía - Agilismo | `ICS_BB_AG_<Titulo>.pdf` | `ICS_G01_4K3_2026\Material de Estudio\Material Bibliografico\Agilismo\` |
+| Bibliografía - Lean y Kanban | `ICS_BB_LK_<Titulo>.pdf` | `ICS_G01_4K3_2026\Material de Estudio\Material Bibliografico\Lean y Kanban\` |
+| Presentaciones de Clases | `ICS_PPT_U<NroUnidad>_<Tema>.pdf` | `ICS_G01_4K3_2026\Material de Estudio\Presentaciones de Clases\` |
+| Resúmenes | `ICS_RES_U<NroUnidad>_<Tema>.pdf` | `ICS_G01_4K3_2026\Material de Estudio\Resumenes\` |
+| Guías | `ICS_GUIA_<Tema>.pdf` | `ICS_G01_4K3_2026\Material de Estudio\Guias\` |
+| Programa de Asignatura | `ICS_ProgramaAsignatura_2026.pdf` | `ICS_G01_4K3_2026\Programa\` |
+| Templates | `ICS_Template_<Nombre>.[docx\|xlsx]` | `ICS_G01_4K3_2026\Templates\` |
+| Trabajos Conceptuales | `ICS_TC_<Nro>_<Titulo>.pdf` | `ICS_G01_4K3_2026\Trabajos\Trabajos Conceptuales\` |
+| Trabajos Prácticos Evaluables | `ICS_TP_<Nro>_<Titulo>.[pdf\|docx\|xlsx]` | `ICS_G01_4K3_2026\Trabajos\Trabajos Practicos\Evaluables\` |
+| Trabajos Prácticos No Evaluables | `ICS_TPNE_<Nro>_<Titulo>.pdf` | `ICS_G01_4K3_2026\Trabajos\Trabajos Practicos\No Evaluables\` |
+| Trabajos de Investigación Grupal | `ICS_TIG_<Titulo>.pdf` | `ICS_G01_4K3_2026\Trabajos\Trabajos de Investigacion Grupal\` |
+| Pautas e Información | `ICS_PAUTA_<Nombre>.pdf` | `ICS_G01_4K3_2026\Pautas e Informacion\` |
 
 ---
 
