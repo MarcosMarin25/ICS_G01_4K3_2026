@@ -1,9 +1,11 @@
 
-# Ingeniería y Calidad de Software - Grupo 01
+# ICS_G01_4K3_2026
 
 **Curso:** 4K3
 
 **Año:** 2026
+
+Este repositorio es utilizado por los integrantes del grupo 1 durante el cursado de la materia Ingeniería y Calidad de Software en el año 2026, con el objetivo de organizar los ítems de configuración generados y utilizados a lo largo del cuatrimestre.
 
 ---
 
@@ -27,47 +29,67 @@
 ---
 
 ## Estructura del Repositorio
-
-    Ing. de Software_4K3_2026_G1/
-    ├── Material de Estudio
-    │    └── Material Bibliográfico              
-    │           ├── Ing. de Software
-    │           ├── Gestión de Configuración de Software
-    │           ├── Testing de Software
-    │           ├── Test Driven Development
-    │           ├── Agilismo
-    │           └── Lean y Kanban
-    │
-    ├── Material práctico                        
-    │   ├── Trabajos Evaluables                       
-    │   ├── Guías                                     
-    │   ├── Trabajos No Evaluables                    
-    │   └── Templates para prácticos y parciales      
-    │
-    ├── Material Teórico                     
-    │   ├── Presentaciones de Clases         
-    │   ├── Trabajos de Investigación Grupal 
-    │   └── Resúmenes                        
-    │
-    ├── Pautas e Información
-    └── README.md                            
-
+```
+ICS_G01_4K3_2026
+├── Material de Estudio
+│   ├── Material Bibliografico
+│   │   ├── Ing. de Software
+│   │   │   └── ICS_BB_IS_<Titulo>.pdf
+│   │   ├── Gestion de Configuracion de Software
+│   │   │   └── ICS_BB_GCS_<Titulo>.pdf
+│   │   ├── Testing de Software
+│   │   │   └── ICS_BB_TS_<Titulo>.pdf
+│   │   ├── Test Driven Development
+│   │   │   └── ICS_BB_TDD_<Titulo>.pdf
+│   │   ├── Agilismo
+│   │   │   └── ICS_BB_AG_<Titulo>.pdf
+│   │   └── Lean y Kanban
+│   │       └── ICS_BB_LK_<Titulo>.pdf
+│   ├── Presentaciones de Clases
+│   │   └── ICS_PPT_U<NroUnidad>_<Tema>.pdf
+│   ├── Resumenes
+│   │   └── ICS_RES_U<NroUnidad>_<Tema>.pdf
+│   └── Guias
+│       └── ICS_GUIA_<Tema>.pdf
+├── Programa
+│   └── ICS_ProgramaAsignatura_2026.pdf
+├── Templates
+│   └── ICS_Template_<Nombre>.[docx|xlsx]
+├── Trabajos
+│   ├── Trabajos Conceptuales
+│   │   └── ICS_TC_<Nro>_<Titulo>.pdf
+│   ├── Trabajos Practicos
+│   │   ├── Evaluables
+│   │   │   └── ICS_TP_<Nro>_<Titulo>.[pdf|docx|xlsx]
+│   │   └── No Evaluables
+│   │       └── ICS_TPNE_<Nro>_<Titulo>.pdf
+│   └── Trabajos de Investigacion Grupal
+│       └── ICS_TIG_<Titulo>.pdf
+├── Pautas e Informacion
+│   └── ICS_PAUTA_<Nombre>.pdf
+└── README.md
+                                                  
+```
 ---
-
-
 ## Ítems de Configuración
-
-| Ítem                                 | Regla de Nombrado                                        | Ubicación Física                                          |
-|--------------------------------------|----------------------------------------------------------|-----------------------------------------------------------|
-| **Libros**                           | `MDE-Libro-<Tema>-<Nombre>.<Extension>`                  | `/Material de Estudio/Material Bibliográfico/<Tema>`      |
-| **TPs Evaluables**                   | `MP-Evaluable-TP<NroTP>-<Nombre>.<Extension>`            | `/Material práctico/Trabajos Evaluables`                  |
-| **TPs No Evaluables**                | `MP-No-Evaluable-TP<NroTP>-<Nombre>.<Extension>`         | `/Material práctico/Trabajos No Evaluables`               |
-| **Guía de Trabajos**                 | `MP-Guia-<Nombre>.<Extension>`                           | `/Material práctico/Guías`                                |
-| **Templates**                        | `MP-Template-<Nombre>.<Extension>`                       | `/Material práctico/Templates para prácticos y parciales` |
-| **Presentaciones**                   | `MT-Presentación-<NroPresentación>-<Nombre>.<Extension>` | `/Material Teórico/Presentaciones de Clases`              |
-| **Trabajos de Investigación Grupal** | `MT-TIG-<Nro>-<Nombre>.<Extension>`                      | `/Material Teórico/Trabajos de Investigación Grupal`      |
-| **Resúmenes**                        | `MT-Resumen-<Nombre>.<Extension>`                        | `/Material Teórico/Resúmenes`                             |
-| **Pautas**                           | `PEI-<Nombre>.<Extension>`                               | `/Pautas e Informacion`                                   |
+| Ítem | Regla de Nombrado | Ubicación |
+|---|---|---|
+| Bibliografía - Ing. de Software | `ICS_BB_IS_<Titulo>.pdf` | `ISW_G1_4K3_2026\Material de Estudio\Material Bibliografico\Ing. de Software\` |
+| Bibliografía - Gestión de Configuración | `ICS_BB_GCS_<Titulo>.pdf` | `ISW_G1_4K3_2026\Material de Estudio\Material Bibliografico\Gestion de Configuracion de Software\` |
+| Bibliografía - Testing de Software | `ICS_BB_TS_<Titulo>.pdf` | `ISW_G1_4K3_2026\Material de Estudio\Material Bibliografico\Testing de Software\` |
+| Bibliografía - TDD | `ICS_BB_TDD_<Titulo>.pdf` | `ISW_G1_4K3_2026\Material de Estudio\Material Bibliografico\Test Driven Development\` |
+| Bibliografía - Agilismo | `ICS_BB_AG_<Titulo>.pdf` | `ISW_G1_4K3_2026\Material de Estudio\Material Bibliografico\Agilismo\` |
+| Bibliografía - Lean y Kanban | `ICS_BB_LK_<Titulo>.pdf` | `ISW_G1_4K3_2026\Material de Estudio\Material Bibliografico\Lean y Kanban\` |
+| Presentaciones de Clases | `ICS_PPT_U<NroUnidad>_<Tema>.pdf` | `ISW_G1_4K3_2026\Material de Estudio\Presentaciones de Clases\` |
+| Resúmenes | `ICS_RES_U<NroUnidad>_<Tema>.pdf` | `ISW_G1_4K3_2026\Material de Estudio\Resumenes\` |
+| Guías | `ICS_GUIA_<Tema>.pdf` | `ISW_G1_4K3_2026\Material de Estudio\Guias\` |
+| Programa de Asignatura | `ICS_ProgramaAsignatura_2026.pdf` | `ISW_G1_4K3_2026\Programa\` |
+| Templates | `ICS_Template_<Nombre>.[docx\|xlsx]` | `ISW_G1_4K3_2026\Templates\` |
+| Trabajos Conceptuales | `ICS_TC_<Nro>_<Titulo>.pdf` | `ISW_G1_4K3_2026\Trabajos\Trabajos Conceptuales\` |
+| Trabajos Prácticos Evaluables | `ICS_TP_<Nro>_<Titulo>.[pdf\|docx\|xlsx]` | `ISW_G1_4K3_2026\Trabajos\Trabajos Practicos\Evaluables\` |
+| Trabajos Prácticos No Evaluables | `ICS_TPNE_<Nro>_<Titulo>.pdf` | `ISW_G1_4K3_2026\Trabajos\Trabajos Practicos\No Evaluables\` |
+| Trabajos de Investigación Grupal | `ICS_TIG_<Titulo>.pdf` | `ISW_G1_4K3_2026\Trabajos\Trabajos de Investigacion Grupal\` |
+| Pautas e Información | `ICS_PAUTA_<Nombre>.pdf` | `ISW_G1_4K3_2026\Pautas e Informacion\` |
 
 ---
 
@@ -75,11 +97,30 @@
 
 | Sigla               | Significado                                                                |
 |---------------------|----------------------------------------------------------------------------|
-| `<Nombre>`          | Nombre del archivo según figura en la UV (libro, presentación, guía, etc.) |
-| `<Extension>`       | Extensión del archivo.                                                     |
-| `<NroTP>`           | Número de trabajo Práctico relacionado (Evaluable o No Evaluable).         |
-| `<NroPresentación>` | Número de cada Presentación tal como figura en la UV.                      |
-| `<Tema>`            | Tema coincidente a alguna carpeta de `Material Bibliográfico`              |
+| `ICS`             | Ingeniería y Calidad de software                                           |
+| `G1`              | Grupo número 1                                                             |
+| `TP`              | Trabajo Práctico                                                           |
+| `TPNE`            | Trabajo práctico No Evaluable                                              |
+| `TC`              | Trabajo Conceptual                                                         |
+| `TIG`             | Trabajo de Investigación Grupal                                            |
+| `PPT`             | Presentaciones                                                             |
+| `RES`             | Resúmenes                                                                  |
+| `BB`              | Bibliografía                                                               |
+| `GUIA`            | Guía                                                                       |
+| `PAUTA`           | Pauta/Información                                                          |
+| `U`               | Unidad                                                                     |
+| `IS`              | Ingeniería de software                                                     |
+| `GCS`             | Gestión de configuración de software                                       |
+| `TS`              | Testing de Software                                                        |
+| `TDD`             | Test Driven Development                                                    |
+| `AG`              | Agilismo                                                                   |
+| `LK`              | Lean y Kanban                                                              |
+| `<Nombre>`/`<Título>`/`<Tema>` | Nombre o titulo del documento                                 |
+| `<Extension>`       | Extensión del archivo.                                                   |
+| `<Nro>`             | Número de trabajo Práctico relacionado (Evaluable o No Evaluable).       |
+| `<NroUnidad>`       | Número de unidad según programa de la asignatura                         |
+
+
 
 ---
 
