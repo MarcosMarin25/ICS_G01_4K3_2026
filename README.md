@@ -53,6 +53,7 @@ ICS_G01_4K3_2026
 │       └── ICS_RES_U<NroUnidad>_<Tema>.pdf
 ├── Pautas e Informacion
 │   └── ICS_PAUTA_<Nombre>.pdf
+|   └── ICS_PLAN_<Nombre>.pdf
 ├── Programa
 │   └── ICS_ProgramaAsignatura_2026.pdf
 ├── Templates
@@ -128,15 +129,15 @@ ICS_G01_4K3_2026
 
 ## Líneas Base
 
-| Línea Base   | Fecha | Descripción                          |
-|--------------|-------|--------------------------------------|
-| **LB-G01-1** |       |  |
+| Línea Base   | Fecha     | Descripción                          |
+|--------------|-----------|--------------------------------------|
+| **LB-G01-1** | 01/9/2026 | Entrega de TP4 - Herramientas de SCM |
  
 **Formato de Identificación de Líneas Base**:  
 LB-G01-`<NroLineaBase>`
 Donde `<NroLineaBase>` es un número entero que comienza en 1 y se incrementa en una unidad.
 
 **Criterio de revisión**:  
-Para este repositorio, el criterio para definir la Linea Base se realizará cada 2 Trabajos Practicos realizados. 
+Para este repositorio, el criterio para definir la Línea Base será al concluir y/o aprobar cada Trabajo Práctico(evaluable).
 
 ---
