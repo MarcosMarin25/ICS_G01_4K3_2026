@@ -32,6 +32,8 @@ Este repositorio es utilizado por los integrantes del grupo 1 durante el cursado
 ```
 ICS_G01_4K3_2026
 ├── Material de Estudio
+│   ├── Guias
+│   │   └── ICS_GUIA_<Tema>.pdf
 │   ├── Material Bibliografico
 │   │   ├── Ing. de Software
 │   │   │   └── ICS_BB_IS_<Titulo>.pdf
@@ -47,10 +49,10 @@ ICS_G01_4K3_2026
 │   │       └── ICS_BB_LK_<Titulo>.pdf
 │   ├── Presentaciones de Clases
 │   │   └── ICS_PPT_U<NroUnidad>_<Tema>.pdf
-│   ├── Resumenes
-│   │   └── ICS_RES_U<NroUnidad>_<Tema>.pdf
-│   └── Guias
-│       └── ICS_GUIA_<Tema>.pdf
+│   └── Resumenes
+│       └── ICS_RES_U<NroUnidad>_<Tema>.pdf
+├── Pautas e Informacion
+│   └── ICS_PAUTA_<Nombre>.pdf
 ├── Programa
 │   └── ICS_ProgramaAsignatura_2026.pdf
 ├── Templates
@@ -65,8 +67,6 @@ ICS_G01_4K3_2026
 │   │       └── ICS_TPNE_<Nro>_<Titulo>.pdf
 │   └── Trabajos de Investigacion Grupal
 │       └── ICS_TIG_<Titulo>.pdf
-├── Pautas e Informacion
-│   └── ICS_PAUTA_<Nombre>.pdf
 └── README.md
                                                   
 ```
@@ -128,12 +128,13 @@ ICS_G01_4K3_2026
 
 | Línea Base   | Fecha | Descripción                          |
 |--------------|-------|--------------------------------------|
-| **LB-G01-1** |       | Entrega de TP4 - Herramientas de SCM |
+| **LB-G01-1** |       |  |
  
 **Formato de Identificación de Líneas Base**:  
 LB-G01-`<NroLineaBase>`
 Donde `<NroLineaBase>` es un número entero que comienza en 1 y se incrementa en una unidad.
 
 **Criterio de revisión**:  
-Las líneas base se revisan el día de entrega de un TP Evaluable, y en esa instancia se define la creación de una nueva línea base (A definir).
+Para este repositorio, el criterio para definir la Linea Base se realizará cada 2 Trabajos Practicos realizados. 
+
 ---
