@@ -90,6 +90,8 @@ ICS_G01_4K3_2026
 | Trabajos Prácticos No Evaluables | `ICS_TPNE_<Nro>_<Titulo>.pdf` | `ICS_G01_4K3_2026\Trabajos\Trabajos Practicos\No Evaluables\` |
 | Trabajos de Investigación Grupal | `ICS_TIG_<Titulo>.pdf` | `ICS_G01_4K3_2026\Trabajos\Trabajos de Investigacion Grupal\` |
 | Pautas e Información | `ICS_PAUTA_<Nombre>.pdf` | `ICS_G01_4K3_2026\Pautas e Informacion\` |
+| Plan de Configuración | `ICS_PLAN_<Nombre>.pdf` | `ICS_G01_4K3_2026\Pautas e Informacion\` |
+
 
 ---
 
