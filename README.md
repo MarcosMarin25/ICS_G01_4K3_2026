@@ -33,43 +33,24 @@ Este repositorio es utilizado por los integrantes del grupo 1 durante el cursado
 ICS_G01_4K3_2026
 ├── Material de Estudio
 │   ├── Guias
-│   │   └── ICS_GUIA_<Tema>.pdf
 │   ├── Material Bibliografico
 │   │   ├── Ing. de Software
-│   │   │   └── ICS_BB_IS_<Titulo>.pdf
 │   │   ├── Gestion de Configuracion de Software
-│   │   │   └── ICS_BB_GCS_<Titulo>.pdf
 │   │   ├── Testing de Software
-│   │   │   └── ICS_BB_TS_<Titulo>.pdf
 │   │   ├── Test Driven Development
-│   │   │   └── ICS_BB_TDD_<Titulo>.pdf
 │   │   ├── Agilismo
-│   │   │   └── ICS_BB_AG_<Titulo>.pdf
 │   │   └── Lean y Kanban
-│   │       └── ICS_BB_LK_<Titulo>.pdf
 │   ├── Presentaciones de Clases
-│   │   └── ICS_PPT_U<NroUnidad>_<Tema>.pdf
 │   └── Resumenes
-│       └── ICS_RES_U<NroUnidad>_<Tema>.pdf
 ├── Pautas e Informacion
-│   └── ICS_PAUTA_<Nombre>.pdf
-|   └── ICS_PLAN_<Nombre>.pdf
 ├── Programa
-│   └── ICS_ProgramaAsignatura_2026.pdf
 ├── Templates
-│   └── ICS_Template_<Nombre>.[docx|xlsx]
 ├── Trabajos
-│   ├── Trabajos Conceptuales
-│   │   └── ICS_TC_<Nro>_<Titulo>.pdf
-│   ├── Trabajos Practicos
-│   │   ├── Evaluables
-│   │   │   └── ICS_TP_<Nro>_<Titulo>.[pdf|docx|xlsx]
-│   │   └── No Evaluables
-│   │       └── ICS_TPNE_<Nro>_<Titulo>.pdf
-│   └── Trabajos de Investigacion Grupal
-│       └── ICS_TIG_<Titulo>.pdf
-└── README.md
-                                                  
+│    ├── Trabajos Practicos
+│    │   ├── Evaluables
+│    │   └── No Evaluables
+│    └── Trabajos de Investigacion Grupal
+└── README.md                                                  
 ```
 ---
 ## Ítems de Configuración
@@ -86,7 +67,6 @@ ICS_G01_4K3_2026
 | Guías | `ICS_GUIA_<Tema>.pdf` | `ICS_G01_4K3_2026\Material de Estudio\Guias\` |
 | Programa de Asignatura | `ICS_ProgramaAsignatura_2026.pdf` | `ICS_G01_4K3_2026\Programa\` |
 | Templates | `ICS_Template_<Nombre>.[docx\|xlsx]` | `ICS_G01_4K3_2026\Templates\` |
-| Trabajos Conceptuales | `ICS_TC_<Nro>_<Titulo>.pdf` | `ICS_G01_4K3_2026\Trabajos\Trabajos Conceptuales\` |
 | Trabajos Prácticos Evaluables | `ICS_TP_<Nro>_<Titulo>.[pdf\|docx\|xlsx]` | `ICS_G01_4K3_2026\Trabajos\Trabajos Practicos\Evaluables\` |
 | Trabajos Prácticos No Evaluables | `ICS_TPNE_<Nro>_<Titulo>.pdf` | `ICS_G01_4K3_2026\Trabajos\Trabajos Practicos\No Evaluables\` |
 | Trabajos de Investigación Grupal | `ICS_TIG_<Titulo>.pdf` | `ICS_G01_4K3_2026\Trabajos\Trabajos de Investigacion Grupal\` |
@@ -104,7 +84,6 @@ ICS_G01_4K3_2026
 | `G1`              | Grupo número 1                                                             |
 | `TP`              | Trabajo Práctico                                                           |
 | `TPNE`            | Trabajo práctico No Evaluable                                              |
-| `TC`              | Trabajo Conceptual                                                         |
 | `TIG`             | Trabajo de Investigación Grupal                                            |
 | `PPT`             | Presentaciones                                                             |
 | `RES`             | Resúmenes                                                                  |
