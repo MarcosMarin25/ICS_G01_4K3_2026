@@ -120,4 +120,7 @@ Donde `<NroLineaBase>` es un número entero que comienza en 1 y se incrementa en
 **Criterio de revisión**:  
 Para este repositorio, el criterio para definir la Línea Base será al momento de realizar cualquier entrega formal de cada Trabajo Práctico Evaluable. 
 
+**Justificación del criterio**:  
+Se define una línea base en cada entrega formal de un Trabajo Práctico Evaluable porque en ese momento el contenido del repositorio está completo, revisado y consistente con lo presentado a la cátedra. Cada línea base se materializa mediante un tag de Git y un release de GitHub con el identificador correspondiente, y los cambios posteriores se gestionan sin modificar la línea base ya establecida.
+
 ---
