@@ -74,7 +74,7 @@ Como visitante quiero comprar una entrada para asegurar mi visita al parque
   | 16 a 59 | 100% |
   | 60 o más | 50% |
 
-- La edad mínima válida es 1 año. Una edad 0 o negativa es inválida.
+- La cantidad de entradas y las edades deben ser números enteros; valores decimales (flotantes) son inválidos. La edad mínima válida es 1 año (una edad 0 o negativa es inválida). La cantidad de edades ingresadas debe coincidir exactamente con la cantidad de entradas solicitadas..
 - "No más de un mes" significa hasta el mismo día del mes siguiente, inclusive. Por ejemplo, desde el 15/10 se puede comprar hasta el 15/11.
 - El límite de las 17:30 es inclusive y aplica solo a compras para el día actual.
 - Si la compra es inválida, el servicio lanza un error de validación con un mensaje descriptivo, y no envía el mail ni redirige a Mercado Pago.
@@ -151,7 +151,8 @@ Las pruebas están en el orden sugerido para el ciclo **Red → Green → Refact
 | F17 | Sin tipo de pase | Tipo de pase vacío | Error "Debe indicar el tipo de pase" | CA 1 |
 | F18 | Tipo de pase inválido | Tipo de pase = "premium" | Error "El tipo de pase debe ser VIP o regular" | CA 1 |
 | F19 | Usuario no registrado | Usuario que no existe | Error "Solo los usuarios registrados pueden comprar entradas" | CA 9 |
-
+| F20 | Cantidad decimal | 2.5 entradas | Error "La cantidad de entradas debe ser un número entero" | CA 1, 7 |
+| F21 | Edad decimal | Edades [30, 10.5, 8] | Error "Edad inválida" | CA 1 |
 
 ## Parte 2: Pruebas en pseudocódigo
 
@@ -489,6 +490,17 @@ describe("ServicioCompraEntradas - validaciones", () => {
     expect(() => servicio.comprar(solicitudValida({ usuario: "desconocido@mail.com" })))
       .toThrow("Solo los usuarios registrados pueden comprar entradas");
   });
+
+  test("F20 - rechaza una cantidad de entradas decimal (flotante)", () => {
+    expect(() => servicio.comprar(solicitudValida({ cantidad: 2.5 })))
+      .toThrow("La cantidad de entradas debe ser un número entero");
+  });
+
+  test("F21 - rechaza una edad decimal (flotante)", () => {
+    expect(() => servicio.comprar(solicitudValida({ edades: [30, 10.5, 8] })))
+      .toThrow("Edad inválida");
+  });
+
 });
 ```
 
@@ -497,7 +509,7 @@ describe("ServicioCompraEntradas - validaciones", () => {
 
 | Criterio de aceptación / Regla del PO | Pruebas |
 |---|---|
-| CA 1. Datos obligatorios (fecha, cantidad, edades, tipo de pase) | P01, P09, P12, F06, F10, F11, F14, F15, F16, F17, F18 |
+| CA 1. Datos obligatorios (fecha, cantidad, edades, tipo de pase) | P01, P09, P12, F06, F10, F11, F14, F15, F16, F17, F18, F20, F21 |
 | CA 2. Fecha actual o futura | P04, F05 |
 | CA 3. Mail de confirmación | P01, P02 |
 | CA 4. Redirección a Mercado Pago con tarjeta | P01, P02 |
