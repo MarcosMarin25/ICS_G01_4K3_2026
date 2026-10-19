@@ -84,7 +84,8 @@ class ServicioCompraEntradas {
     if (esHoy && minutosDelDia(ahora) > LIMITE_MISMO_DIA_EN_MINUTOS) {
       throw new Error("Las entradas para hoy se pueden comprar hasta las 17:30");
     }
-    if (solicitud.cantidad > MAXIMO_ENTRADAS_POR_FECHA) {
+    const yaCompradas = this.compras.cantidadComprada(solicitud.usuario, solicitud.fechaVisita);
+    if (yaCompradas + solicitud.cantidad > MAXIMO_ENTRADAS_POR_FECHA) {
       throw new Error("No se pueden comprar más de 10 entradas para una misma fecha");
     }
 
