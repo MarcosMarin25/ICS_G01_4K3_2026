@@ -15,8 +15,8 @@ describe("CalculadoraPrecios", () => {
     expect(calculadora.precioEntrada(30, "VIP")).toBe(20000);
   });
 
-  test("C03 - un niño de 1 año no paga", () => {
-    expect(calculadora.precioEntrada(1, "VIP")).toBe(0);
+  test("C03 - un bebé de 0 años no paga", () => {
+    expect(calculadora.precioEntrada(0, "VIP")).toBe(0);
   });
 
   test("C04 - un niño de 3 años no paga", () => {
@@ -27,7 +27,7 @@ describe("CalculadoraPrecios", () => {
     expect(calculadora.precioEntrada(4, "REGULAR")).toBe(5000);
   });
 
-  test("C06 - un menor de 15 años paga la mitad", () => {
+  test("C06 - una persona de 15 años paga la mitad", () => {
     expect(calculadora.precioEntrada(15, "VIP")).toBe(10000);
   });
 
