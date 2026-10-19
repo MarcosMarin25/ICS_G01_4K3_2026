@@ -147,7 +147,95 @@ En cada refactor las pruebas siguieron pasando y el lint no dio errores. La cobe
 
 ## D. Compras que deben fallar (validaciones)
 
-_Pendiente._
+Las pruebas se ejecutaron en orden numérico. Cada validación se insertó en su lugar dentro del orden definido: (1) usuario registrado, (2) datos obligatorios, (3) valores válidos, (4) reglas de fecha y (5) máximo por fecha. En la columna "Obtenido en Red", "No lanzó error" corresponde a `Received function did not throw`.
+
+| # | Prueba | Esperado (mensaje) | Obtenido en Red | Obtenido en Green | Estrategia | Cambio en el código | Estado |
+|---|---|---|---|---|---|---|---|
+| F01 | Sin forma de pago | "Debe seleccionar una forma de pago" | No lanzó error | El mensaje esperado | Implementación obvia | Se exige `formaPago` | ✅ Pasa |
+| F02 | Lunes (2026-10-19) | "El parque está cerrado en la fecha seleccionada" | No lanzó error | El mensaje esperado | Implementación obvia | Se consulta `calendario.estaAbierto()` | ✅ Pasa |
+| F03 | Navidad (reloj 2026-12-20) | "El parque está cerrado en la fecha seleccionada" | Pasó sin cambios | El mensaje esperado | Confirmación de borde | — | ✅ Pasa |
+| F04 | Año Nuevo (reloj 2026-12-20) | "El parque está cerrado en la fecha seleccionada" | Pasó sin cambios | El mensaje esperado | Confirmación de borde | — | ✅ Pasa |
+| F05 | Fecha pasada (2026-10-14) | "La fecha de visita no puede ser anterior a hoy" | No lanzó error | El mensaje esperado | Implementación obvia | Se compara la fecha de visita con el día de hoy del reloj | ✅ Pasa |
+| F06 | Sin fecha | "Debe indicar la fecha de visita" | `Cannot read properties of null (reading 'split')` (\*) | El mensaje esperado | Implementación obvia | Se exige `fechaVisita`, como primer dato obligatorio | ✅ Pasa |
+| F07 | Más de un mes (2026-11-17) | "Solo se pueden comprar entradas con hasta un mes de anticipación" | No lanzó error | El mensaje esperado | Implementación obvia | Límite: `new Date(año, mes + 1, día)` | ✅ Pasa |
+| F08 | Hoy a las 17:31 | "Las entradas para hoy se pueden comprar hasta las 17:30" | No lanzó error | El mensaje esperado | Implementación obvia | Si la fecha es hoy y son más de las 17:30, se rechaza | ✅ Pasa |
+| F09 | 11 entradas | "No se pueden comprar más de 10 entradas para una misma fecha" | No lanzó error | El mensaje esperado | Implementación obvia | `cantidad > 10` | ✅ Pasa |
+| F10 | Cantidad 0 | "La cantidad de entradas debe ser al menos 1" | No lanzó error | El mensaje esperado | Implementación obvia | `cantidad < 1` | ✅ Pasa |
+| F11 | Cantidad -1 | "La cantidad de entradas debe ser al menos 1" | Pasó sin cambios | El mensaje esperado | Confirmación de borde | — | ✅ Pasa |
+| F12 | 7 previas + 4 | "No se pueden comprar más de 10 entradas para una misma fecha" | No lanzó error | El mensaje esperado | Triangulación | Se suman las compras previas del usuario para la fecha | ✅ Pasa |
+| F13 | 9 previas + `[30, 2]` | "No se pueden comprar más de 10 entradas para una misma fecha" | Pasó sin cambios | El mensaje esperado | Confirmación de borde | — (el máximo cuenta `cantidad`, incluida la entrada de $0) | ✅ Pasa |
+| F14 | 3 entradas y 2 edades | "Debe indicar la edad de cada visitante" | No lanzó error | El mensaje esperado | Implementación obvia | `edades.length !== cantidad` | ✅ Pasa |
+| F15 | Edad -1 | "Edad inválida" | No lanzó error | El mensaje esperado | Implementación obvia | `edad < 0` | ✅ Pasa |
+| F16 | _Retirada_ | — | — | — | — | Ver la nota en `pruebas_comprar_entradas.md` | — |
+| F17 | Sin tipo de pase | "Debe indicar el tipo de pase" | No lanzó error | El mensaje esperado | Implementación obvia | Se exige `tipoPase` | ✅ Pasa |
+| F18 | Pase `"PREMIUM"` | "El tipo de pase debe ser VIP o regular" | No lanzó error | El mensaje esperado | Implementación obvia | Solo se acepta `"VIP"` o `"REGULAR"` | ✅ Pasa |
+| F19 | Usuario no registrado | "Solo los usuarios registrados pueden comprar entradas" | No lanzó error | El mensaje esperado | Implementación obvia | Se consulta `usuarios.estaRegistrado()`, como primera validación | ✅ Pasa |
+| F20 | Cantidad 2.5 | "La cantidad de entradas debe ser un número entero" | "Debe indicar la edad de cada visitante" (\*\*) | El mensaje esperado | Implementación obvia | Se valida que la cantidad sea entera antes que el mínimo y que las edades | ✅ Pasa |
+| F21 | Edad 10.5 | "Edad inválida" | No lanzó error | El mensaje esperado | Implementación obvia | Las edades tienen que ser enteras | ✅ Pasa |
+| F22 | Rechazo sin efectos secundarios | Error de máximo, sin mail, sin Mercado Pago y el repositorio en 7 | Pasó sin cambios (\*\*\*) | Lo esperado | Confirmación de borde | — | ✅ Pasa |
+| F23 | Forma de pago `"CHEQUE"` | "La forma de pago debe ser tarjeta o efectivo" | No lanzó error | El mensaje esperado | Implementación obvia | Solo se acepta `"TARJETA"` o `"EFECTIVO"` | ✅ Pasa |
+| F24 | 3 entradas y 4 edades | "Debe indicar la edad de cada visitante" | Pasó sin cambios | El mensaje esperado | Confirmación de borde | — (cubierta por el `!==` de F14) | ✅ Pasa |
+| F25 | Fecha `2026-13-45` | "Fecha de visita inválida" | "Solo se pueden comprar entradas con hasta un mes de anticipación" (\*\*\*\*) | El mensaje esperado | Implementación obvia | Se rechazan el mes fuera de 1 a 12 y el día fuera de 1 a 31 | ✅ Pasa |
+| F26 | Reloj 2027-01-31, fecha 2027-03-02 | "Solo se pueden comprar entradas con hasta un mes de anticipación" | No lanzó error | El mensaje esperado | Triangulación | Si el mes siguiente no tiene ese día, el límite es su último día | ✅ Pasa |
+| F27 | Fecha `2026-02-30` | "Fecha de visita inválida" | "La fecha de visita no puede ser anterior a hoy" (\*\*\*\*) | El mensaje esperado | Triangulación | El chequeo de rangos se reemplaza por uno de ida y vuelta: se crea la fecha y se comparan año, mes y día | ✅ Pasa |
+
+(\*) **F06:** sin la validación, el servicio no rechazaba la solicitud: **explotaba** con un `TypeError` al intentar leer la fecha. Esto muestra la diferencia entre un error de negocio (una solicitud inválida, con un mensaje para el usuario) y un bug.
+
+(\*\*) **F20:** con 2.5 entradas y 3 edades, la primera validación que fallaba era la de las edades. El Red demuestra que **el orden de las validaciones importa**: la cantidad tiene que validarse completa (que sea entera y que sea al menos 1) antes de compararla con las edades. F11 (`cantidad: -1, edades: []`) exige lo mismo.
+
+(\*\*\*) **F22, verificada con mutación:** como pasó sin cambios, se hizo un experimento sin commitear. Se movió `compras.registrar()` al principio de `comprar()`, antes de las validaciones. Fallaron F22 (`Expected: 7, Received: 11`), P07 y P13. Después se revirtió el cambio y se volvió a 53/53. La prueba sí protege el supuesto de que una compra inválida no tiene efectos secundarios.
+
+(\*\*\*\*) **F25 y F27:** los dos Red muestran cómo `Date` convierte en silencio una fecha imposible. `2026-13-45` se transformó en una fecha de 2027 y el error salió por el horizonte. `2026-02-30` se transformó en el 02/03/2026 y el error salió como fecha pasada. F27 confirmó que un chequeo de rangos no alcanza (ver la nota de F25 y F27 en `pruebas_comprar_entradas.md`).
+
+**F26, el defecto del fin de mes:** el límite de F07 se calculó con `new Date(año, mes + 1, día)`, que es la forma directa. F26 mostró el defecto: desde el 31/01, ese cálculo da el 03/03 y el 02/03 se aceptaba. P06 (15/11) y P18 (28/02) siguieron pasando con las dos implementaciones, y por eso hacía falta F26.
+
+**Bordes protegidos por pruebas de la sección C:** al implementar F08 se verificó que P05 (17:30) y P16 (mañana a las 18:00) siguieran pasando, lo que confirma `>` y no `>=`. Con F12 siguieron pasando P13 (7 + 3 = 10) y P17 (otro usuario). Con F15 siguió pasando P12 (edad 0), lo que confirma `< 0` y no `<= 0`.
+
+**Refactor:**
+- **F05:** el parseo de la fecha quedó duplicado entre el calendario y el servicio. Se creó `src/logica/fechas.js`, con `crearFechaLocal()` e `inicioDelDia()`, y lo usan los dos módulos.
+- **F08:** los números de la hora límite pasaron a `HORA_LIMITE_MISMO_DIA`, `MINUTO_LIMITE_MISMO_DIA` y `LIMITE_MISMO_DIA_EN_MINUTOS`, y se extrajo `minutosDelDia()` a `fechas.js`. El reloj pasó a consultarse una sola vez por compra.
+- **F09:** el 10 pasó a la constante `MAXIMO_ENTRADAS_POR_FECHA`.
+- **F18:** `"VIP"` aparecía en la calculadora y en el servicio, y `"TARJETA"` en el servicio. Se creó `src/logica/valores.js` con `TIPO_PASE` y `FORMA_PAGO`, que usan los dos módulos.
+- **F26:** el cálculo del límite pasó a `fechas.js` como `mismoDiaDelMesSiguiente()`. En ese commit el lint todavía marcaba el 12 y el 31 del chequeo de rangos de F25, que se había postergado hasta F27 a propósito.
+- **F25 y F27:** la verificación de que la fecha existe pasó a `fechas.js` como `esFechaExistente()`. El lint volvió a quedar sin errores.
+- **Cierre de la sección:** las validaciones se extrajeron a métodos privados, uno por paso del orden: `#validarUsuario`, `#validarDatosObligatorios`, `#validarValores`, `#validarReglasDeFecha` y `#validarMaximoPorFecha`. También se extrajo `#emitirEntradas`. Ahora `comprar()` se lee como una lista de pasos.
+- **F01, F02, F06, F10, F14, F15, F17, F19, F20, F21 y F23:** no hubo nada que refactorizar. Cada Green agregó una sola condición en su lugar y la estructura se mejoró al cerrar la sección.
+
+En cada refactor las pruebas siguieron pasando. Al final hay 58/58 pruebas, el lint no da errores y la cobertura es del 100% en los cinco módulos de `src/`.
+
+**Commits** (rama `TP_6`):
+
+| Paso | RED | GREEN | REFACTOR |
+|---|---|---|---|
+| F01 | `68f2eae` | `d55091d` | — |
+| F02 | `f9a942c` | `87abb81` | — |
+| F03 | `7d5c7eb` (pasó sin cambios) | — | — |
+| F04 | `03f2a16` (pasó sin cambios) | — | — |
+| F05 | `06582b2` | `76acdbd` | `5d6bf34` |
+| F06 | `146f725` | `fab7ff4` | — |
+| F07 | `f84b73b` | `c28fc12` | — |
+| F08 | `e10b1a1` | `c65473a` | `e65777e` |
+| F09 | `7133df7` | `89966e6` | `6a03b39` |
+| F10 | `529ca63` | `3dcfae7` | — |
+| F11 | `62dcddf` (pasó sin cambios) | — | — |
+| F12 | `cc73dfc` | `0c89853` | — |
+| F13 | `dc3cde3` (pasó sin cambios) | — | — |
+| F14 | `9e88e2c` | `992d09e` | — |
+| F15 | `c3a5f28` | `fda96a1` | — |
+| F17 | `54e5ccd` | `146a01e` | — |
+| F18 | `37f31e2` | `4cf128d` | `f860be0` |
+| F19 | `0c978e6` | `3053b2e` | — |
+| F20 | `a1cb311` | `e34ce9c` | — |
+| F21 | `8f29f36` | `734a010` | — |
+| F22 | `db8a598` (pasó sin cambios) | — | — |
+| F23 | `4ebc277` | `3013268` | — |
+| F24 | `d66829f` (pasó sin cambios) | — | — |
+| F25 | `cd0554b` | `7adef01` | — (postergado a F27) |
+| F26 | `a06d65f` | `a5fc528` | `6da0faf` |
+| F27 | `a5e3cb5` | `6de752d` | `471bb87` |
+| Cierre de la sección | — | — | `20c9b8a` (métodos privados) |
+
+**Resultado final:** 26 de 26 pruebas pasan.
 
 
 ## Resumen
@@ -157,5 +245,7 @@ _Pendiente._
 | A. Precio de cada entrada | 9 | 9 | 0 |
 | B. Días de apertura | 5 | 5 | 0 |
 | C. Compras que deben pasar | 18 | 18 | 0 |
-| D. Compras que deben fallar | 26 | — | — |
-| **Total** | **58** | **32** | **0** |
+| D. Compras que deben fallar | 26 | 26 | 0 |
+| **Total** | **58** | **58** | **0** |
+
+**Cobertura** (`npm run test:coverage`): 100% de sentencias, ramas, funciones y líneas en los cinco módulos de `src/logica/` (`calculadoraPrecios.js`, `calendarioParque.js`, `fechas.js`, `servicioCompraEntradas.js` y `valores.js`). **Lint** (`npm run lint`): sin errores.
