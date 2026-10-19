@@ -17,6 +17,7 @@ class ServicioCompraEntradas {
     }));
     const montoTotal = entradas.reduce((total, entrada) => total + entrada.precio, 0);
 
+    this.compras.registrar(solicitud.usuario, solicitud.fechaVisita, solicitud.cantidad);
     if (solicitud.formaPago === "TARJETA") {
       this.mercadoPago.redirigir(montoTotal);
     }
