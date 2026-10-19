@@ -11,8 +11,11 @@ class ServicioCompraEntradas {
   }
 
   comprar(solicitud) {
-    const montoTotal = solicitud.edades.reduce(
-      (total, edad) => total + this.calculadora.precioEntrada(edad, solicitud.tipoPase), 0);
+    const entradas = solicitud.edades.map((edad) => ({
+      edad,
+      precio: this.calculadora.precioEntrada(edad, solicitud.tipoPase),
+    }));
+    const montoTotal = entradas.reduce((total, entrada) => total + entrada.precio, 0);
 
     if (solicitud.formaPago === "TARJETA") {
       this.mercadoPago.redirigir(montoTotal);
@@ -24,10 +27,7 @@ class ServicioCompraEntradas {
       fechaVisita: solicitud.fechaVisita,
       tipoPase: solicitud.tipoPase,
       montoTotal,
-      entradas: solicitud.edades.map((edad) => ({
-        edad,
-        precio: this.calculadora.precioEntrada(edad, solicitud.tipoPase),
-      })),
+      entradas,
     };
   }
 }
