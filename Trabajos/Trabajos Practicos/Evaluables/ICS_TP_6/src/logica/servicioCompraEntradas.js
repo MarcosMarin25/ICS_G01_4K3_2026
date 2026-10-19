@@ -83,7 +83,7 @@ class ServicioCompraEntradas {
     if (solicitud.edades.length !== solicitud.cantidad) {
       throw new Error("Debe indicar la edad de cada visitante");
     }
-    if (solicitud.edades.some((edad) => edad < 0)) {
+    if (solicitud.edades.some((edad) => !Number.isInteger(edad) || edad < 0)) {
       throw new Error("Edad inválida");
     }
     const fechaVisita = crearFechaLocal(solicitud.fechaVisita);
