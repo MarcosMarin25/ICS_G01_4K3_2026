@@ -56,4 +56,12 @@ describe("ServicioCompraEntradas - compras válidas", () => {
     expect(mercadoPago.fueLlamadaConMonto(50000)).toBe(true); // 20000 + 20000 + 10000
     expect(mail.fueEnviadoA(USUARIO)).toBe(true);
   });
+
+  test("P02 - una compra en efectivo envía el mail y no redirige a Mercado Pago", () => {
+    const resultado = servicio.comprar(solicitudValida({ formaPago: "EFECTIVO" }));
+
+    expect(resultado.confirmada).toBe(true);
+    expect(mercadoPago.fueLlamada()).toBe(false);
+    expect(mail.fueEnviadoA(USUARIO)).toBe(true);
+  });
 });
