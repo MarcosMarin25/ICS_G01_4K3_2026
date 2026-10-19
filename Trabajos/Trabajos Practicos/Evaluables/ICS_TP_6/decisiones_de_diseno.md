@@ -28,6 +28,7 @@ Documentos relacionados:
 | ADR 8 | Descuentos que no se acumulan: un solo precio por edad |
 | ADR 9 | Montos en pesos enteros |
 | ADR 10 | Centralizar los valores válidos y las funciones de fecha |
+| ADR 11 | Interfaz web que reutiliza la lógica sin duplicarla, y que no se prueba con Jest |
 
 ---
 
@@ -260,6 +261,58 @@ La implementación evalúa los rangos de menor a mayor y devuelve el primero que
 
 ---
 
+## ADR 11. Interfaz web que reutiliza la lógica sin duplicarla, y que no se prueba con Jest
+
+**Contexto.** El PO pide una interfaz web responsive con la fuente Lato y su paleta de colores, una pantalla simulada "Mercado Pago Compra Exitosa" y un modal "Mail enviado a ...". La lógica de negocio ya está en `src/logica/`, probada al 100%, y está escrita en CommonJS (`require` y `module.exports`), porque así la usan Node y Jest.
+
+**Decisión.**
+- **Ubicación y estructura:** la interfaz está en `src/web/` (`index.html`, `estilos.css` y `app.js`). Se abre con `npm run web`, que levanta un servidor local mínimo (`scripts/servidorWeb.js`, sin dependencias, que solo sirve archivos de `src/` y solo escucha en la máquina local), en `http://localhost:8080/src/web/`.
+- **La web no duplica la lógica.** `app.js` tiene un cargador de pocas líneas que lee cada módulo de `src/logica/` con `fetch` y lo ejecuta con su propio `module` y `require`. Así, la página usa exactamente el mismo código que verifican las 58 pruebas.
+- **La validación la hace el servicio.** El formulario tiene `novalidate`, y los mensajes de error que se muestran son los que lanza `ServicioCompraEntradas`. La interfaz solo guía al usuario: el selector de fecha sugiere el rango de un mes, avisa si el día elegido está cerrado (usando `CalendarioParque`) y muestra un resumen del precio estimado (usando `CalculadoraPrecios`).
+- **Dependencias del navegador:**
+  - El reloj es el real.
+  - La sesión y los usuarios están simulados (el PO permite empezar con la sesión mockeada). Los usuarios registrados de prueba son `visitante@mail.com` y `otro@mail.com`.
+  - Las compras se guardan en memoria mientras la página está abierta.
+  - Mercado Pago y el mail son implementaciones simuladas que muestran la pantalla y el modal que pidió el PO.
+- **Campo de edad vacío.** Se envía como `NaN`, y no como `0`, para que el servicio lo rechace ("Edad inválida"). Si se enviara como 0, sería la edad de un bebé, que es válida.
+- **Paleta (supuesto).** El PO no proporcionó los valores de su paleta. Se usa una **paleta definida por el grupo ante la falta de valores del PO, inspirada en la temática de bioparque**. Está en variables CSS de `:root`, para reemplazarla fácilmente si aparece la paleta oficial:
+
+  | Variable | Color | Uso |
+  |---|---|---|
+  | `--color-primario` | `#2E7D32` (verde bosque) | Encabezado, botones principales |
+  | `--color-primario-hover` | `#1B5E20` | Botones al pasar el mouse |
+  | `--color-secundario` | `#8D6E63` (tierra) | Bordes, detalles |
+  | `--color-acento` | `#F9A825` (amarillo sol) | Destacados, total a pagar |
+  | `--color-fondo` | `#F5F7F2` | Fondo general |
+  | `--color-superficie` | `#FFFFFF` | Tarjetas y formulario |
+  | `--color-texto` | `#1F2A1F` | Texto |
+  | `--color-error` | `#C62828` | Mensajes de validación |
+  | `--color-exito` | `#2E7D32` | Confirmaciones |
+
+  La fuente es Lato (Google Fonts) en todo el sitio. El diseño es *mobile first*: una columna en el celular y dos (formulario y resumen) desde 800 px de ancho.
+
+**Por qué no se prueba con Jest.**
+- **Toda la lógica de negocio que usa la web ya está probada.** `app.js` no decide nada: arma la solicitud a partir del formulario, llama a `comprar()` y muestra el resultado o el mensaje de error. Probarlo con Jest sería probar el DOM y no reglas de negocio.
+- **Es otro nivel de prueba.** El comportamiento visual (diseño responsive, colores, fuente, la pantalla de Mercado Pago, el modal) se verifica con pruebas de extremo a extremo en un navegador real, por ejemplo con Playwright o Cypress. Esas herramientas exceden el alcance de un TP de TDD unitario (ver "Fuera del alcance de las pruebas unitarias").
+- **La cobertura se mide solo sobre `src/logica/`** (`collectCoverageFrom` en `package.json`). Incluir `src/web/` bajaría la cobertura sin aportar información sobre la calidad de la lógica, y haría fallar el umbral del 100%.
+- **Verificación realizada.** Se verificó en Chrome, en escritorio y con un ancho de celular de 360 px, sin desplazamiento horizontal. Se recorrieron estos flujos:
+  - Enviar el formulario vacío muestra "Debe indicar la fecha de visita".
+  - Elegir un lunes muestra el aviso de parque cerrado.
+  - Comprar sin forma de pago muestra "Debe seleccionar una forma de pago".
+  - Una compra con tarjeta de 3 entradas VIP (edades 30, 28 y 2) muestra la pantalla "Mercado Pago Compra Exitosa" por $40.000, después la confirmación "Compraste 3 entradas VIP para el 20/10/2026" y el modal "Mail enviado a visitante@mail.com".
+
+**Alternativas consideradas.**
+- **Copiar la lógica en `app.js`.** Se descartó: habría dos versiones de las reglas, y la de la web no estaría probada.
+- **Cargar los módulos con etiquetas `<script>` comunes.** Se descartó: los scripts clásicos comparten el ámbito global, y las declaraciones `const { TIPO_PASE }` de la calculadora y del servicio chocarían.
+- **Un empaquetador (webpack, esbuild) o pasar la lógica a módulos ES.** Se descartó: agrega una herramienta y un paso de compilación, o cambia el formato que usan Jest y Node, solo para servir tres archivos.
+
+**Consecuencias.**
+- La web siempre usa la versión probada de la lógica.
+- Para abrir la web hace falta `npm run web`. Si se abre el HTML directamente como `file://`, la página avisa que necesita el servidor.
+- El calendario nativo del navegador no permite deshabilitar días sueltos. Por eso, en lugar de deshabilitar los lunes y feriados, la interfaz avisa al elegirlos, y el servicio los rechaza si igual se envían.
+
+---
+
 ## Diseño de las pruebas
 
 ### Partición de equivalencias y valores límite
@@ -354,7 +407,7 @@ Algunos refactors se **postergaron a propósito** (K04 hasta K05, P01 hasta P10 
 | Mercado Pago real | Es un servicio externo: una prueba unitaria no puede depender de la red ni cobrar de verdad. Se reemplaza por `PasarelaMercadoPagoEspia`. | Prueba de integración contra el entorno de pruebas (*sandbox*) de Mercado Pago |
 | Envío real del mail | Es un servicio externo. Se reemplaza por `ServicioMailEspia`. | Prueba de integración con un servidor de correo de prueba |
 | Persistencia real de usuarios y compras | No hay base de datos en esta US. Se reemplaza por un stub y un fake. | Prueba de integración con la base de datos |
-| Interfaz (calendario visual con días deshabilitados, paleta, fuente Lato, diseño responsive) | Es comportamiento visual. La lógica que decide qué días están cerrados sí se prueba (K01 a K05), y el servicio igual rechaza una fecha cerrada por si llega una (F02 a F04). | Prueba de extremo a extremo (*end-to-end*) en el navegador, y revisión visual |
+| Interfaz web en `src/web/` (formulario, aviso de días cerrados, paleta, fuente Lato, diseño responsive, pantalla simulada de Mercado Pago y modal del mail) | Es comportamiento visual, y no contiene reglas de negocio: usa la lógica de `src/logica/`, que sí se prueba. La lógica que decide qué días están cerrados se prueba en K01 a K05, y el servicio igual rechaza una fecha cerrada por si llega una (F02 a F04). Ver el ADR 11. | Prueba de extremo a extremo (*end-to-end*) en el navegador (Playwright o Cypress) y revisión visual |
 
 El nivel unitario verifica **la lógica de negocio**. La integración con los servicios externos y la interfaz corresponden a otros niveles de prueba.
 
@@ -388,7 +441,7 @@ La tabla completa de **criterios de aceptación y reglas del PO → pruebas**, y
 |---|---|
 | Pruebas | **58**: 9 de precios (C), 5 de calendario (K), 18 de compras válidas (P) y 26 de validaciones (F) |
 | Resultado | 58 de 58 pasan |
-| Cobertura (`npm run test:coverage`) | **100%** de sentencias, ramas, funciones y líneas en los cinco módulos de `src/logica/` |
+| Cobertura (`npm run test:coverage`) | **100%** de sentencias, ramas, funciones y líneas en los cinco módulos de `src/logica/`. La interfaz de `src/web/` no se mide (ADR 11) |
 | Lint (`npm run lint`) | Sin errores |
 | Tiempo de ejecución | Unos 2 segundos para las 58 pruebas. La primera corrida tarda más porque incluye la carga inicial de Jest |
 | Ciclos registrados en `TP_6` (secciones B, C y D) | 31 RED, 31 GREEN, 13 REFACTOR y 18 confirmaciones de borde, cada uno en su commit |

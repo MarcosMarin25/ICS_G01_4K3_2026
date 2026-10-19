@@ -43,6 +43,14 @@ module.exports = [
     },
   },
   {
+    // La interfaz web corre en el navegador como script clásico, no como módulo de Node.
+    files: ["src/web/**/*.js"],
+    languageOptions: {
+      sourceType: "script",
+      globals: { ...globals.browser },
+    },
+  },
+  {
     files: ["tests/**/*.js"],
     languageOptions: {
       globals: { ...globals.jest },
