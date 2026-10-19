@@ -96,6 +96,17 @@ class ServicioCompraEntradas {
     if (!this.usuarios.estaRegistrado(solicitud.usuario)) {
       errores.usuario = "Solo los usuarios registrados pueden comprar entradas";
     }
+    if (!solicitud.fechaVisita) {
+      errores.fechaVisita = "Debe indicar la fecha de visita";
+    } else if (!esFechaExistente(solicitud.fechaVisita)) {
+      errores.fechaVisita = "Fecha de visita inválida";
+    } else {
+      try {
+        this.#validarReglasDeFecha(solicitud);
+      } catch (error) {
+        errores.fechaVisita = error.message;
+      }
+    }
     if (!solicitud.tipoPase) {
       errores.tipoPase = "Debe indicar el tipo de pase";
     } else if (!Object.values(TIPO_PASE).includes(solicitud.tipoPase)) {
