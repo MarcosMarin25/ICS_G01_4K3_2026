@@ -10,7 +10,11 @@ function crearFechaLocal(fecha) {
 // Indica si el parque abre en una fecha dada.
 class CalendarioParque {
   estaAbierto(fecha) {
-    return crearFechaLocal(fecha).getDay() !== LUNES;
+    const fechaLocal = crearFechaLocal(fecha);
+    if (fechaLocal.getMonth() === 11 && fechaLocal.getDate() === 25) {
+      return false;
+    }
+    return fechaLocal.getDay() !== LUNES;
   }
 }
 
