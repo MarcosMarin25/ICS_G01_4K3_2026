@@ -395,4 +395,12 @@ describe("ServicioCompraEntradas - validación por campo", () => {
     expect(mercadoPago.fueLlamada()).toBe(false);
     expect(compras.cantidadComprada(USUARIO, FECHA_ABIERTA)).toBe(0);
   });
+
+  test("V09 - no evalúa el máximo por fecha si la fecha es inválida", () => {
+    expect(servicio.validarCampos(solicitudValida({
+      fechaVisita: "2026-13-45",
+      cantidad: 11,
+      edades: Array(11).fill(30),
+    }))).toEqual({ fechaVisita: "Fecha de visita inválida" });
+  });
 });
