@@ -64,6 +64,9 @@ class ServicioCompraEntradas {
     if (!solicitud.formaPago) {
       throw new Error("Debe seleccionar una forma de pago");
     }
+    if (solicitud.cantidad < 1) {
+      throw new Error("La cantidad de entradas debe ser al menos 1");
+    }
     const fechaVisita = crearFechaLocal(solicitud.fechaVisita);
     const ahora = this.reloj.ahora();
     const hoy = inicioDelDia(ahora);
