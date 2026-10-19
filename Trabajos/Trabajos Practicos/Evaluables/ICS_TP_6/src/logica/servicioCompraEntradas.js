@@ -73,8 +73,10 @@ class ServicioCompraEntradas {
     if (!solicitud.formaPago) {
       throw new Error("Debe seleccionar una forma de pago");
     }
-    const [, mesVisita, diaVisita] = solicitud.fechaVisita.split("-").map(Number);
-    if (mesVisita < 1 || mesVisita > 12 || diaVisita < 1 || diaVisita > 31) {
+    const [anioVisita, mesVisita, diaVisita] = solicitud.fechaVisita.split("-").map(Number);
+    const fechaCreada = new Date(anioVisita, mesVisita - 1, diaVisita);
+    if (fechaCreada.getFullYear() !== anioVisita || fechaCreada.getMonth() !== mesVisita - 1
+      || fechaCreada.getDate() !== diaVisita) {
       throw new Error("Fecha de visita inválida");
     }
     if (!Object.values(TIPO_PASE).includes(solicitud.tipoPase)) {
