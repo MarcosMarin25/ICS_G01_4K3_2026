@@ -229,4 +229,11 @@ describe("ServicioCompraEntradas - validaciones", () => {
     expect(() => servicio.comprar(solicitudValida({ fechaVisita: "2026-11-17" })))
       .toThrow("Solo se pueden comprar entradas con hasta un mes de anticipación");
   });
+
+  test("F08 - rechaza comprar para hoy después de las 17:30", () => {
+    reloj.fijar("2026-10-15T17:31");
+
+    expect(() => servicio.comprar(solicitudValida({ fechaVisita: HOY })))
+      .toThrow("Las entradas para hoy se pueden comprar hasta las 17:30");
+  });
 });
