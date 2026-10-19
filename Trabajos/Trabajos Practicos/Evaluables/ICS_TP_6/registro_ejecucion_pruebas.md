@@ -35,6 +35,8 @@ La evidencia de la última ejecución completa está en `reportes/reporte-prueba
 
 **Resultado final:** 9 de 9 pruebas pasan.
 
+**Commits:** esta sección se mergeó en `TP_6` con *squash* (commit `36a2a41`). El commit de cada paso (RED, GREEN y REFACTOR, de C01 a C09) se puede ver en la pestaña *Commits* del [PR #5](https://github.com/MarcosMarin25/ICS_G01_4K3_2026/pull/5). Desde la sección B, cada paso tiene su commit directamente en `TP_6`.
+
 
 ## B. Días de apertura (`CalendarioParque`)
 
