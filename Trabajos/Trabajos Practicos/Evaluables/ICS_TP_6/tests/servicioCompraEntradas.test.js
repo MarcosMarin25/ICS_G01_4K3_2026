@@ -291,4 +291,9 @@ describe("ServicioCompraEntradas - validaciones", () => {
     expect(() => servicio.comprar(solicitudValida({ tipoPase: "PREMIUM" })))
       .toThrow("El tipo de pase debe ser VIP o regular");
   });
+
+  test("F19 - rechaza la compra de un usuario no registrado", () => {
+    expect(() => servicio.comprar(solicitudValida({ usuario: "desconocido@mail.com" })))
+      .toThrow("Solo los usuarios registrados pueden comprar entradas");
+  });
 });
