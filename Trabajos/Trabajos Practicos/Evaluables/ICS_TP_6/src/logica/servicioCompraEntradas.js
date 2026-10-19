@@ -24,6 +24,10 @@ class ServicioCompraEntradas {
       fechaVisita: solicitud.fechaVisita,
       tipoPase: solicitud.tipoPase,
       montoTotal,
+      entradas: solicitud.edades.map((edad) => ({
+        edad,
+        precio: this.calculadora.precioEntrada(edad, solicitud.tipoPase),
+      })),
     };
   }
 }
