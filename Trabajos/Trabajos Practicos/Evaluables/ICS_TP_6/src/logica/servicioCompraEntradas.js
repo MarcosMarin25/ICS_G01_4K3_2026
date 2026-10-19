@@ -117,10 +117,17 @@ class ServicioCompraEntradas {
     } else if (!Object.values(FORMA_PAGO).includes(solicitud.formaPago)) {
       errores.formaPago = "La forma de pago debe ser tarjeta o efectivo";
     }
-    if (solicitud.edades.length !== solicitud.cantidad) {
-      errores.edades = "Debe indicar la edad de cada visitante";
-    } else if (solicitud.edades.some((edad) => !Number.isInteger(edad) || edad < 0)) {
-      errores.edades = "Edad inválida";
+    if (!Number.isInteger(solicitud.cantidad)) {
+      errores.cantidad = "La cantidad de entradas debe ser un número entero";
+    } else if (solicitud.cantidad < 1) {
+      errores.cantidad = "La cantidad de entradas debe ser al menos 1";
+    }
+    if (!errores.cantidad) {
+      if (solicitud.edades.length !== solicitud.cantidad) {
+        errores.edades = "Debe indicar la edad de cada visitante";
+      } else if (solicitud.edades.some((edad) => !Number.isInteger(edad) || edad < 0)) {
+        errores.edades = "Edad inválida";
+      }
     }
     return errores;
   }
