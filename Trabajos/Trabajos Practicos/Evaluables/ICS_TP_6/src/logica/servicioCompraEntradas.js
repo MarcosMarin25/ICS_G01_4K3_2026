@@ -117,6 +117,11 @@ class ServicioCompraEntradas {
     } else if (!Object.values(FORMA_PAGO).includes(solicitud.formaPago)) {
       errores.formaPago = "La forma de pago debe ser tarjeta o efectivo";
     }
+    if (solicitud.edades.length !== solicitud.cantidad) {
+      errores.edades = "Debe indicar la edad de cada visitante";
+    } else if (solicitud.edades.some((edad) => !Number.isInteger(edad) || edad < 0)) {
+      errores.edades = "Edad inválida";
+    }
     return errores;
   }
 
