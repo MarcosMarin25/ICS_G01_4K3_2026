@@ -347,3 +347,9 @@ describe("ServicioCompraEntradas - validaciones", () => {
       .toThrow("Fecha de visita inválida");
   });
 });
+
+describe("ServicioCompraEntradas - validación por campo", () => {
+  test("V01 - una solicitud válida no tiene errores por campo", () => {
+    expect(servicio.validarCampos(solicitudValida())).toEqual({});
+  });
+});
