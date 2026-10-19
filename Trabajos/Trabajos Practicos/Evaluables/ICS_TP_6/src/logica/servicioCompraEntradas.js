@@ -67,6 +67,9 @@ class ServicioCompraEntradas {
     if (!solicitud.formaPago) {
       throw new Error("Debe seleccionar una forma de pago");
     }
+    if (!["VIP", "REGULAR"].includes(solicitud.tipoPase)) {
+      throw new Error("El tipo de pase debe ser VIP o regular");
+    }
     if (solicitud.cantidad < 1) {
       throw new Error("La cantidad de entradas debe ser al menos 1");
     }
