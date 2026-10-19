@@ -91,6 +91,10 @@ class ServicioCompraEntradas {
     };
   }
 
+  validarCampos() {
+    return {};
+  }
+
   #validarUsuario({ usuario }) {
     if (!this.usuarios.estaRegistrado(usuario)) {
       throw new Error("Solo los usuarios registrados pueden comprar entradas");
