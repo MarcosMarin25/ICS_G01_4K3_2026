@@ -178,4 +178,12 @@ describe("ServicioCompraEntradas - compras válidas", () => {
 
     expect(resultado.confirmada).toBe(true);
   });
+
+  test("P18 - a fin de mes permite comprar hasta el último día del mes siguiente", () => {
+    reloj.fijar("2027-01-31T10:00");
+
+    const resultado = servicio.comprar(solicitudValida({ fechaVisita: "2027-02-28" }));
+
+    expect(resultado.confirmada).toBe(true);
+  });
 });
