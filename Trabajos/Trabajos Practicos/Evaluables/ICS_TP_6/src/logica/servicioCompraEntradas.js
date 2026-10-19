@@ -48,6 +48,10 @@ class ServicioCompraEntradas {
   }
 
   comprar(solicitud) {
+    if (!solicitud.formaPago) {
+      throw new Error("Debe seleccionar una forma de pago");
+    }
+
     const entradas = solicitud.edades.map((edad) => ({
       edad,
       precio: this.calculadora.precioEntrada(edad, solicitud.tipoPase),
