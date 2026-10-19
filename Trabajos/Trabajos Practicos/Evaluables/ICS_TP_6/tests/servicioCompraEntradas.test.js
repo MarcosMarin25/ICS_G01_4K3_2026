@@ -341,4 +341,9 @@ describe("ServicioCompraEntradas - validaciones", () => {
     expect(() => servicio.comprar(solicitudValida({ fechaVisita: "2027-03-02" })))
       .toThrow("Solo se pueden comprar entradas con hasta un mes de anticipación");
   });
+
+  test("F27 - rechaza una fecha de visita que no existe", () => {
+    expect(() => servicio.comprar(solicitudValida({ fechaVisita: "2026-02-30" })))
+      .toThrow("Fecha de visita inválida");
+  });
 });
