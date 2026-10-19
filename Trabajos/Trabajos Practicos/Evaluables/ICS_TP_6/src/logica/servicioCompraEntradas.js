@@ -60,65 +60,20 @@ class ServicioCompraEntradas {
     this.mercadoPago = mercadoPago;
   }
 
+  /**
+   * Valida la solicitud y, si es válida, registra la compra, redirige al pago con tarjeta
+   * y envía el mail de confirmación. Si es inválida, lanza un error y no hace nada de eso.
+   * Las validaciones siguen un orden fijo: usuario, datos obligatorios, valores, reglas de fecha
+   * y máximo por fecha.
+   */
   comprar(solicitud) {
-    if (!this.usuarios.estaRegistrado(solicitud.usuario)) {
-      throw new Error("Solo los usuarios registrados pueden comprar entradas");
-    }
-    if (!solicitud.fechaVisita) {
-      throw new Error("Debe indicar la fecha de visita");
-    }
-    if (!solicitud.tipoPase) {
-      throw new Error("Debe indicar el tipo de pase");
-    }
-    if (!solicitud.formaPago) {
-      throw new Error("Debe seleccionar una forma de pago");
-    }
-    if (!esFechaExistente(solicitud.fechaVisita)) {
-      throw new Error("Fecha de visita inválida");
-    }
-    if (!Object.values(TIPO_PASE).includes(solicitud.tipoPase)) {
-      throw new Error("El tipo de pase debe ser VIP o regular");
-    }
-    if (!Object.values(FORMA_PAGO).includes(solicitud.formaPago)) {
-      throw new Error("La forma de pago debe ser tarjeta o efectivo");
-    }
-    if (!Number.isInteger(solicitud.cantidad)) {
-      throw new Error("La cantidad de entradas debe ser un número entero");
-    }
-    if (solicitud.cantidad < 1) {
-      throw new Error("La cantidad de entradas debe ser al menos 1");
-    }
-    if (solicitud.edades.length !== solicitud.cantidad) {
-      throw new Error("Debe indicar la edad de cada visitante");
-    }
-    if (solicitud.edades.some((edad) => !Number.isInteger(edad) || edad < 0)) {
-      throw new Error("Edad inválida");
-    }
-    const fechaVisita = crearFechaLocal(solicitud.fechaVisita);
-    const ahora = this.reloj.ahora();
-    const hoy = inicioDelDia(ahora);
-    if (fechaVisita < hoy) {
-      throw new Error("La fecha de visita no puede ser anterior a hoy");
-    }
-    if (!this.calendario.estaAbierto(solicitud.fechaVisita)) {
-      throw new Error("El parque está cerrado en la fecha seleccionada");
-    }
-    if (fechaVisita > mismoDiaDelMesSiguiente(hoy)) {
-      throw new Error("Solo se pueden comprar entradas con hasta un mes de anticipación");
-    }
-    const esHoy = fechaVisita.getTime() === hoy.getTime();
-    if (esHoy && minutosDelDia(ahora) > LIMITE_MISMO_DIA_EN_MINUTOS) {
-      throw new Error("Las entradas para hoy se pueden comprar hasta las 17:30");
-    }
-    const yaCompradas = this.compras.cantidadComprada(solicitud.usuario, solicitud.fechaVisita);
-    if (yaCompradas + solicitud.cantidad > MAXIMO_ENTRADAS_POR_FECHA) {
-      throw new Error("No se pueden comprar más de 10 entradas para una misma fecha");
-    }
+    this.#validarUsuario(solicitud);
+    this.#validarDatosObligatorios(solicitud);
+    this.#validarValores(solicitud);
+    this.#validarReglasDeFecha(solicitud);
+    this.#validarMaximoPorFecha(solicitud);
 
-    const entradas = solicitud.edades.map((edad) => ({
-      edad,
-      precio: this.calculadora.precioEntrada(edad, solicitud.tipoPase),
-    }));
+    const entradas = this.#emitirEntradas(solicitud);
     const montoTotal = entradas.reduce((total, entrada) => total + entrada.precio, 0);
 
     this.compras.registrar(solicitud.usuario, solicitud.fechaVisita, solicitud.cantidad);
@@ -134,6 +89,85 @@ class ServicioCompraEntradas {
       montoTotal,
       entradas,
     };
+  }
+
+  #validarUsuario({ usuario }) {
+    if (!this.usuarios.estaRegistrado(usuario)) {
+      throw new Error("Solo los usuarios registrados pueden comprar entradas");
+    }
+  }
+
+  #validarDatosObligatorios({ fechaVisita, tipoPase, formaPago }) {
+    if (!fechaVisita) {
+      throw new Error("Debe indicar la fecha de visita");
+    }
+    if (!tipoPase) {
+      throw new Error("Debe indicar el tipo de pase");
+    }
+    if (!formaPago) {
+      throw new Error("Debe seleccionar una forma de pago");
+    }
+  }
+
+  #validarValores({ fechaVisita, tipoPase, formaPago, cantidad, edades }) {
+    if (!esFechaExistente(fechaVisita)) {
+      throw new Error("Fecha de visita inválida");
+    }
+    if (!Object.values(TIPO_PASE).includes(tipoPase)) {
+      throw new Error("El tipo de pase debe ser VIP o regular");
+    }
+    if (!Object.values(FORMA_PAGO).includes(formaPago)) {
+      throw new Error("La forma de pago debe ser tarjeta o efectivo");
+    }
+    // La cantidad se valida antes que las edades: con una cantidad inválida
+    // no tiene sentido comparar cuántas edades se ingresaron (F11, F20).
+    if (!Number.isInteger(cantidad)) {
+      throw new Error("La cantidad de entradas debe ser un número entero");
+    }
+    if (cantidad < 1) {
+      throw new Error("La cantidad de entradas debe ser al menos 1");
+    }
+    if (edades.length !== cantidad) {
+      throw new Error("Debe indicar la edad de cada visitante");
+    }
+    if (edades.some((edad) => !Number.isInteger(edad) || edad < 0)) {
+      throw new Error("Edad inválida");
+    }
+  }
+
+  #validarReglasDeFecha(solicitud) {
+    const fechaVisita = crearFechaLocal(solicitud.fechaVisita);
+    const ahora = this.reloj.ahora();
+    const hoy = inicioDelDia(ahora);
+
+    if (fechaVisita < hoy) {
+      throw new Error("La fecha de visita no puede ser anterior a hoy");
+    }
+    if (!this.calendario.estaAbierto(solicitud.fechaVisita)) {
+      throw new Error("El parque está cerrado en la fecha seleccionada");
+    }
+    if (fechaVisita > mismoDiaDelMesSiguiente(hoy)) {
+      throw new Error("Solo se pueden comprar entradas con hasta un mes de anticipación");
+    }
+    const esHoy = fechaVisita.getTime() === hoy.getTime();
+    if (esHoy && minutosDelDia(ahora) > LIMITE_MISMO_DIA_EN_MINUTOS) {
+      throw new Error("Las entradas para hoy se pueden comprar hasta las 17:30");
+    }
+  }
+
+  #validarMaximoPorFecha({ usuario, fechaVisita, cantidad }) {
+    const yaCompradas = this.compras.cantidadComprada(usuario, fechaVisita);
+    if (yaCompradas + cantidad > MAXIMO_ENTRADAS_POR_FECHA) {
+      throw new Error("No se pueden comprar más de 10 entradas para una misma fecha");
+    }
+  }
+
+  // Emite una entrada por visitante, con su precio. Los menores de hasta 3 años reciben una de $0 (R8).
+  #emitirEntradas({ edades, tipoPase }) {
+    return edades.map((edad) => ({
+      edad,
+      precio: this.calculadora.precioEntrada(edad, tipoPase),
+    }));
   }
 }
 
