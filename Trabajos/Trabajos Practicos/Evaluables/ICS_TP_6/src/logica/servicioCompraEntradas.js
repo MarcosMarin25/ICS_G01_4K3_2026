@@ -1,3 +1,5 @@
+const { crearFechaLocal, inicioDelDia } = require("./fechas");
+
 /**
  * Interfaces que el servicio espera de sus dependencias (inversión de dependencias:
  * el servicio depende de estas abstracciones, no de Mercado Pago ni de un mail reales).
@@ -51,10 +53,8 @@ class ServicioCompraEntradas {
     if (!solicitud.formaPago) {
       throw new Error("Debe seleccionar una forma de pago");
     }
-    const [anio, mes, dia] = solicitud.fechaVisita.split("-").map(Number);
-    const fechaVisita = new Date(anio, mes - 1, dia);
-    const ahora = this.reloj.ahora();
-    const hoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
+    const fechaVisita = crearFechaLocal(solicitud.fechaVisita);
+    const hoy = inicioDelDia(this.reloj.ahora());
     if (fechaVisita < hoy) {
       throw new Error("La fecha de visita no puede ser anterior a hoy");
     }
