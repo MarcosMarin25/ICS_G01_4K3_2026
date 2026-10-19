@@ -96,6 +96,16 @@ class ServicioCompraEntradas {
     if (!this.usuarios.estaRegistrado(solicitud.usuario)) {
       errores.usuario = "Solo los usuarios registrados pueden comprar entradas";
     }
+    if (!solicitud.tipoPase) {
+      errores.tipoPase = "Debe indicar el tipo de pase";
+    } else if (!Object.values(TIPO_PASE).includes(solicitud.tipoPase)) {
+      errores.tipoPase = "El tipo de pase debe ser VIP o regular";
+    }
+    if (!solicitud.formaPago) {
+      errores.formaPago = "Debe seleccionar una forma de pago";
+    } else if (!Object.values(FORMA_PAGO).includes(solicitud.formaPago)) {
+      errores.formaPago = "La forma de pago debe ser tarjeta o efectivo";
+    }
     return errores;
   }
 
