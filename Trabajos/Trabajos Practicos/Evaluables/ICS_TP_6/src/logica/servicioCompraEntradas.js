@@ -19,6 +19,7 @@ class ServicioCompraEntradas {
       confirmada: true,
       cantidadEntradas: solicitud.cantidad,
       fechaVisita: solicitud.fechaVisita,
+      tipoPase: solicitud.tipoPase,
     };
   }
 }
