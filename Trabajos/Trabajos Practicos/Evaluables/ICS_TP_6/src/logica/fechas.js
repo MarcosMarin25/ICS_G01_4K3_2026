@@ -7,6 +7,15 @@ function crearFechaLocal(fecha) {
   return new Date(anio, mes - 1, dia);
 }
 
+// Indica si la fecha "AAAA-MM-DD" existe en el calendario. Date no rechaza fechas imposibles:
+// las corre en silencio ("2026-02-30" da el 02/03 y "2026-13-45" da el 14/02/2027).
+// Por eso se crea la fecha y se verifica que el año, el mes y el día sean los ingresados.
+function esFechaExistente(fecha) {
+  const [anio, mes, dia] = fecha.split("-").map(Number);
+  const creada = crearFechaLocal(fecha);
+  return creada.getFullYear() === anio && creada.getMonth() === mes - 1 && creada.getDate() === dia;
+}
+
 // Devuelve la fecha a las 00:00, para comparar días sin tener en cuenta la hora.
 function inicioDelDia(momento) {
   return new Date(momento.getFullYear(), momento.getMonth(), momento.getDate());
@@ -30,4 +39,11 @@ function minutosDelDia(momento) {
   return momento.getHours() * MINUTOS_POR_HORA + momento.getMinutes();
 }
 
-module.exports = { crearFechaLocal, inicioDelDia, mismoDiaDelMesSiguiente, minutosDelDia, MINUTOS_POR_HORA };
+module.exports = {
+  crearFechaLocal,
+  esFechaExistente,
+  inicioDelDia,
+  mismoDiaDelMesSiguiente,
+  minutosDelDia,
+  MINUTOS_POR_HORA,
+};

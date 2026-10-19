@@ -1,5 +1,5 @@
 const {
-  crearFechaLocal, inicioDelDia, mismoDiaDelMesSiguiente, minutosDelDia, MINUTOS_POR_HORA,
+  crearFechaLocal, esFechaExistente, inicioDelDia, mismoDiaDelMesSiguiente, minutosDelDia, MINUTOS_POR_HORA,
 } = require("./fechas");
 const { TIPO_PASE, FORMA_PAGO } = require("./valores");
 
@@ -73,10 +73,7 @@ class ServicioCompraEntradas {
     if (!solicitud.formaPago) {
       throw new Error("Debe seleccionar una forma de pago");
     }
-    const [anioVisita, mesVisita, diaVisita] = solicitud.fechaVisita.split("-").map(Number);
-    const fechaCreada = new Date(anioVisita, mesVisita - 1, diaVisita);
-    if (fechaCreada.getFullYear() !== anioVisita || fechaCreada.getMonth() !== mesVisita - 1
-      || fechaCreada.getDate() !== diaVisita) {
+    if (!esFechaExistente(solicitud.fechaVisita)) {
       throw new Error("Fecha de visita inválida");
     }
     if (!Object.values(TIPO_PASE).includes(solicitud.tipoPase)) {
