@@ -102,7 +102,9 @@ class ServicioCompraEntradas {
     if (!this.calendario.estaAbierto(solicitud.fechaVisita)) {
       throw new Error("El parque está cerrado en la fecha seleccionada");
     }
-    const limite = new Date(hoy.getFullYear(), hoy.getMonth() + 1, hoy.getDate());
+    const ultimoDiaMesSiguiente = new Date(hoy.getFullYear(), hoy.getMonth() + 2, 0).getDate();
+    const limite = new Date(hoy.getFullYear(), hoy.getMonth() + 1,
+      Math.min(hoy.getDate(), ultimoDiaMesSiguiente));
     if (fechaVisita > limite) {
       throw new Error("Solo se pueden comprar entradas con hasta un mes de anticipación");
     }
