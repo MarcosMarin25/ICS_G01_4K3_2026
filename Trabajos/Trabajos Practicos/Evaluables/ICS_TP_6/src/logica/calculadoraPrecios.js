@@ -5,8 +5,8 @@ const EDAD_MAXIMA_GRATIS = 3;
 const EDAD_MAXIMA_MENOR = 15;
 const EDAD_MINIMA_MAYOR = 60;
 
+// Devuelve el precio de una entrada según la edad del visitante y el tipo de pase.
 class CalculadoraPrecios {
-  // Devuelve el precio de una entrada según la edad del visitante y el tipo de pase.
   precioEntrada(edad, tipoPase) {
     const precioBase = tipoPase === "VIP" ? PRECIO_VIP : PRECIO_REGULAR;
 
