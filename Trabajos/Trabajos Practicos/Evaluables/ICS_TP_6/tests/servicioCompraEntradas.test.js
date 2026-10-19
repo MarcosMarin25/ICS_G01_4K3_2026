@@ -162,4 +162,12 @@ describe("ServicioCompraEntradas - compras válidas", () => {
 
     expect(compras.cantidadComprada(USUARIO, FECHA_ABIERTA)).toBe(3);
   });
+
+  test("P16 - permite comprar para mañana después de las 17:30", () => {
+    reloj.fijar("2026-10-15T18:00");
+
+    const resultado = servicio.comprar(solicitudValida({ fechaVisita: "2026-10-16" }));
+
+    expect(resultado.confirmada).toBe(true);
+  });
 });
