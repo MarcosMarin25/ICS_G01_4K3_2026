@@ -15,7 +15,11 @@ class ServicioCompraEntradas {
       this.mercadoPago.redirigir(50000);
     }
     this.mail.enviarConfirmacion(solicitud.usuario);
-    return { confirmada: true };
+    return {
+      confirmada: true,
+      cantidadEntradas: solicitud.cantidad,
+      fechaVisita: solicitud.fechaVisita,
+    };
   }
 }
 
