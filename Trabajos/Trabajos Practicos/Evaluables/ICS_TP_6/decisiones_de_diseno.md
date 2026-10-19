@@ -273,7 +273,12 @@ La implementación evalúa los rangos de menor a mayor y devuelve el primero que
   - Un campo muestra su error cuando el usuario terminó con él (sale del campo o elige una opción o una fecha). Desde ahí se revalida con cada cambio, así el error desaparece apenas se corrige.
   - Las edades no se marcan mientras queden campos de edad sin completar.
   - Al tocar Comprar se muestran los errores de todos los campos y el foco va al primero inválido. `comprar()` sigue siendo la autoridad final.
-  - Además, el selector de fecha sugiere el rango de un mes, y el resumen muestra el precio estimado (usando `CalculadoraPrecios`).
+  - Además, el resumen muestra el precio estimado (usando `CalculadoraPrecios`).
+- **Calendario propio con los días no disponibles deshabilitados (FAQ 2).** El `input type="date"` del navegador no permite deshabilitar días sueltos, como los lunes. Por eso la fecha se elige en un calendario propio (`src/web/app.js` y `index.html`):
+  - **Sin duplicar reglas.** Un día se puede elegir solo si las reglas de fecha de la lógica no lo rechazan. Para cada día, el calendario llama a `servicio.validarCampos()` con la solicitud actual cambiando solo la fecha; esto funciona porque las reglas de fecha no dependen de otros campos. Así quedan deshabilitados los lunes, el 25/12 y el 1/1 (`CalendarioParque.estaAbierto()`, a través de la regla de parque abierto), los días pasados, los que superan el mes de anticipación y el día de hoy después de las 17:30, con la misma tabla `REGLAS` que usa `comprar()`.
+  - **El motivo de cada día deshabilitado** es el mismo mensaje del servicio (por ejemplo, "El parque está cerrado en la fecha seleccionada"). Se muestra al pasar el mouse, lo lee el lector de pantalla y aparece debajo del calendario si se toca el día.
+  - **Accesibilidad:** los días deshabilitados tienen `aria-disabled` (aparecen tachados y apagados): se pueden recorrer con el teclado, pero no elegir. Las flechas mueven el foco entre los días y pasan de mes; Enter elige el día. Solo se puede navegar entre el mes actual y el mes del límite de anticipación.
+  - **La validación del servicio no cambia:** si por cualquier motivo llega una fecha no disponible, `comprar()` la rechaza (F02 a F08).
 - **Dependencias del navegador:**
   - El reloj es el real.
   - La sesión y los usuarios están simulados (el PO permite empezar con la sesión mockeada). Los usuarios registrados de prueba son `visitante@mail.com` y `otro@mail.com`.
@@ -320,7 +325,8 @@ La implementación evalúa los rangos de menor a mayor y devuelve el primero que
 - **La cobertura se mide solo sobre `src/logica/`** (`collectCoverageFrom` en `package.json`). Incluir `src/web/` bajaría la cobertura sin aportar información sobre la calidad de la lógica, y haría fallar el umbral del 100%.
 - **Verificación realizada.** Se verificó en Chrome, en escritorio y con un ancho de celular de 360 px, sin desplazamiento horizontal. Se recorrieron estos flujos:
   - Enviar el formulario vacío muestra "Debe indicar la fecha de visita".
-  - Elegir un lunes marca la fecha en el momento con "El parque está cerrado en la fecha seleccionada".
+  - Con el reloj real del 19/10/2026 (lunes), en el calendario aparecen deshabilitados los días pasados, el 19/10 y el 26/10 (lunes, "El parque está cerrado..."), y del 20/11 en adelante ("Solo se pueden comprar entradas con hasta un mes de anticipación..."). El 20/10 y el 19/11 (límite) se pueden elegir, y no se puede navegar a diciembre.
+  - Tocar un día deshabilitado no lo elige y muestra el motivo. Con el teclado, las flechas recorren los días y cambian de mes, y Enter elige.
   - Con 11 entradas y una fecha inválida no se marca el máximo; al corregir la fecha aparece en el momento "No se pueden comprar más de 10 entradas para una misma fecha" en la cantidad.
   - Con una sola edad cargada y dos vacías no se marca nada; al completar con 10.5 aparece "Edad inválida".
   - Al comprar con datos incompletos se marcan todos los campos con error a la vez y el foco va al primero.
@@ -335,7 +341,7 @@ La implementación evalúa los rangos de menor a mayor y devuelve el primero que
 **Consecuencias.**
 - La web siempre usa la versión probada de la lógica.
 - Para abrir la web hace falta `npm run web`. Si se abre el HTML directamente como `file://`, la página avisa que necesita el servidor.
-- El calendario nativo del navegador no permite deshabilitar días sueltos. Por eso, en lugar de deshabilitar los lunes y feriados, la interfaz marca el error en el momento al elegirlos, y el servicio los rechaza si igual se envían.
+- El calendario propio cumple el FAQ 2 (días cerrados deshabilitados) sin repetir las reglas de fecha: si una regla cambia en la lógica, el calendario la refleja solo.
 
 ---
 
@@ -463,7 +469,7 @@ Algunos refactors se **postergaron a propósito** (K04 hasta K05, P01 hasta P10 
 | Mercado Pago real | Es un servicio externo: una prueba unitaria no puede depender de la red ni cobrar de verdad. Se reemplaza por `PasarelaMercadoPagoEspia`. | Prueba de integración contra el entorno de pruebas (*sandbox*) de Mercado Pago |
 | Envío real del mail | Es un servicio externo. Se reemplaza por `ServicioMailEspia`. | Prueba de integración con un servidor de correo de prueba |
 | Persistencia real de usuarios y compras | No hay base de datos en esta US. Se reemplaza por un stub y un fake. | Prueba de integración con la base de datos |
-| Interfaz web en `src/web/` (formulario, aviso de días cerrados, paleta, fuente Lato, diseño responsive, pantalla simulada de Mercado Pago y modal del mail) | Es comportamiento visual, y no contiene reglas de negocio: usa la lógica de `src/logica/`, que sí se prueba. La lógica que decide qué días están cerrados se prueba en K01 a K05, y el servicio igual rechaza una fecha cerrada por si llega una (F02 a F04). Ver el ADR 11. | Prueba de extremo a extremo (*end-to-end*) en el navegador (Playwright o Cypress) y revisión visual |
+| Interfaz web en `src/web/` (formulario, calendario con días deshabilitados, paleta, fuente Lato, diseño responsive, pantalla simulada de Mercado Pago y modal del mail) | Es comportamiento visual, y no contiene reglas de negocio: usa la lógica de `src/logica/`, que sí se prueba. La lógica que decide qué días están cerrados se prueba en K01 a K05, y el servicio igual rechaza una fecha cerrada por si llega una (F02 a F04). Ver el ADR 11. | Prueba de extremo a extremo (*end-to-end*) en el navegador (Playwright o Cypress) y revisión visual |
 
 El nivel unitario verifica **la lógica de negocio**. La integración con los servicios externos y la interfaz corresponden a otros niveles de prueba.
 

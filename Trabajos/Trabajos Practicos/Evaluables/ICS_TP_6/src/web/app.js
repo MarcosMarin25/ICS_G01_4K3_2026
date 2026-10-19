@@ -155,7 +155,7 @@
   // Para cada campo de la solicitud: el elemento que muestra su error y los que se marcan como inválidos.
   const CAMPOS = {
     usuario: { error: "error-usuario", marcar: () => [$("usuario")] },
-    fechaVisita: { error: "error-fechaVisita", marcar: () => [$("fecha")] },
+    fechaVisita: { error: "error-fechaVisita", marcar: () => [$("calendario")] },
     cantidad: { error: "error-cantidad", marcar: () => [$("cantidad")] },
     edades: { error: "error-edades", marcar: () => [...document.querySelectorAll("#edades input"), $("campo-edades")] },
     tipoPase: { error: "error-tipoPase", marcar: () => [$("campo-tipoPase")] },
@@ -173,10 +173,121 @@
     const tocados = new Set();
     let intentoComprar = false;
 
-    // El selector de fecha sugiere el rango válido; igual, la validación la hace el servicio.
-    const hoy = logica.fechas.inicioDelDia(new Date());
-    $("fecha").min = aTextoDeFecha(hoy);
-    $("fecha").max = aTextoDeFecha(logica.fechas.mismoDiaDelMesSiguiente(hoy));
+    // ---------- Calendario (FAQ 2) ----------
+    // Un día se puede elegir solo si las reglas de fecha de la lógica no lo rechazan. Se le pregunta
+    // a validarCampos() con la solicitud actual cambiando solo la fecha: las reglas de fecha no
+    // dependen de otros campos. Así se deshabilitan los lunes, el 25/12, el 1/1, los días pasados,
+    // los de más de un mes y hoy después de las 17:30, sin repetir ninguna regla en la interfaz.
+    const formatoMes = new Intl.DateTimeFormat("es-AR", { month: "long", year: "numeric" });
+    const formatoDia = new Intl.DateTimeFormat("es-AR", {
+      weekday: "long", day: "numeric", month: "long", year: "numeric",
+    });
+    const DIAS_POR_SEMANA = 7;
+    const hoy = logica.fechas.inicioDelDia(dependencias.reloj.ahora());
+    const primerMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+    const limite = logica.fechas.mismoDiaDelMesSiguiente(hoy);
+    const ultimoMes = new Date(limite.getFullYear(), limite.getMonth(), 1);
+    let mesVisible = primerMes;
+
+    function motivoNoDisponible(texto) {
+      return servicio.validarCampos({ ...leerSolicitud(), fechaVisita: texto }).fechaVisita;
+    }
+
+    function dibujarCalendario(fechaConFoco) {
+      const anio = mesVisible.getFullYear();
+      const mes = mesVisible.getMonth();
+      const elegida = $("fecha").value;
+      const nombreMes = formatoMes.format(mesVisible);
+      $("calendario-mes").textContent = nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1);
+      document.querySelector(".calendario__nav[data-mes='-1']").disabled = mesVisible <= primerMes;
+      document.querySelector(".calendario__nav[data-mes='1']").disabled = mesVisible >= ultimoMes;
+
+      const celdas = [];
+      // La semana empieza el lunes: getDay() da 0 para el domingo.
+      const huecos = (new Date(anio, mes, 1).getDay() + DIAS_POR_SEMANA - 1) % DIAS_POR_SEMANA;
+      for (let i = 0; i < huecos; i++) {
+        celdas.push(document.createElement("span"));
+      }
+      const diasDelMes = new Date(anio, mes + 1, 0).getDate();
+      for (let dia = 1; dia <= diasDelMes; dia++) {
+        const fecha = new Date(anio, mes, dia);
+        const texto = aTextoDeFecha(fecha);
+        const motivo = motivoNoDisponible(texto);
+        const boton = document.createElement("button");
+        boton.type = "button";
+        boton.className = "calendario__dia";
+        boton.textContent = dia;
+        boton.dataset.fecha = texto;
+        boton.tabIndex = -1;
+        boton.setAttribute("aria-pressed", String(texto === elegida));
+        boton.setAttribute("aria-label", motivo
+          ? `${formatoDia.format(fecha)}, no disponible: ${motivo}`
+          : formatoDia.format(fecha));
+        if (motivo) {
+          boton.setAttribute("aria-disabled", "true");
+          boton.title = motivo;
+        }
+        boton.classList.toggle("es-hoy", fecha.getTime() === hoy.getTime());
+        celdas.push(boton);
+      }
+      $("calendario-dias").replaceChildren(...celdas);
+
+      // Un solo día entra en el orden de tabulación; las flechas mueven el foco entre los días.
+      const dias = [...$("calendario-dias").querySelectorAll("button")];
+      const conFoco = dias.find((d) => d.dataset.fecha === fechaConFoco)
+        ?? dias.find((d) => d.dataset.fecha === elegida)
+        ?? dias.find((d) => !d.hasAttribute("aria-disabled"))
+        ?? dias[0];
+      conFoco.tabIndex = 0;
+      if (fechaConFoco) {
+        conFoco.focus();
+      }
+    }
+
+    function elegirFecha(boton) {
+      if (boton.getAttribute("aria-disabled") === "true") {
+        $("fecha-elegida").textContent = `Ese día no está disponible: ${boton.title}.`;
+        return;
+      }
+      $("fecha").value = boton.dataset.fecha;
+      $("fecha-elegida").textContent = `Elegiste el ${formatoDia.format(logica.fechas.crearFechaLocal(boton.dataset.fecha))}.`;
+      dibujarCalendario(boton.dataset.fecha);
+      $("fecha").dispatchEvent(new Event("change", { bubbles: true }));
+    }
+
+    $("calendario-dias").addEventListener("click", (evento) => {
+      const boton = evento.target.closest(".calendario__dia");
+      if (boton) {
+        elegirFecha(boton);
+      }
+    });
+
+    const MOVIMIENTOS = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -DIAS_POR_SEMANA, ArrowDown: DIAS_POR_SEMANA };
+    $("calendario-dias").addEventListener("keydown", (evento) => {
+      const salto = MOVIMIENTOS[evento.key];
+      const boton = evento.target.closest(".calendario__dia");
+      if (!salto || !boton) {
+        return;
+      }
+      evento.preventDefault();
+      const destino = logica.fechas.crearFechaLocal(boton.dataset.fecha);
+      destino.setDate(destino.getDate() + salto);
+      const mesDestino = new Date(destino.getFullYear(), destino.getMonth(), 1);
+      if (mesDestino < primerMes || mesDestino > ultimoMes) {
+        return;
+      }
+      mesVisible = mesDestino;
+      dibujarCalendario(aTextoDeFecha(destino));
+    });
+
+    document.querySelectorAll(".calendario__nav").forEach((boton) => {
+      boton.addEventListener("click", () => {
+        mesVisible = new Date(mesVisible.getFullYear(), mesVisible.getMonth() + Number(boton.dataset.mes), 1);
+        dibujarCalendario();
+      });
+    });
+
+    dibujarCalendario();
 
     function hayEdadesVacias() {
       return [...document.querySelectorAll("#edades input")].some((campo) => campo.value === "");
@@ -284,6 +395,11 @@
       $("confirmacion").hidden = true;
       $("formulario").closest(".disposicion").hidden = false;
       $("formulario").reset();
+      // En un input hidden, asignar value cambia también el valor por defecto: reset() no lo borra.
+      $("fecha").value = "";
+      $("fecha-elegida").textContent = "Elegí un día disponible.";
+      mesVisible = primerMes;
+      dibujarCalendario();
       tocados.clear();
       intentoComprar = false;
       $("error").hidden = true;

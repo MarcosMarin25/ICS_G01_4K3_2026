@@ -200,7 +200,8 @@ Elegir tres o cuatro, según el tiempo:
 - **Sin efectos secundarios:** una compra rechazada no cobra, no envía mail y no registra nada (F22), y se verificó con una **mutación**.
 - **La web** (mostrarla 30 segundos):
   - Reutiliza la misma lógica probada, sin duplicarla.
-  - **Valida en el momento:** elegir un lunes marca la fecha al instante, y con 11 entradas aparece el error del máximo apenas la fecha es válida. Los mensajes salen de `validarCampos()`, que se hizo con TDD (V01 a V09) y usa la misma tabla de reglas que `comprar()`.
+  - **Calendario propio (FAQ 2):** los lunes, feriados, días pasados y los de más de un mes aparecen deshabilitados. No repite reglas: le pregunta a `validarCampos()` por cada día.
+  - **Valida en el momento:** con 11 entradas aparece el error del máximo apenas la fecha es válida. Los mensajes salen de `validarCampos()`, que se hizo con TDD (V01 a V09) y usa la misma tabla de reglas que `comprar()`.
   - Mercado Pago y el mail son simulados, como pidió el PO.
   - No se prueba con Jest porque no tiene reglas de negocio: es otro nivel de prueba (*end-to-end*).
 - **Lección:** TDD es una técnica de **diseño**. Las pruebas definieron la interfaz del servicio y obligaron a inyectar el reloj y las dependencias.
@@ -271,6 +272,5 @@ La calidad se construye desde el inicio, no se inspecciona al final. TDD reduce 
 **¿Qué harían distinto? ¿Qué limitaciones tiene?**
 Respuesta honesta:
 - Faltan pruebas de integración (Mercado Pago, mail y base de datos reales) y pruebas *end-to-end* de la web.
-- El calendario nativo del navegador no permite deshabilitar días sueltos, así que la web avisa en lugar de deshabilitarlos.
 - TDD tiene un costo inicial de tiempo, que se recupera en menos defectos y en refactors seguros.
 - Empezaríamos sin *squash merge* desde el primer PR.

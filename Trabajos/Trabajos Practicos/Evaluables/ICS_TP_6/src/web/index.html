@@ -73,9 +73,28 @@
               <p id="error-usuario" class="campo__error" aria-live="polite" hidden></p>
             </div>
             <div class="campo">
-              <label for="fecha">Fecha de visita</label>
-              <input id="fecha" name="fecha" type="date" aria-describedby="error-fechaVisita">
-              <p class="campo__ayuda">Cerrado los lunes, el 25/12 y el 1/1.</p>
+              <p class="campo__etiqueta" id="fecha-etiqueta">Fecha de visita</p>
+              <!-- Valor elegido en el calendario, en formato AAAA-MM-DD. -->
+              <input id="fecha" name="fecha" type="hidden">
+              <!-- Calendario propio (FAQ 2): los días que las reglas de la lógica rechazan aparecen deshabilitados. -->
+              <div id="calendario" class="calendario" role="group" aria-labelledby="fecha-etiqueta"
+                aria-describedby="fecha-elegida error-fechaVisita">
+                <div class="calendario__cabecera">
+                  <button type="button" class="calendario__nav" data-mes="-1" aria-label="Mes anterior">‹</button>
+                  <p id="calendario-mes" class="calendario__mes" aria-live="polite"></p>
+                  <button type="button" class="calendario__nav" data-mes="1" aria-label="Mes siguiente">›</button>
+                </div>
+                <div class="calendario__semana" aria-hidden="true">
+                  <span>Lu</span><span>Ma</span><span>Mi</span><span>Ju</span><span>Vi</span><span>Sá</span><span>Do</span>
+                </div>
+                <div id="calendario-dias" class="calendario__dias"></div>
+                <ul class="calendario__leyenda" aria-hidden="true">
+                  <li><span class="muestra muestra--disponible"></span>Disponible</li>
+                  <li><span class="muestra muestra--cerrado"></span>No disponible</li>
+                  <li><span class="muestra muestra--elegido"></span>Elegido</li>
+                </ul>
+              </div>
+              <p id="fecha-elegida" class="campo__ayuda" aria-live="polite">Elegí un día disponible.</p>
               <p id="error-fechaVisita" class="campo__error" aria-live="polite" hidden></p>
             </div>
           </div>

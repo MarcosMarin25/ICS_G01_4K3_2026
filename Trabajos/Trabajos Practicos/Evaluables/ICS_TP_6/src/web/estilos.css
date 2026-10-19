@@ -351,6 +351,154 @@ fieldset[aria-invalid="true"] .opcion:not(:has(input:checked)) {
   border-color: var(--color-exito);
 }
 
+.campo__etiqueta {
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+/* Calendario propio (FAQ 2): los días no disponibles aparecen deshabilitados. */
+.calendario {
+  padding: 12px;
+  background: var(--color-superficie);
+  border: 1.5px solid var(--color-borde);
+  border-radius: var(--radio-chico);
+}
+
+.calendario[aria-invalid="true"] {
+  border-color: var(--color-error);
+}
+
+.calendario__cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.calendario__mes {
+  font-weight: 900;
+}
+
+.calendario__nav {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  font: inherit;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--color-primario);
+  background: var(--color-primario-suave);
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.calendario__nav:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-primario) 18%, var(--color-superficie));
+}
+
+.calendario__nav:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.calendario__nav:focus-visible,
+.calendario__dia:focus-visible {
+  outline: 3px solid var(--color-primario);
+  outline-offset: 1px;
+}
+
+.calendario__semana,
+.calendario__dias {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.calendario__semana {
+  margin-bottom: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--color-texto-suave);
+}
+
+.calendario__dia {
+  position: relative;
+  aspect-ratio: 1;
+  min-height: 36px;
+  padding: 0;
+  font: inherit;
+  font-weight: 700;
+  color: var(--color-texto);
+  background: var(--color-primario-suave);
+  border: 1.5px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.calendario__dia:hover:not([aria-disabled="true"]) {
+  border-color: var(--color-primario);
+}
+
+/* Día no disponible: tachado y apagado; se puede recorrer con el teclado pero no elegir. */
+.calendario__dia[aria-disabled="true"] {
+  font-weight: 400;
+  color: var(--color-texto-suave);
+  background: transparent;
+  text-decoration: line-through;
+  cursor: not-allowed;
+}
+
+.calendario__dia.es-hoy {
+  border-color: var(--color-secundario);
+}
+
+.calendario__dia[aria-pressed="true"] {
+  color: var(--color-superficie);
+  background: var(--color-primario);
+  border-color: var(--color-primario);
+}
+
+.calendario__leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.78rem;
+  color: var(--color-texto-suave);
+}
+
+.calendario__leyenda li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.muestra {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.muestra--disponible {
+  background: var(--color-primario-suave);
+  border: 1px solid var(--color-secundario);
+}
+
+.muestra--cerrado {
+  background: repeating-linear-gradient(135deg, var(--color-borde) 0 2px, transparent 2px 4px);
+  border: 1px solid var(--color-borde);
+}
+
+.muestra--elegido {
+  background: var(--color-primario);
+}
+
 /* Contador de entradas */
 .contador {
   display: flex;
