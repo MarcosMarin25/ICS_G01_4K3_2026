@@ -156,4 +156,10 @@ describe("ServicioCompraEntradas - compras válidas", () => {
 
     expect(resultado.confirmada).toBe(true);
   });
+
+  test("P15 - la compra confirmada queda registrada", () => {
+    servicio.comprar(solicitudValida()); // 3 entradas para FECHA_ABIERTA
+
+    expect(compras.cantidadComprada(USUARIO, FECHA_ABIERTA)).toBe(3);
+  });
 });
