@@ -11,7 +11,10 @@ function crearFechaLocal(fecha) {
 class CalendarioParque {
   estaAbierto(fecha) {
     const fechaLocal = crearFechaLocal(fecha);
-    if (fechaLocal.getMonth() === 11 && fechaLocal.getDate() === 25) {
+    const feriados = [[11, 25], [0, 1]];
+    const esFeriado = feriados.some(([mes, dia]) =>
+      fechaLocal.getMonth() === mes && fechaLocal.getDate() === dia);
+    if (esFeriado) {
       return false;
     }
     return fechaLocal.getDay() !== LUNES;
