@@ -10,6 +10,7 @@ const PasarelaMercadoPagoEspia = require("./dobles/pasarelaMercadoPagoEspia");
 const AHORA = "2026-10-15T10:00"; // jueves
 const HOY = "2026-10-15";
 const FECHA_ABIERTA = "2026-10-20"; // martes
+const FECHA_CERRADA = "2026-10-19"; // lunes
 const USUARIO = "visitante@mail.com";
 const OTRO_USUARIO = "otro@mail.com";
 
@@ -192,5 +193,10 @@ describe("ServicioCompraEntradas - validaciones", () => {
   test("F01 - rechaza la compra sin forma de pago", () => {
     expect(() => servicio.comprar(solicitudValida({ formaPago: null })))
       .toThrow("Debe seleccionar una forma de pago");
+  });
+
+  test("F02 - rechaza la compra para un lunes", () => {
+    expect(() => servicio.comprar(solicitudValida({ fechaVisita: FECHA_CERRADA })))
+      .toThrow("El parque está cerrado en la fecha seleccionada");
   });
 });
