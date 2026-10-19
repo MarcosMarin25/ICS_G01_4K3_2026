@@ -74,6 +74,9 @@ class ServicioCompraEntradas {
     if (!Object.values(TIPO_PASE).includes(solicitud.tipoPase)) {
       throw new Error("El tipo de pase debe ser VIP o regular");
     }
+    if (!Number.isInteger(solicitud.cantidad)) {
+      throw new Error("La cantidad de entradas debe ser un número entero");
+    }
     if (solicitud.cantidad < 1) {
       throw new Error("La cantidad de entradas debe ser al menos 1");
     }
