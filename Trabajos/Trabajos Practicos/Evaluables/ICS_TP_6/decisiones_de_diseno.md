@@ -281,9 +281,9 @@ La implementación evalúa los rangos de menor a mayor y devuelve el primero que
   - **La validación del servicio no cambia:** si por cualquier motivo llega una fecha no disponible, `comprar()` la rechaza (F02 a F08).
 - **Dependencias del navegador:**
   - El reloj es el real.
-  - La sesión y los usuarios están simulados (el PO permite empezar con la sesión mockeada). Los usuarios registrados de prueba son `visitante@mail.com` y `otro@mail.com`.
+  - La sesión y los usuarios están simulados (FAQ 19: el PO permite la sesión y el usuario mockeados). Los usuarios registrados de prueba son `visitante@mail.com` y `otro@mail.com`, y el encabezado muestra el usuario de la sesión.
   - Las compras se guardan en memoria mientras la página está abierta.
-  - Mercado Pago y el mail son implementaciones simuladas que muestran la pantalla y el modal que pidió el PO.
+  - Mercado Pago y el mail son implementaciones simuladas que muestran lo que pide el PO: la pantalla "Mercado Pago Compra Exitosa" con el monto (FAQ 4) y el modal "Mail enviado a <mail del usuario>" (FAQ 5). El mail del modal es el que `comprar()` le pasa a `mail.enviarConfirmacion()`, es decir, el usuario de la sesión simulada; se verificó con los dos usuarios de prueba.
 - **Campo de edad vacío.** Se envía como `NaN`, y no como `0`, para que el servicio lo rechace ("Edad inválida"). Si se enviara como 0, sería la edad de un bebé, que es válida.
 - **Paleta oficial del PO (FAQ 3).** Se usa la paleta [386641-6a994e-a7c957-f2e8cf-bc4749](https://coolors.co/palette/386641-6a994e-a7c957-f2e8cf-bc4749), en variables CSS de `:root`. Hasta que apareció el FAQ, la web usaba una paleta provisoria definida por el grupo, que se reemplazó cambiando solo esas variables.
 
