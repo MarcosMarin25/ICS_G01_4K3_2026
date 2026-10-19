@@ -140,4 +140,12 @@ describe("ServicioCompraEntradas - compras válidas", () => {
     expect(resultado.confirmada).toBe(true);
     expect(resultado.entradas[1].precio).toBe(0);
   });
+
+  test("P13 - permite varias compras que suman 10 entradas para la misma fecha", () => {
+    compras.registrar(USUARIO, FECHA_ABIERTA, 7);
+
+    const resultado = servicio.comprar(solicitudValida()); // 3 entradas más
+
+    expect(resultado.confirmada).toBe(true);
+  });
 });
