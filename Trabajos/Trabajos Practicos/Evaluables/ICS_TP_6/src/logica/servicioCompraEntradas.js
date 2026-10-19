@@ -61,6 +61,9 @@ class ServicioCompraEntradas {
     if (!solicitud.fechaVisita) {
       throw new Error("Debe indicar la fecha de visita");
     }
+    if (!solicitud.tipoPase) {
+      throw new Error("Debe indicar el tipo de pase");
+    }
     if (!solicitud.formaPago) {
       throw new Error("Debe seleccionar una forma de pago");
     }
