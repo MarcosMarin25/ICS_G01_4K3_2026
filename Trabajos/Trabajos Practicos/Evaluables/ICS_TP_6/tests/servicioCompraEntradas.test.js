@@ -352,4 +352,9 @@ describe("ServicioCompraEntradas - validación por campo", () => {
   test("V01 - una solicitud válida no tiene errores por campo", () => {
     expect(servicio.validarCampos(solicitudValida())).toEqual({});
   });
+
+  test("V02 - informa si el usuario no está registrado", () => {
+    expect(servicio.validarCampos(solicitudValida({ usuario: "desconocido@mail.com" })))
+      .toEqual({ usuario: "Solo los usuarios registrados pueden comprar entradas" });
+  });
 });
