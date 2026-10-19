@@ -199,4 +199,11 @@ describe("ServicioCompraEntradas - validaciones", () => {
     expect(() => servicio.comprar(solicitudValida({ fechaVisita: FECHA_CERRADA })))
       .toThrow("El parque está cerrado en la fecha seleccionada");
   });
+
+  test("F03 - rechaza la compra para el 25 de diciembre", () => {
+    reloj.fijar("2026-12-20T10:00");
+
+    expect(() => servicio.comprar(solicitudValida({ fechaVisita: "2026-12-25" })))
+      .toThrow("El parque está cerrado en la fecha seleccionada");
+  });
 });
