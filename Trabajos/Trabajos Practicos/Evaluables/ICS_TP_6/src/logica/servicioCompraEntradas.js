@@ -1,4 +1,6 @@
-const { crearFechaLocal, inicioDelDia, minutosDelDia, MINUTOS_POR_HORA } = require("./fechas");
+const {
+  crearFechaLocal, inicioDelDia, mismoDiaDelMesSiguiente, minutosDelDia, MINUTOS_POR_HORA,
+} = require("./fechas");
 const { TIPO_PASE, FORMA_PAGO } = require("./valores");
 
 // Para visitar el día actual se puede comprar hasta las 17:30 inclusive (R5).
@@ -102,10 +104,7 @@ class ServicioCompraEntradas {
     if (!this.calendario.estaAbierto(solicitud.fechaVisita)) {
       throw new Error("El parque está cerrado en la fecha seleccionada");
     }
-    const ultimoDiaMesSiguiente = new Date(hoy.getFullYear(), hoy.getMonth() + 2, 0).getDate();
-    const limite = new Date(hoy.getFullYear(), hoy.getMonth() + 1,
-      Math.min(hoy.getDate(), ultimoDiaMesSiguiente));
-    if (fechaVisita > limite) {
+    if (fechaVisita > mismoDiaDelMesSiguiente(hoy)) {
       throw new Error("Solo se pueden comprar entradas con hasta un mes de anticipación");
     }
     const esHoy = fechaVisita.getTime() === hoy.getTime();
