@@ -40,7 +40,37 @@ La evidencia de la última ejecución completa está en `reportes/reporte-prueba
 
 ## B. Días de apertura (`CalendarioParque`)
 
-_Pendiente._
+Orden de ejecución: K01, K03, K02, K04, K05. K03 va antes que K02 porque es la que obliga a mirar el día de la semana. Si K02 iba segunda, pasaba con el *fake it* y no aportaba nada.
+
+| # | Prueba | Esperado | Obtenido en Red | Obtenido en Green | Estrategia | Cambio en el código | Estado |
+|---|---|---|---|---|---|---|---|
+| K01 | Martes abierto (2026-10-20) | `true` | `Cannot find module '../src/logica/calendarioParque'` | `true` | Fake it | Se crea la clase con `estaAbierto()` que devuelve `true` | ✅ Pasa |
+| K03 | Lunes cerrado (2026-10-19) | `false` | `true` | `false` | Implementación obvia | Se arma la fecha local con año, mes y día, y se cierra si `getDay()` es lunes | ✅ Pasa |
+| K02 | Domingo abierto (2026-10-18) | `true` | Pasó sin cambios | `true` | Confirmación de borde | — | ✅ Pasa |
+| K04 | Navidad cerrado (2026-12-25) | `false` | `true` | `false` | Implementación obvia | Se cierra si el mes es diciembre y el día es 25 | ✅ Pasa |
+| K05 | Año Nuevo cerrado (2027-01-01) | `false` | `true` | `false` | Triangulación | El caso suelto de Navidad pasa a ser una lista de feriados fijos | ✅ Pasa |
+
+**Trampa de zona horaria:** con la zona `America/Buenos_Aires`, `new Date("2026-10-19").getDay()` devuelve `0` (domingo), porque JavaScript interpreta la cadena `AAAA-MM-DD` en UTC y en UTC-3 cae el día anterior. `new Date(2026, 9, 19).getDay()` devuelve `1` (lunes). Por eso, desde el Green de K03, la fecha se arma con sus partes en la zona local.
+
+**Refactor:**
+- **K01:** no hubo nada que refactorizar, porque el código es una sola línea. No se hizo commit de refactor.
+- **K03:** el `1` se reemplazó por la constante `LUNES` y el parseo se extrajo a `crearFechaLocal(fecha)`, con un comentario sobre la trampa de UTC. Queda dentro del módulo hasta que otra clase lo necesite.
+- **K04:** el refactor se postergó a propósito, porque con un solo feriado no se veía la forma de la generalización. No se hizo commit de refactor.
+- **K05:** los feriados pasaron a la constante `FERIADOS_FIJOS`, con el mes de 1 a 12 para no arrastrar el mes base 0 de `Date`. La condición se extrajo a `esFeriadoFijo()`, y `estaAbierto()` quedó como una sola regla: no es lunes y no es feriado fijo. La regla `no-magic-numbers` de ESLint marcó los números sueltos del Green.
+
+En cada refactor las 14 pruebas siguieron pasando. Al final, el lint no da errores y la cobertura es del 100%.
+
+**Commits** (rama `TP_6`):
+
+| Paso | RED | GREEN | REFACTOR |
+|---|---|---|---|
+| K01 | `4b209d9` | `bab4543` | — (no hizo falta) |
+| K03 | `1940ef0` | `ffe3b12` | `3cf98c5` |
+| K02 | `9c95b41` (pasó sin cambios) | — | — |
+| K04 | `ab95acb` | `a818f33` | — (postergado a K05) |
+| K05 | `4e9cce4` | `4b7847f` | `01129af` |
+
+**Resultado final:** 5 de 5 pruebas pasan.
 
 
 ## C. Compras que deben pasar (`ServicioCompraEntradas`)
@@ -58,7 +88,7 @@ _Pendiente._
 | Sección | Pruebas | Pasan | Fallan |
 |---|---|---|---|
 | A. Precio de cada entrada | 9 | 9 | 0 |
-| B. Días de apertura | 5 | — | — |
+| B. Días de apertura | 5 | 5 | 0 |
 | C. Compras que deben pasar | 18 | — | — |
 | D. Compras que deben fallar | 26 | — | — |
-| **Total** | **58** | **9** | **0** |
+| **Total** | **58** | **14** | **0** |
