@@ -148,4 +148,12 @@ describe("ServicioCompraEntradas - compras válidas", () => {
 
     expect(resultado.confirmada).toBe(true);
   });
+
+  test("P14 - el máximo de 10 se cuenta por fecha", () => {
+    compras.registrar(USUARIO, FECHA_ABIERTA, 10);
+
+    const resultado = servicio.comprar(solicitudValida({ fechaVisita: "2026-10-21" }));
+
+    expect(resultado.confirmada).toBe(true);
+  });
 });
