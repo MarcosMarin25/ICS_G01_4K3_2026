@@ -91,8 +91,12 @@ class ServicioCompraEntradas {
     };
   }
 
-  validarCampos() {
-    return {};
+  validarCampos(solicitud) {
+    const errores = {};
+    if (!this.usuarios.estaRegistrado(solicitud.usuario)) {
+      errores.usuario = "Solo los usuarios registrados pueden comprar entradas";
+    }
+    return errores;
   }
 
   #validarUsuario({ usuario }) {
