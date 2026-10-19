@@ -262,4 +262,11 @@ describe("ServicioCompraEntradas - validaciones", () => {
       edades: [30, 28, 8, 40],
     }))).toThrow("No se pueden comprar más de 10 entradas para una misma fecha");
   });
+
+  test("F13 - los menores de hasta 3 años cuentan en el máximo de 10", () => {
+    compras.registrar(USUARIO, FECHA_ABIERTA, 9);
+
+    expect(() => servicio.comprar(solicitudValida({ cantidad: 2, edades: [30, 2] })))
+      .toThrow("No se pueden comprar más de 10 entradas para una misma fecha");
+  });
 });
