@@ -281,4 +281,9 @@ describe("ServicioCompraEntradas - validaciones", () => {
   });
 
   // F16 retirada: la edad 0 pasó a ser válida (ver P12).
+
+  test("F17 - rechaza la compra sin tipo de pase", () => {
+    expect(() => servicio.comprar(solicitudValida({ tipoPase: null })))
+      .toThrow("Debe indicar el tipo de pase");
+  });
 });
