@@ -64,4 +64,11 @@ describe("ServicioCompraEntradas - compras válidas", () => {
     expect(mercadoPago.fueLlamada()).toBe(false);
     expect(mail.fueEnviadoA(USUARIO)).toBe(true);
   });
+
+  test("P03 - al finalizar informa la cantidad de entradas y la fecha", () => {
+    const resultado = servicio.comprar(solicitudValida());
+
+    expect(resultado.cantidadEntradas).toBe(3);
+    expect(resultado.fechaVisita).toBe(FECHA_ABIERTA);
+  });
 });
