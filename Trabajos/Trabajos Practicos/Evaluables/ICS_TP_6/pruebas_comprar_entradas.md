@@ -32,7 +32,7 @@ Como visitante quiero comprar una entrada para asegurar mi visita al parque
 | Regla | Detalle |
 |---|---|
 | R1. Días de apertura | Abre todos los días menos los **lunes**, el **25 de diciembre** y el **1 de enero**. |
-| R2. Precio de las entradas | **VIP: $20.000** y **regular: $10.000**. Para esta US, el precio es la única diferencia entre los pases. |
+| R2. Precio de las entradas | **VIP: $20.000** y **regular: $10.000** (el FAQ 6 lo llama pase "Común"). Para esta US, el precio es la única diferencia entre los pases. |
 | R3. Descuentos por edad | **Hasta 3 años inclusive: no pagan.** **Hasta 15 años inclusive: 50% off.** **Desde 60 años inclusive: 50% off.** |
 | R4. Horizonte de compra | Se compra con **no más de un mes** de anticipación. |
 | R5. Límite horario para el mismo día | Para visitar el día actual se puede comprar **hasta las 17:30** (1 h 30 min antes del cierre de las 19:00). |
@@ -42,13 +42,16 @@ Como visitante quiero comprar una entrada para asegurar mi visita al parque
 
 ### Reglas que no se prueban con pruebas unitarias
 
-| Regla | Por qué |
-|---|---|
-| El calendario debe mostrar deshabilitados los días cerrados | Es comportamiento de la interfaz. La lógica que decide qué días están cerrados sí se prueba (R1), y el servicio igual rechaza una fecha cerrada por si llega una. |
-| Paleta de colores y fuente Lato | Es diseño visual. |
-| App mobile / web responsive | Es diseño visual. |
-| Simular Mercado Pago con una pantalla "Mercado Pago Compra Exitosa" y el mail con un modal "Mail enviado a ..." | Se resuelve en el desarrollo de la interfaz. En las pruebas, Mercado Pago y el mail se reemplazan por espías que registran si fueron llamados. |
-| Solo DNI | No aplica: esta US no pide documento. Es de "Inscribirme a actividad". |
+| Regla | FAQ | Por qué | Cómo se resolvió |
+|---|---|---|---|
+| El calendario debe mostrar deshabilitados los días cerrados | FAQ 2 | Es comportamiento de la interfaz. La lógica que decide qué días están cerrados sí se prueba (R1, K01 a K05), y el servicio igual rechaza una fecha cerrada por si llega una (F02 a F04). | Calendario propio en la web: cada día se habilita o deshabilita según las mismas reglas de la lógica (`validarCampos()`), sin repetirlas. |
+| Paleta de colores y fuente Lato | FAQ 3 | Es diseño visual. | Paleta oficial `#386641`, `#6A994E`, `#A7C957`, `#F2E8CF`, `#BC4749` en variables CSS, con contraste WCAG AA verificado, y fuente Lato. |
+| Simular Mercado Pago con una pantalla "Mercado Pago Compra Exitosa" | FAQ 4 | Se resuelve en la interfaz. En las pruebas, Mercado Pago se reemplaza por un espía que registra si fue llamado y con qué monto (P01, P02, F22). | Pantalla simulada con el monto pagado. |
+| Simular el mail con un modal "Mail enviado a ..." | FAQ 5 | Se resuelve en la interfaz. En las pruebas, el mail se reemplaza por un espía que registra a quién se envió (P01, P02, F22). | Modal con el mail del usuario de la sesión. |
+| Logo de EcoHarmony Park | FAQ 17 | Es diseño visual. | Propuesta del grupo en SVG con la paleta oficial, pendiente de validación del PO. |
+| Sesión y usuario mockeados | FAQ 19 | La autenticación real no es parte de esta US. La regla de negocio (solo usuarios registrados) sí se prueba con un stub (F19, V02). | Sesión simulada con dos usuarios de prueba. |
+| App mobile / web responsive | FAQ 24 | Es diseño visual. | Diseño *mobile first*, verificado a 360 px y a 1280 px. |
+| Solo DNI | — | No aplica: esta US no pide documento. Es de "Inscribirme a actividad". | — |
 
 
 ## Supuestos de diseño para las pruebas
@@ -65,6 +68,7 @@ Como visitante quiero comprar una entrada para asegurar mi visita al parque
   - `PasarelaMercadoPago`: registra si se pidió la redirección al pago y con qué monto.
   - `Reloj`: da la **fecha y hora** actuales de forma fija, para que las pruebas no cambien según el momento en que se corren.
 - En el código, el tipo de pase toma los valores `"VIP"` o `"REGULAR"` y la forma de pago `"TARJETA"` o `"EFECTIVO"`. Cualquier otro valor es inválido.
+- El pase que la US llama "regular" es el que el FAQ 6 llama "Común": son el mismo pase. Para ser coherentes con la US, en el código se usa `"REGULAR"` y en la web se muestra "Regular".
 - El tipo de pase se elige una vez por compra y vale para todas sus entradas.
 - El máximo es **10 entradas inclusive** (≤ 10). El criterio 7 dice "no debe ser mayor a 10" y la prueba de usuario del enunciado dice "cantidad menor a 10". Se toma el criterio de aceptación porque es la regla, y la prueba de usuario se lee como un ejemplo que pasa. P07 prueba el borde de 10.
 - El criterio 2 del enunciado original dice "fecha de visita guiada". Se transcribe como "fecha de visita", porque esta US no trata sobre visitas guiadas.
