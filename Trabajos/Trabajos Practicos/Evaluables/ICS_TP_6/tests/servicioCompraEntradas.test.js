@@ -375,4 +375,9 @@ describe("ServicioCompraEntradas - validación por campo", () => {
     expect(servicio.validarCampos(solicitudValida({ edades: [30, -1, 8] })))
       .toEqual({ edades: "Edad inválida" });
   });
+
+  test("V06 - no compara las edades si la cantidad es inválida", () => {
+    expect(servicio.validarCampos(solicitudValida({ cantidad: 2.5 })))
+      .toEqual({ cantidad: "La cantidad de entradas debe ser un número entero" });
+  });
 });
