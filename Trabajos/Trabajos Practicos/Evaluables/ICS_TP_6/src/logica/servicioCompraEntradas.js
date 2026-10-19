@@ -11,7 +11,9 @@ class ServicioCompraEntradas {
   }
 
   comprar(solicitud) {
-    this.mercadoPago.redirigir(50000);
+    if (solicitud.formaPago === "TARJETA") {
+      this.mercadoPago.redirigir(50000);
+    }
     this.mail.enviarConfirmacion(solicitud.usuario);
     return { confirmada: true };
   }
