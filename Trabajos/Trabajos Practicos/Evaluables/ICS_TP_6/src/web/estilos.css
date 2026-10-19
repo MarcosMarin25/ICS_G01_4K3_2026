@@ -299,9 +299,10 @@ code {
   color: var(--color-texto-suave);
 }
 
-.campo__aviso {
+/* Error de un campo, informado en el momento por servicio.validarCampos(). */
+.campo__error {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 6px;
   margin-top: 8px;
   padding: 6px 10px;
@@ -310,6 +311,40 @@ code {
   color: var(--color-error);
   background: color-mix(in srgb, var(--color-error) 8%, var(--color-superficie));
   border-radius: 8px;
+  animation: subir 0.2s ease-out;
+}
+
+.campo__error::before {
+  content: "!";
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  font-weight: 900;
+  color: var(--color-superficie);
+  background: var(--color-error);
+  border-radius: 50%;
+}
+
+.campo input[aria-invalid="true"] {
+  border-color: var(--color-error);
+  background: color-mix(in srgb, var(--color-error) 4%, var(--color-superficie));
+}
+
+.campo input[aria-invalid="true"]:focus-visible {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-error) 18%, transparent);
+}
+
+fieldset[aria-invalid="true"] .opcion:not(:has(input:checked)) {
+  border-color: color-mix(in srgb, var(--color-error) 60%, var(--color-borde));
+}
+
+/* Campo validado sin errores: borde verde para confirmar que está bien. */
+.campo input.es-valido {
+  border-color: var(--color-exito);
 }
 
 /* Contador de entradas */
@@ -320,6 +355,8 @@ code {
 }
 
 .contador input[type="number"] {
+  position: relative;
+  z-index: 1;
   text-align: center;
   font-size: 1.2rem;
   font-weight: 900;

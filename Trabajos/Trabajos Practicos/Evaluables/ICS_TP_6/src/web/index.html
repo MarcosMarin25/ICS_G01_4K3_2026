@@ -68,14 +68,15 @@
           <div class="campos-dos">
             <div class="campo">
               <label for="usuario">Usuario</label>
-              <input id="usuario" name="usuario" type="email" value="visitante@mail.com" autocomplete="email">
+              <input id="usuario" name="usuario" type="email" value="visitante@mail.com" autocomplete="email" aria-describedby="error-usuario">
               <p class="campo__ayuda">De prueba: visitante@mail.com u otro@mail.com.</p>
+              <p id="error-usuario" class="campo__error" aria-live="polite" hidden></p>
             </div>
             <div class="campo">
               <label for="fecha">Fecha de visita</label>
-              <input id="fecha" name="fecha" type="date">
+              <input id="fecha" name="fecha" type="date" aria-describedby="error-fechaVisita">
               <p class="campo__ayuda">Cerrado los lunes, el 25/12 y el 1/1.</p>
-              <p id="aviso-fecha" class="campo__aviso" hidden></p>
+              <p id="error-fechaVisita" class="campo__error" aria-live="polite" hidden></p>
             </div>
           </div>
         </section>
@@ -86,20 +87,22 @@
             <label for="cantidad">Cantidad de entradas</label>
             <div class="contador">
               <button type="button" class="contador__boton" data-paso="-1" aria-label="Una entrada menos">−</button>
-              <input id="cantidad" name="cantidad" type="number" min="1" max="10" step="1" inputmode="numeric" placeholder="0">
+              <input id="cantidad" name="cantidad" type="number" min="1" max="10" step="1" inputmode="numeric" placeholder="0" aria-describedby="error-cantidad">
               <button type="button" class="contador__boton" data-paso="1" aria-label="Una entrada más">+</button>
             </div>
             <p class="campo__ayuda">Los menores de hasta 3 años también llevan entrada (de $0) y cuentan en el máximo.</p>
+            <p id="error-cantidad" class="campo__error" aria-live="polite" hidden></p>
           </div>
-          <fieldset class="campo" id="campo-edades" hidden>
+          <fieldset class="campo" id="campo-edades" aria-describedby="error-edades" hidden>
             <legend>Edad de cada visitante</legend>
             <div id="edades" class="edades"></div>
+            <p id="error-edades" class="campo__error" aria-live="polite" hidden></p>
           </fieldset>
         </section>
 
         <section class="paso tarjeta" aria-labelledby="paso-3">
           <h2 id="paso-3" class="paso__titulo"><span class="paso__numero" aria-hidden="true">3</span>Elegí tu pase</h2>
-          <fieldset class="campo">
+          <fieldset class="campo" id="campo-tipoPase" aria-describedby="error-tipoPase">
             <legend class="solo-lectores">Tipo de pase</legend>
             <div class="opciones">
               <label class="opcion">
@@ -126,12 +129,13 @@
               <li><strong>Hasta 15 años:</strong> 50% off</li>
               <li><strong>Desde 60 años:</strong> 50% off</li>
             </ul>
+            <p id="error-tipoPase" class="campo__error" aria-live="polite" hidden></p>
           </fieldset>
         </section>
 
         <section class="paso tarjeta" aria-labelledby="paso-4">
           <h2 id="paso-4" class="paso__titulo"><span class="paso__numero" aria-hidden="true">4</span>¿Cómo pagás?</h2>
-          <fieldset class="campo">
+          <fieldset class="campo" id="campo-formaPago" aria-describedby="error-formaPago">
             <legend class="solo-lectores">Forma de pago</legend>
             <div class="opciones">
               <label class="opcion">
@@ -153,6 +157,7 @@
                 <svg class="opcion__check" aria-hidden="true"><use href="#i-check"/></svg>
               </label>
             </div>
+            <p id="error-formaPago" class="campo__error" aria-live="polite" hidden></p>
           </fieldset>
         </section>
 

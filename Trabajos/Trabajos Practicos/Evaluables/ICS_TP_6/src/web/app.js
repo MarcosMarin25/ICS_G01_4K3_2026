@@ -152,16 +152,64 @@
     }));
   }
 
+  // Para cada campo de la solicitud: el elemento que muestra su error y los que se marcan como inválidos.
+  const CAMPOS = {
+    usuario: { error: "error-usuario", marcar: () => [$("usuario")] },
+    fechaVisita: { error: "error-fechaVisita", marcar: () => [$("fecha")] },
+    cantidad: { error: "error-cantidad", marcar: () => [$("cantidad")] },
+    edades: { error: "error-edades", marcar: () => [...document.querySelectorAll("#edades input"), $("campo-edades")] },
+    tipoPase: { error: "error-tipoPase", marcar: () => [$("campo-tipoPase")] },
+    formaPago: { error: "error-formaPago", marcar: () => [$("campo-formaPago")] },
+  };
+
   function iniciar(logica) {
     const { efectos, dependencias } = crearDependencias(logica);
     const ServicioCompraEntradas = logica.servicioCompraEntradas;
     const servicio = new ServicioCompraEntradas(dependencias);
-    const { calendario, calculadora } = dependencias;
+    const { calculadora } = dependencias;
+
+    // Validación en el momento: un campo muestra su error recién cuando el usuario terminó con él
+    // (lo "tocó"), o cuando intentó comprar. Desde ahí se revalida con cada cambio.
+    const tocados = new Set();
+    let intentoComprar = false;
 
     // El selector de fecha sugiere el rango válido; igual, la validación la hace el servicio.
     const hoy = logica.fechas.inicioDelDia(new Date());
     $("fecha").min = aTextoDeFecha(hoy);
     $("fecha").max = aTextoDeFecha(logica.fechas.mismoDiaDelMesSiguiente(hoy));
+
+    function hayEdadesVacias() {
+      return [...document.querySelectorAll("#edades input")].some((campo) => campo.value === "");
+    }
+
+    function debeMostrarse(campo) {
+      if (intentoComprar) {
+        return true;
+      }
+      // Las edades no se marcan mientras queden campos de edad sin completar.
+      return tocados.has(campo) && !(campo === "edades" && hayEdadesVacias());
+    }
+
+    // Los mensajes salen de servicio.validarCampos(): las mismas reglas que comprar(), probadas con Jest.
+    function validarEnElMomento() {
+      const errores = servicio.validarCampos(leerSolicitud());
+      for (const [campo, { error, marcar }] of Object.entries(CAMPOS)) {
+        const visible = debeMostrarse(campo);
+        const mensaje = visible ? errores[campo] : undefined;
+        $(error).textContent = mensaje ?? "";
+        $(error).hidden = !mensaje;
+        for (const elemento of marcar()) {
+          elemento.setAttribute("aria-invalid", mensaje ? "true" : "false");
+          elemento.classList.toggle("es-valido", visible && !mensaje && elemento.tagName === "INPUT");
+        }
+      }
+      return errores;
+    }
+
+    function tocar(campo) {
+      tocados.add(campo);
+      validarEnElMomento();
+    }
 
     function actualizarResumen() {
       const { edades, tipoPase } = leerSolicitud();
@@ -174,19 +222,6 @@
       const total = formatoPesos.format(entradas.reduce((suma, entrada) => suma + entrada.precio, 0));
       $("total").textContent = total;
       $("total-movil").textContent = total;
-    }
-
-    function avisarSiEstaCerrado() {
-      const fecha = $("fecha").value;
-      const cerrado = Boolean(fecha) && logica.fechas.esFechaExistente(fecha) && !calendario.estaAbierto(fecha);
-      $("aviso-fecha").hidden = !cerrado;
-      $("aviso-fecha").textContent = cerrado ? "El parque está cerrado ese día." : "";
-    }
-
-    function mostrarError(mensaje) {
-      $("error").textContent = mensaje;
-      $("error").hidden = false;
-      $("error").scrollIntoView({ behavior: "smooth", block: "center" });
     }
 
     function mostrarConfirmacion(resultado) {
@@ -210,15 +245,25 @@
 
     $("formulario").addEventListener("submit", (evento) => {
       evento.preventDefault();
+      intentoComprar = true;
+      validarEnElMomento();
       $("error").hidden = true;
       efectos.montoPagado = null;
       efectos.destinatarioMail = null;
 
+      // comprar() sigue siendo la autoridad final: si la solicitud es inválida, no compra.
       let resultado;
       try {
         resultado = servicio.comprar(leerSolicitud());
       } catch (error) {
-        mostrarError(error.message);
+        $("error").textContent = `${error.message}. Revisá los datos marcados en rojo.`;
+        $("error").hidden = false;
+        const primerInvalido = document.querySelector("#formulario [aria-invalid='true']");
+        const destino = primerInvalido?.tagName === "INPUT"
+          ? primerInvalido
+          : primerInvalido?.querySelector("input");
+        destino?.scrollIntoView({ behavior: "smooth", block: "center" });
+        destino?.focus({ preventScroll: true });
         return;
       }
 
@@ -239,12 +284,29 @@
       $("confirmacion").hidden = true;
       $("formulario").closest(".disposicion").hidden = false;
       $("formulario").reset();
+      tocados.clear();
+      intentoComprar = false;
+      $("error").hidden = true;
       $("usuario-sesion").textContent = $("usuario").value;
       dibujarCamposDeEdad();
       actualizarResumen();
-      avisarSiEstaCerrado();
+      validarEnElMomento();
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
+
+    // Cualquier cambio revalida en el momento los campos que ya se tocaron.
+    $("formulario").addEventListener("input", validarEnElMomento);
+    $("formulario").addEventListener("change", validarEnElMomento);
+
+    // Cuándo se considera que el usuario terminó con cada campo.
+    $("usuario").addEventListener("focusout", () => tocar("usuario"));
+    $("fecha").addEventListener("change", () => tocar("fechaVisita"));
+    $("cantidad").addEventListener("focusout", () => tocar("cantidad"));
+    $("edades").addEventListener("focusout", () => tocar("edades"));
+    document.querySelectorAll("input[name='tipoPase']")
+      .forEach((opcion) => opcion.addEventListener("change", () => tocar("tipoPase")));
+    document.querySelectorAll("input[name='formaPago']")
+      .forEach((opcion) => opcion.addEventListener("change", () => tocar("formaPago")));
 
     $("usuario").addEventListener("input", () => {
       $("usuario-sesion").textContent = $("usuario").value.trim() || "(sin usuario)";
@@ -252,20 +314,20 @@
     $("cantidad").addEventListener("input", () => {
       dibujarCamposDeEdad();
       actualizarResumen();
+      validarEnElMomento();
     });
     // Botones − y +: solo ayudan a cargar la cantidad; el máximo de 10 lo valida el servicio.
     document.querySelectorAll(".contador__boton").forEach((boton) => {
       boton.addEventListener("click", () => {
         const actual = Number($("cantidad").value) || 0;
-        const nueva = Math.max(1, actual + Number(boton.dataset.paso));
-        $("cantidad").value = nueva;
-        $("cantidad").dispatchEvent(new Event("input"));
+        $("cantidad").value = Math.max(1, actual + Number(boton.dataset.paso));
+        $("cantidad").dispatchEvent(new Event("input", { bubbles: true }));
+        tocar("cantidad");
       });
     });
     $("edades").addEventListener("input", actualizarResumen);
     document.querySelectorAll("input[name='tipoPase']")
       .forEach((opcion) => opcion.addEventListener("change", actualizarResumen));
-    $("fecha").addEventListener("change", avisarSiEstaCerrado);
   }
 
   cargarLogica()
