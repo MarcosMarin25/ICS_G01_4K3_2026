@@ -286,4 +286,9 @@ describe("ServicioCompraEntradas - validaciones", () => {
     expect(() => servicio.comprar(solicitudValida({ tipoPase: null })))
       .toThrow("Debe indicar el tipo de pase");
   });
+
+  test("F18 - rechaza un tipo de pase inválido", () => {
+    expect(() => servicio.comprar(solicitudValida({ tipoPase: "PREMIUM" })))
+      .toThrow("El tipo de pase debe ser VIP o regular");
+  });
 });
