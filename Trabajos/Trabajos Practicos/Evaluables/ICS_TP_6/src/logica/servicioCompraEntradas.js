@@ -67,6 +67,9 @@ class ServicioCompraEntradas {
     if (solicitud.cantidad < 1) {
       throw new Error("La cantidad de entradas debe ser al menos 1");
     }
+    if (solicitud.edades.length !== solicitud.cantidad) {
+      throw new Error("Debe indicar la edad de cada visitante");
+    }
     const fechaVisita = crearFechaLocal(solicitud.fechaVisita);
     const ahora = this.reloj.ahora();
     const hoy = inicioDelDia(ahora);
