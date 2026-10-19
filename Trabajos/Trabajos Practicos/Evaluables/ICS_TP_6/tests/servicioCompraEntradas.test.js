@@ -125,4 +125,12 @@ describe("ServicioCompraEntradas - compras válidas", () => {
 
     expect(resultado.montoTotal).toBe(20000); // 10000 + 5000 + 0 + 5000
   });
+
+  test("P11 - un menor de hasta 3 años recibe una entrada de $0", () => {
+    const resultado = servicio.comprar(solicitudValida({ cantidad: 2, edades: [30, 2] }));
+
+    expect(resultado.entradas.length).toBe(2);
+    expect(resultado.entradas[0].precio).toBe(20000);
+    expect(resultado.entradas[1].precio).toBe(0);
+  });
 });
