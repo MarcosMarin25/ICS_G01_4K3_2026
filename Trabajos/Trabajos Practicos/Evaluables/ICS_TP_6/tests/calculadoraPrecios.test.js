@@ -18,4 +18,8 @@ describe("CalculadoraPrecios", () => {
   test("C03 - un niño de 1 año no paga", () => {
     expect(calculadora.precioEntrada(1, "VIP")).toBe(0);
   });
+
+  test("C04 - un niño de 3 años no paga", () => {
+    expect(calculadora.precioEntrada(3, "VIP")).toBe(0);
+  });
 });
