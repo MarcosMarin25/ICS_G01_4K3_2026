@@ -78,4 +78,12 @@ describe("ServicioCompraEntradas - compras válidas", () => {
 
     expect(resultado.confirmada).toBe(true);
   });
+
+  test("P05 - permite comprar para hoy justo a las 17:30", () => {
+    reloj.fijar("2026-10-15T17:30");
+
+    const resultado = servicio.comprar(solicitudValida({ fechaVisita: HOY }));
+
+    expect(resultado.confirmada).toBe(true);
+  });
 });
