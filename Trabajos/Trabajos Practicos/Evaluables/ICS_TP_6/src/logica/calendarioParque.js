@@ -1,7 +1,8 @@
 // Indica si el parque abre en una fecha dada.
 class CalendarioParque {
-  estaAbierto() {
-    return true;
+  estaAbierto(fecha) {
+    const [anio, mes, dia] = fecha.split("-").map(Number);
+    return new Date(anio, mes - 1, dia).getDay() !== 1;
   }
 }
 
