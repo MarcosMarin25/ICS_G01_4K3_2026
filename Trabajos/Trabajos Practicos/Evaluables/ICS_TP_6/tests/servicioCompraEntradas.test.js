@@ -236,4 +236,11 @@ describe("ServicioCompraEntradas - validaciones", () => {
     expect(() => servicio.comprar(solicitudValida({ fechaVisita: HOY })))
       .toThrow("Las entradas para hoy se pueden comprar hasta las 17:30");
   });
+
+  test("F09 - rechaza más de 10 entradas", () => {
+    expect(() => servicio.comprar(solicitudValida({
+      cantidad: 11,
+      edades: Array(11).fill(30),
+    }))).toThrow("No se pueden comprar más de 10 entradas para una misma fecha");
+  });
 });
