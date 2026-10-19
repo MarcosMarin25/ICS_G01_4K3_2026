@@ -8,6 +8,7 @@ const ServicioMailEspia = require("./dobles/servicioMailEspia");
 const PasarelaMercadoPagoEspia = require("./dobles/pasarelaMercadoPagoEspia");
 
 const AHORA = "2026-10-15T10:00"; // jueves
+const HOY = "2026-10-15";
 const FECHA_ABIERTA = "2026-10-20"; // martes
 const USUARIO = "visitante@mail.com";
 const OTRO_USUARIO = "otro@mail.com";
@@ -70,5 +71,11 @@ describe("ServicioCompraEntradas - compras válidas", () => {
 
     expect(resultado.cantidadEntradas).toBe(3);
     expect(resultado.fechaVisita).toBe(FECHA_ABIERTA);
+  });
+
+  test("P04 - permite comprar para hoy antes de las 17:30", () => {
+    const resultado = servicio.comprar(solicitudValida({ fechaVisita: HOY })); // reloj en 10:00
+
+    expect(resultado.confirmada).toBe(true);
   });
 });
