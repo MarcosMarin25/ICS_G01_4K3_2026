@@ -387,4 +387,12 @@ describe("ServicioCompraEntradas - validación por campo", () => {
     expect(servicio.validarCampos(solicitudValida({ cantidad: 4, edades: [30, 28, 8, 40] })))
       .toEqual({ cantidad: "No se pueden comprar más de 10 entradas para una misma fecha" });
   });
+
+  test("V08 - validar los campos no registra la compra, no envía el mail ni redirige", () => {
+    servicio.validarCampos(solicitudValida());
+
+    expect(mail.fueEnviadoA(USUARIO)).toBe(false);
+    expect(mercadoPago.fueLlamada()).toBe(false);
+    expect(compras.cantidadComprada(USUARIO, FECHA_ABIERTA)).toBe(0);
+  });
 });
