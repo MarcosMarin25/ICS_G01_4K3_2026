@@ -380,4 +380,11 @@ describe("ServicioCompraEntradas - validación por campo", () => {
     expect(servicio.validarCampos(solicitudValida({ cantidad: 2.5 })))
       .toEqual({ cantidad: "La cantidad de entradas debe ser un número entero" });
   });
+
+  test("V07 - informa el máximo por fecha en el campo de la cantidad", () => {
+    compras.registrar(USUARIO, FECHA_ABIERTA, 7);
+
+    expect(servicio.validarCampos(solicitudValida({ cantidad: 4, edades: [30, 28, 8, 40] })))
+      .toEqual({ cantidad: "No se pueden comprar más de 10 entradas para una misma fecha" });
+  });
 });
