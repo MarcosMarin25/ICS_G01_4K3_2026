@@ -84,6 +84,14 @@ Como visitante quiero comprar una entrada para asegurar mi visita al parque
 - El máximo de 10 entradas es por usuario y por fecha: las compras de otros usuarios no cuentan.
 - Cuando la compra es válida, queda registrada en el repositorio de compras, para que cuente en el máximo de las compras siguientes.
 - Si la compra es inválida, el servicio lanza un error de validación con un mensaje descriptivo, y no envía el mail, no redirige a Mercado Pago y no registra la compra.
+- Las validaciones siguen un orden fijo, y el servicio informa **solo el primer error** que encuentra:
+  1. Usuario registrado (F19).
+  2. Datos obligatorios presentes: fecha de visita (F06), tipo de pase (F17) y forma de pago (F01).
+  3. Valores válidos: fecha existente (F25, F27), tipo de pase (F18), forma de pago (F23), cantidad entera (F20) y mayor o igual a 1 (F10, F11), una edad por entrada (F14, F24) y edades enteras mayores o iguales a 0 (F15, F21).
+  4. Reglas de fecha: no anterior a hoy (F05), parque abierto (F02, F03, F04), hasta un mes de anticipación (F07, F26) y límite de las 17:30 para el día actual (F08).
+  5. Máximo de 10 entradas por usuario y por fecha (F09, F12, F13, F22).
+
+  El orden importa cuando una solicitud tiene más de un dato inválido. F11 (`cantidad: -1, edades: []`) y F20 (`cantidad: 2.5` con 3 edades) esperan el error de la cantidad y no el de las edades, por eso la cantidad se valida completa antes de compararla con las edades. Por el mismo motivo, F26 usa el 2027-03-02 y no el 2027-03-01: el 01/03 es lunes y daría primero el error de parque cerrado. Los datos se revisan antes que las reglas de negocio, para no consultar el calendario, el reloj o el repositorio con datos que no tienen sentido.
 - Para los ejemplos, "ahora" es el **jueves 2026-10-15 a las 10:00**. Las pruebas de feriados cambian el reloj al **domingo 2026-12-20 a las 10:00**, para que el 25/12 y el 1/1 queden dentro del mes de anticipación.
 
 
