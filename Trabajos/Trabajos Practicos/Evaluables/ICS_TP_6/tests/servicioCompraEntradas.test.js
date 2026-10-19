@@ -253,4 +253,13 @@ describe("ServicioCompraEntradas - validaciones", () => {
     expect(() => servicio.comprar(solicitudValida({ cantidad: -1, edades: [] })))
       .toThrow("La cantidad de entradas debe ser al menos 1");
   });
+
+  test("F12 - rechaza varias compras que superan 10 entradas para la misma fecha", () => {
+    compras.registrar(USUARIO, FECHA_ABIERTA, 7);
+
+    expect(() => servicio.comprar(solicitudValida({
+      cantidad: 4,
+      edades: [30, 28, 8, 40],
+    }))).toThrow("No se pueden comprar más de 10 entradas para una misma fecha");
+  });
 });
