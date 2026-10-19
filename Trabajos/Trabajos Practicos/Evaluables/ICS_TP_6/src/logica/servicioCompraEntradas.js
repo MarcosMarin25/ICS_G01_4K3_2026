@@ -51,6 +51,13 @@ class ServicioCompraEntradas {
     if (!solicitud.formaPago) {
       throw new Error("Debe seleccionar una forma de pago");
     }
+    const [anio, mes, dia] = solicitud.fechaVisita.split("-").map(Number);
+    const fechaVisita = new Date(anio, mes - 1, dia);
+    const ahora = this.reloj.ahora();
+    const hoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
+    if (fechaVisita < hoy) {
+      throw new Error("La fecha de visita no puede ser anterior a hoy");
+    }
     if (!this.calendario.estaAbierto(solicitud.fechaVisita)) {
       throw new Error("El parque está cerrado en la fecha seleccionada");
     }
