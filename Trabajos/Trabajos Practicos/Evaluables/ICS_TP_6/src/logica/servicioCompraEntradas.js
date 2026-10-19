@@ -71,6 +71,10 @@ class ServicioCompraEntradas {
     if (!solicitud.formaPago) {
       throw new Error("Debe seleccionar una forma de pago");
     }
+    const [, mesVisita, diaVisita] = solicitud.fechaVisita.split("-").map(Number);
+    if (mesVisita < 1 || mesVisita > 12 || diaVisita < 1 || diaVisita > 31) {
+      throw new Error("Fecha de visita inválida");
+    }
     if (!Object.values(TIPO_PASE).includes(solicitud.tipoPase)) {
       throw new Error("El tipo de pase debe ser VIP o regular");
     }
