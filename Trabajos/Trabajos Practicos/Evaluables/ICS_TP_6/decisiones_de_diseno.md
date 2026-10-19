@@ -318,6 +318,17 @@ La implementación evalúa los rangos de menor a mayor y devuelve el primero que
   - **Formulario:** está dividido en cuatro pasos numerados (fecha, visitantes, pase y forma de pago), con tarjetas seleccionables y botones − y + para la cantidad.
   - **Celular:** se muestra en una sola columna, con una barra fija abajo que deja siempre a mano el total y el botón Comprar.
   - **Escritorio (desde 900 px de ancho):** se muestra en dos columnas, y el resumen, con forma de entrada, queda fijo al costado.
+  - **Pantallas bajas (celular horizontal):** la portada, la barra inferior, la pantalla de Mercado Pago y el modal del mail se compactan, y la pantalla de Mercado Pago se puede desplazar si no entra en el alto.
+  - **Verificación en seis tamaños (FAQ 24: app mobile y web responsive).** En cada uno se recorrió el flujo completo (calendario, cantidad, edades, pase, pago, pantalla de Mercado Pago, confirmación y modal del mail). Se midió que no haya desplazamiento horizontal ni elementos fuera de la pantalla, y que la pantalla de Mercado Pago y el modal entren enteros:
+
+    | Dispositivo | Tamaño | Disposición | Resultado |
+    |---|---|---|---|
+    | Celular chico | 320 × 568 | Una columna y barra inferior | Sin desbordes |
+    | Celular | 375 × 667 | Una columna y barra inferior | Sin desbordes |
+    | Celular horizontal | 812 × 375 | Una columna, barra inferior y versión compacta | Sin desbordes. Antes del ajuste, la pantalla de Mercado Pago medía 386 px de alto y no entraba en los 375 px |
+    | Tablet vertical | 768 × 1024 | Una columna y barra inferior | Sin desbordes |
+    | Tablet horizontal | 1024 × 768 | Dos columnas y resumen fijo | Sin desbordes |
+    | Pantalla grande | 1920 × 1080 | Dos columnas, centradas (ancho máximo de 1120 px) | Sin desbordes |
   - **Otros detalles:** los colores derivados (bordes y fondos suaves) se obtienen mezclando la paleta con `color-mix`, sin agregar colores nuevos, y las animaciones se desactivan si el sistema pide reducir el movimiento.
 
 **Por qué no se prueba con Jest.**
