@@ -170,4 +170,12 @@ describe("ServicioCompraEntradas - compras válidas", () => {
 
     expect(resultado.confirmada).toBe(true);
   });
+
+  test("P17 - las compras de otro usuario no cuentan en el máximo de 10", () => {
+    compras.registrar(OTRO_USUARIO, FECHA_ABIERTA, 10);
+
+    const resultado = servicio.comprar(solicitudValida()); // 3 entradas para USUARIO
+
+    expect(resultado.confirmada).toBe(true);
+  });
 });
