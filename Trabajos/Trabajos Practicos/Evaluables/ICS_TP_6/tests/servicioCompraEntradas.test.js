@@ -187,3 +187,10 @@ describe("ServicioCompraEntradas - compras válidas", () => {
     expect(resultado.confirmada).toBe(true);
   });
 });
+
+describe("ServicioCompraEntradas - validaciones", () => {
+  test("F01 - rechaza la compra sin forma de pago", () => {
+    expect(() => servicio.comprar(solicitudValida({ formaPago: null })))
+      .toThrow("Debe seleccionar una forma de pago");
+  });
+});
