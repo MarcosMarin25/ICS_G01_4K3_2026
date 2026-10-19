@@ -1,5 +1,8 @@
 class CalculadoraPrecios {
   precioEntrada(edad, tipoPase) {
+    if (tipoPase === "VIP") {
+      return 20000;
+    }
     return 10000;
   }
 }
