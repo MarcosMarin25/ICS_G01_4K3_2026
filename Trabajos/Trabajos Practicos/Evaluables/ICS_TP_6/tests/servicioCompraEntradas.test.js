@@ -319,4 +319,9 @@ describe("ServicioCompraEntradas - validaciones", () => {
     expect(mercadoPago.fueLlamada()).toBe(false);
     expect(compras.cantidadComprada(USUARIO, FECHA_ABIERTA)).toBe(7);
   });
+
+  test("F23 - rechaza una forma de pago inválida", () => {
+    expect(() => servicio.comprar(solicitudValida({ formaPago: "CHEQUE" })))
+      .toThrow("La forma de pago debe ser tarjeta o efectivo");
+  });
 });
