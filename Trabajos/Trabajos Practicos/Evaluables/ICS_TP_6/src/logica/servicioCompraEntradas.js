@@ -1,4 +1,5 @@
 const { crearFechaLocal, inicioDelDia, minutosDelDia, MINUTOS_POR_HORA } = require("./fechas");
+const { TIPO_PASE, FORMA_PAGO } = require("./valores");
 
 // Para visitar el día actual se puede comprar hasta las 17:30 inclusive (R5).
 const HORA_LIMITE_MISMO_DIA = 17;
@@ -67,7 +68,7 @@ class ServicioCompraEntradas {
     if (!solicitud.formaPago) {
       throw new Error("Debe seleccionar una forma de pago");
     }
-    if (!["VIP", "REGULAR"].includes(solicitud.tipoPase)) {
+    if (!Object.values(TIPO_PASE).includes(solicitud.tipoPase)) {
       throw new Error("El tipo de pase debe ser VIP o regular");
     }
     if (solicitud.cantidad < 1) {
@@ -108,7 +109,7 @@ class ServicioCompraEntradas {
     const montoTotal = entradas.reduce((total, entrada) => total + entrada.precio, 0);
 
     this.compras.registrar(solicitud.usuario, solicitud.fechaVisita, solicitud.cantidad);
-    if (solicitud.formaPago === "TARJETA") {
+    if (solicitud.formaPago === FORMA_PAGO.TARJETA) {
       this.mercadoPago.redirigir(montoTotal);
     }
     this.mail.enviarConfirmacion(solicitud.usuario);

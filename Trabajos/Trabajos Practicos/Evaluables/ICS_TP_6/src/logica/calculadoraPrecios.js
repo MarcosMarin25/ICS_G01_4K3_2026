@@ -1,3 +1,5 @@
+const { TIPO_PASE } = require("./valores");
+
 const PRECIO_REGULAR = 10000;
 const PRECIO_VIP = 20000;
 
@@ -11,7 +13,7 @@ const PORCENTAJE_TOTAL = 100;
 // Devuelve el precio de una entrada según la edad del visitante y el tipo de pase.
 class CalculadoraPrecios {
   precioEntrada(edad, tipoPase) {
-    const precioBase = tipoPase === "VIP" ? PRECIO_VIP : PRECIO_REGULAR;
+    const precioBase = tipoPase === TIPO_PASE.VIP ? PRECIO_VIP : PRECIO_REGULAR;
 
     if (edad <= EDAD_MAXIMA_GRATIS) {
       return 0;
