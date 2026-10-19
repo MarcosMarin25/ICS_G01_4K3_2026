@@ -248,4 +248,9 @@ describe("ServicioCompraEntradas - validaciones", () => {
     expect(() => servicio.comprar(solicitudValida({ cantidad: 0, edades: [] })))
       .toThrow("La cantidad de entradas debe ser al menos 1");
   });
+
+  test("F11 - rechaza una cantidad negativa", () => {
+    expect(() => servicio.comprar(solicitudValida({ cantidad: -1, edades: [] })))
+      .toThrow("La cantidad de entradas debe ser al menos 1");
+  });
 });
