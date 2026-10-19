@@ -119,16 +119,20 @@ code {
   letter-spacing: 0.02em;
 }
 
-.marca {
-  gap: 12px;
-  font-size: 1.15rem;
+.marca__logo {
+  display: block;
+  width: auto;
+  height: 48px;
+  padding: 4px 8px;
+  background: var(--color-superficie);
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
 }
 
-.marca__logo {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+@media (min-width: 560px) {
+  .marca__logo {
+    height: 60px;
+  }
 }
 
 .sesion {
@@ -1091,6 +1095,18 @@ fieldset[aria-invalid="true"] .opcion:not(:has(input:checked)) {
 }
 
 /* ---------- Pie ---------- */
+.pie__marca {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.pie__marca img {
+  border-radius: 6px;
+}
+
 .pie {
   padding: 20px 0 calc(var(--alto-barra-movil) + 20px);
   font-size: 0.85rem;

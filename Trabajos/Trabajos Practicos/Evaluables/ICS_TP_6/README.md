@@ -1,3 +1,5 @@
+<p align="center"><img src="src/web/logo.jpg" alt="EcoHarmony Park" width="360"></p>
+
 # TP 6 - TDD: Comprar entradas (EcoHarmony Park)
 
 Ingeniería y Calidad de Software, UTN FRC 2026, grupo 1 (4K3). Práctico 6, evaluable.
