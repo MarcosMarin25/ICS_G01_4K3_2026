@@ -1,0 +1,28 @@
+{
+  "name": "comprar-entradas",
+  "version": "1.0.0",
+  "description": "TP 6 - TDD: User Story Comprar entradas (EcoHarmony Park)",
+  "scripts": {
+    "test": "jest"
+  },
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-html-reporter": "^3.10.2"
+  },
+  "jest": {
+    "reporters": [
+      "default",
+      [
+        "jest-html-reporter",
+        {
+          "pageTitle": "Reporte de pruebas - Comprar entradas",
+          "outputPath": "reportes/reporte-pruebas.html",
+          "includeFailureMsg": true,
+          "dateFormat": "dd/mm/yyyy HH:MM:ss",
+          "sort": "default"
+        }
+      ]
+    ]
+  }
+}
