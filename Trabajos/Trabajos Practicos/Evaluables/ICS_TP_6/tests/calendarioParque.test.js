@@ -10,4 +10,8 @@ describe("CalendarioParque", () => {
   test("K01 - un martes el parque está abierto", () => {
     expect(calendario.estaAbierto("2026-10-20")).toBe(true);
   });
+
+  test("K03 - un lunes el parque está cerrado", () => {
+    expect(calendario.estaAbierto("2026-10-19")).toBe(false);
+  });
 });
