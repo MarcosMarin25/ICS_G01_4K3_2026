@@ -301,4 +301,9 @@ describe("ServicioCompraEntradas - validaciones", () => {
     expect(() => servicio.comprar(solicitudValida({ cantidad: 2.5 })))
       .toThrow("La cantidad de entradas debe ser un número entero");
   });
+
+  test("F21 - rechaza una edad decimal (flotante)", () => {
+    expect(() => servicio.comprar(solicitudValida({ edades: [30, 10.5, 8] })))
+      .toThrow("Edad inválida");
+  });
 });
