@@ -26,4 +26,16 @@ describe("CalculadoraPrecios", () => {
   test("C05 - un niño de 4 años paga la mitad", () => {
     expect(calculadora.precioEntrada(4, "REGULAR")).toBe(5000);
   });
+
+  test("C06 - un menor de 15 años paga la mitad", () => {
+    expect(calculadora.precioEntrada(15, "VIP")).toBe(10000);
+  });
+
+  test("C07 - una persona de 16 años paga entero", () => {
+    expect(calculadora.precioEntrada(16, "REGULAR")).toBe(10000);
+  });
+
+  test("C08 - una persona de 59 años paga entero", () => {
+    expect(calculadora.precioEntrada(59, "VIP")).toBe(20000);
+  });
 });
