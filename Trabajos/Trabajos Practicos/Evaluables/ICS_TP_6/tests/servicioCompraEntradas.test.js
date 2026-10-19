@@ -329,4 +329,9 @@ describe("ServicioCompraEntradas - validaciones", () => {
     expect(() => servicio.comprar(solicitudValida({ cantidad: 3, edades: [30, 28, 8, 40] })))
       .toThrow("Debe indicar la edad de cada visitante");
   });
+
+  test("F25 - rechaza una fecha de visita con mes o día fuera de rango", () => {
+    expect(() => servicio.comprar(solicitudValida({ fechaVisita: "2026-13-45" })))
+      .toThrow("Fecha de visita inválida");
+  });
 });
