@@ -357,4 +357,12 @@ describe("ServicioCompraEntradas - validación por campo", () => {
     expect(servicio.validarCampos(solicitudValida({ usuario: "desconocido@mail.com" })))
       .toEqual({ usuario: "Solo los usuarios registrados pueden comprar entradas" });
   });
+
+  test("V03 - informa a la vez los errores de varios campos", () => {
+    expect(servicio.validarCampos(solicitudValida({ tipoPase: null, formaPago: "CHEQUE" })))
+      .toEqual({
+        tipoPase: "Debe indicar el tipo de pase",
+        formaPago: "La forma de pago debe ser tarjeta o efectivo",
+      });
+  });
 });
