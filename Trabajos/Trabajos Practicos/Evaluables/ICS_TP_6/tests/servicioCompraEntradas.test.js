@@ -306,4 +306,17 @@ describe("ServicioCompraEntradas - validaciones", () => {
     expect(() => servicio.comprar(solicitudValida({ edades: [30, 10.5, 8] })))
       .toThrow("Edad inválida");
   });
+
+  test("F22 - una compra rechazada no envía el mail, no redirige ni registra la compra", () => {
+    compras.registrar(USUARIO, FECHA_ABIERTA, 7);
+
+    expect(() => servicio.comprar(solicitudValida({
+      cantidad: 4,
+      edades: [30, 28, 8, 40],
+    }))).toThrow("No se pueden comprar más de 10 entradas para una misma fecha");
+
+    expect(mail.fueEnviadoA(USUARIO)).toBe(false);
+    expect(mercadoPago.fueLlamada()).toBe(false);
+    expect(compras.cantidadComprada(USUARIO, FECHA_ABIERTA)).toBe(7);
+  });
 });
