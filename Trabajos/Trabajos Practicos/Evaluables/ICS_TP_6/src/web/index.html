@@ -2,172 +2,258 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#386641">
   <title>Comprar entradas - EcoHarmony Park</title>
-  <link rel="icon" href="icono.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="icon" href="icono.svg" type="image/svg+xml">
   <link rel="stylesheet" href="estilos.css">
 </head>
 <body>
-  <main class="app">
-    <p id="aviso-servidor" class="banner" role="alert" hidden>
-      Esta página necesita un servidor local para cargar la lógica. Abrila con <code>npm run web</code>
-      y entrá a <code>http://localhost:8080/src/web/</code>.
+  <!-- Íconos reutilizables -->
+  <svg width="0" height="0" class="oculto" aria-hidden="true">
+    <symbol id="i-calendario" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 10h18M8 3v4M16 3v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-reloj" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-personas" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M2.5 20c.5-3.5 3.2-5.5 6.5-5.5s6 2 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18.5 14.8c1.7.8 2.8 2.6 3 5.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-entrada" viewBox="0 0 24 24"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M14 6v12" stroke="currentColor" stroke-width="2" stroke-dasharray="2 2"/></symbol>
+    <symbol id="i-estrella" viewBox="0 0 24 24"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-tarjeta" viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M2.5 10h19M6 15h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-efectivo" viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 9.5v5M18 9.5v5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-sobre" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="m3.5 6.5 8.5 7 8.5-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-alerta" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7.5v5.5M12 16.5v.1" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></symbol>
+  </svg>
+
+  <header class="portada">
+    <div class="contenedor portada__barra">
+      <p class="marca">
+        <!-- Logo: propuesta del grupo, pendiente de validación del PO (FAQ 17). -->
+        <img class="marca__logo" src="icono.svg" alt="" width="44" height="44">
+        EcoHarmony Park
+      </p>
+      <p class="sesion">
+        <span class="sesion__punto" aria-hidden="true"></span>
+        <span>Sesión simulada: <strong id="usuario-sesion">visitante@mail.com</strong></span>
+      </p>
+    </div>
+    <div class="contenedor portada__contenido">
+      <h1 class="portada__titulo">Comprá tus entradas</h1>
+      <p class="portada__bajada">Asegurá tu visita al parque en pocos pasos.</p>
+      <ul class="datos">
+        <li><svg class="icono" aria-hidden="true"><use href="#i-calendario"/></svg>Abierto de martes a domingo</li>
+        <li><svg class="icono" aria-hidden="true"><use href="#i-reloj"/></svg>Compras para hoy hasta las 17:30</li>
+        <li><svg class="icono" aria-hidden="true"><use href="#i-entrada"/></svg>Hasta 10 entradas por fecha</li>
+      </ul>
+    </div>
+    <svg class="portada__colinas" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 60c160-40 320-50 480-20s300 40 480 0 340-50 480-10v60H0Z" fill="currentColor" opacity=".35"/>
+      <path d="M0 75c200-30 380-35 560-10s360 30 540 0 240-25 340-15v40H0Z" fill="currentColor"/>
+    </svg>
+  </header>
+
+  <main class="contenedor principal">
+    <p id="aviso-servidor" class="aviso aviso--error" hidden>
+      <svg class="icono" aria-hidden="true"><use href="#i-alerta"/></svg>
+      <span>Esta página necesita un servidor local para cargar la lógica. Abrila con <code>npm run web</code>
+      y entrá a <code>http://localhost:8080/src/web/</code>.</span>
     </p>
 
-    <!-- ===================== Paso 1: día de la visita ===================== -->
-    <section id="paso-fecha" class="paso" aria-labelledby="titulo-fecha">
-      <header class="tarjeta encabezado">
-        <div class="encabezado__marca">
-          <!-- Logo: propuesta del grupo, pendiente de validación del PO (FAQ 17). -->
-          <img class="encabezado__logo" src="icono.svg" alt="" width="44" height="44">
-          <div>
-            <p class="encabezado__titulo">EcoHarmony Park</p>
-            <p class="encabezado__resumen">Abierto de 8:30 a 19:00</p>
+    <div class="disposicion">
+      <!-- novalidate: la validación la hace ServicioCompraEntradas, la misma lógica que prueba Jest. -->
+      <form id="formulario" class="formulario" novalidate>
+
+        <section class="paso tarjeta" aria-labelledby="paso-1">
+          <h2 id="paso-1" class="paso__titulo"><span class="paso__numero" aria-hidden="true">1</span>¿Cuándo nos visitás?</h2>
+          <div class="campos-dos">
+            <div class="campo">
+              <label for="usuario">Usuario</label>
+              <input id="usuario" name="usuario" type="email" value="visitante@mail.com" autocomplete="email" aria-describedby="error-usuario">
+              <p class="campo__ayuda">De prueba: visitante@mail.com u otro@mail.com.</p>
+              <p id="error-usuario" class="campo__error" aria-live="polite" hidden></p>
+            </div>
+            <div class="campo">
+              <p class="campo__etiqueta" id="fecha-etiqueta">Fecha de visita</p>
+              <!-- Valor elegido en el calendario, en formato AAAA-MM-DD. -->
+              <input id="fecha" name="fecha" type="hidden">
+              <!-- Calendario propio (FAQ 2): los días que las reglas de la lógica rechazan aparecen deshabilitados. -->
+              <div id="calendario" class="calendario" role="group" aria-labelledby="fecha-etiqueta"
+                aria-describedby="fecha-elegida error-fechaVisita">
+                <div class="calendario__cabecera">
+                  <button type="button" class="calendario__nav" data-mes="-1" aria-label="Mes anterior">‹</button>
+                  <p id="calendario-mes" class="calendario__mes" aria-live="polite"></p>
+                  <button type="button" class="calendario__nav" data-mes="1" aria-label="Mes siguiente">›</button>
+                </div>
+                <div class="calendario__semana" aria-hidden="true">
+                  <span>Lu</span><span>Ma</span><span>Mi</span><span>Ju</span><span>Vi</span><span>Sá</span><span>Do</span>
+                </div>
+                <div id="calendario-dias" class="calendario__dias"></div>
+                <ul class="calendario__leyenda" aria-hidden="true">
+                  <li><span class="muestra muestra--disponible"></span>Disponible</li>
+                  <li><span class="muestra muestra--cerrado"></span>No disponible</li>
+                  <li><span class="muestra muestra--elegido"></span>Elegido</li>
+                </ul>
+              </div>
+              <p id="fecha-elegida" class="campo__ayuda" aria-live="polite">Elegí un día disponible.</p>
+              <p id="error-fechaVisita" class="campo__error" aria-live="polite" hidden></p>
+            </div>
+          </div>
+        </section>
+
+        <section class="paso tarjeta" aria-labelledby="paso-2">
+          <h2 id="paso-2" class="paso__titulo"><span class="paso__numero" aria-hidden="true">2</span>¿Quiénes vienen?</h2>
+          <div class="campo">
+            <label for="cantidad">Cantidad de entradas</label>
+            <div class="contador">
+              <button type="button" class="contador__boton" data-paso="-1" aria-label="Una entrada menos">−</button>
+              <input id="cantidad" name="cantidad" type="number" min="1" max="10" step="1" inputmode="numeric" placeholder="0" aria-describedby="error-cantidad">
+              <button type="button" class="contador__boton" data-paso="1" aria-label="Una entrada más">+</button>
+            </div>
+            <p class="campo__ayuda">Los menores de hasta 3 años también llevan entrada (de $0) y cuentan en el máximo.</p>
+            <p id="error-cantidad" class="campo__error" aria-live="polite" hidden></p>
+          </div>
+          <fieldset class="campo" id="campo-edades" aria-describedby="error-edades" hidden>
+            <legend>Edad de cada visitante</legend>
+            <div id="edades" class="edades"></div>
+            <p id="error-edades" class="campo__error" aria-live="polite" hidden></p>
+          </fieldset>
+        </section>
+
+        <section class="paso tarjeta" aria-labelledby="paso-3">
+          <h2 id="paso-3" class="paso__titulo"><span class="paso__numero" aria-hidden="true">3</span>Elegí tu pase</h2>
+          <fieldset class="campo" id="campo-tipoPase" aria-describedby="error-tipoPase">
+            <legend class="solo-lectores">Tipo de pase</legend>
+            <div class="opciones">
+              <label class="opcion">
+                <input type="radio" name="tipoPase" value="REGULAR">
+                <svg class="opcion__icono" aria-hidden="true"><use href="#i-entrada"/></svg>
+                <span class="opcion__texto">
+                  <strong>Regular</strong>
+                  <span class="opcion__precio">$10.000</span>
+                </span>
+                <svg class="opcion__check" aria-hidden="true"><use href="#i-check"/></svg>
+              </label>
+              <label class="opcion">
+                <input type="radio" name="tipoPase" value="VIP">
+                <svg class="opcion__icono" aria-hidden="true"><use href="#i-estrella"/></svg>
+                <span class="opcion__texto">
+                  <strong>VIP</strong>
+                  <span class="opcion__precio">$20.000</span>
+                </span>
+                <svg class="opcion__check" aria-hidden="true"><use href="#i-check"/></svg>
+              </label>
+            </div>
+            <ul class="descuentos">
+              <li><strong>Hasta 3 años:</strong> gratis</li>
+              <li><strong>Hasta 15 años:</strong> 50% off</li>
+              <li><strong>Desde 60 años:</strong> 50% off</li>
+            </ul>
+            <p id="error-tipoPase" class="campo__error" aria-live="polite" hidden></p>
+          </fieldset>
+        </section>
+
+        <section class="paso tarjeta" aria-labelledby="paso-4">
+          <h2 id="paso-4" class="paso__titulo"><span class="paso__numero" aria-hidden="true">4</span>¿Cómo pagás?</h2>
+          <fieldset class="campo" id="campo-formaPago" aria-describedby="error-formaPago">
+            <legend class="solo-lectores">Forma de pago</legend>
+            <div class="opciones">
+              <label class="opcion">
+                <input type="radio" name="formaPago" value="TARJETA">
+                <svg class="opcion__icono" aria-hidden="true"><use href="#i-tarjeta"/></svg>
+                <span class="opcion__texto">
+                  <strong>Tarjeta</strong>
+                  <span class="opcion__detalle">Con Mercado Pago</span>
+                </span>
+                <svg class="opcion__check" aria-hidden="true"><use href="#i-check"/></svg>
+              </label>
+              <label class="opcion">
+                <input type="radio" name="formaPago" value="EFECTIVO">
+                <svg class="opcion__icono" aria-hidden="true"><use href="#i-efectivo"/></svg>
+                <span class="opcion__texto">
+                  <strong>Efectivo</strong>
+                  <span class="opcion__detalle">En la boletería</span>
+                </span>
+                <svg class="opcion__check" aria-hidden="true"><use href="#i-check"/></svg>
+              </label>
+            </div>
+            <p id="error-formaPago" class="campo__error" aria-live="polite" hidden></p>
+          </fieldset>
+        </section>
+
+        <p id="error" class="aviso aviso--error" role="alert" hidden></p>
+      </form>
+
+      <aside class="resumen" aria-labelledby="resumen-titulo">
+        <div class="ticket">
+          <div class="ticket__cabecera">
+            <svg class="icono" aria-hidden="true"><use href="#i-entrada"/></svg>
+            <h2 id="resumen-titulo">Tu compra</h2>
+          </div>
+          <div class="ticket__cuerpo" aria-live="polite">
+            <p id="resumen-vacio" class="resumen__vacio">Completá la cantidad, las edades y el pase para ver el precio.</p>
+            <ul id="detalle" class="detalle"></ul>
+          </div>
+          <div class="ticket__pie">
+            <p class="total">Total <span id="total">$0</span></p>
+            <button type="submit" form="formulario" class="boton boton--ancho">Comprar</button>
+            <p class="ticket__nota">El total final lo confirma el sistema al comprar.</p>
           </div>
         </div>
-        <div class="sesion">
-          <label for="usuario" class="sesion__etiqueta">Sesión simulada (FAQ 19)</label>
-          <select id="usuario" class="sesion__selector">
-            <option value="visitante@mail.com">visitante@mail.com</option>
-            <option value="otro@mail.com">otro@mail.com</option>
-            <option value="invitado@mail.com">invitado@mail.com (no registrado)</option>
-          </select>
-          <p id="error-usuario" class="campo-error" hidden></p>
-        </div>
-      </header>
+      </aside>
 
-      <h1 id="titulo-fecha" class="paso__titulo" tabindex="-1">¿Qué día nos visitás?</h1>
-
-      <input id="fecha" type="hidden">
-      <!-- Calendario propio (FAQ 2): los días que las reglas de la lógica rechazan aparecen deshabilitados. -->
-      <div id="calendario" class="tarjeta calendario" role="group" aria-labelledby="titulo-fecha"
-        aria-describedby="fecha-elegida error-fechaVisita">
-        <div class="calendario__cabecera">
-          <button type="button" class="boton-icono" data-mes="-1" aria-label="Mes anterior">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>
-          </button>
-          <p id="calendario-mes" class="calendario__mes" aria-live="polite"></p>
-          <button type="button" class="boton-icono" data-mes="1" aria-label="Mes siguiente">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
-          </button>
-        </div>
-        <div class="calendario__semana" aria-hidden="true">
-          <span>Lu</span><span>Ma</span><span>Mi</span><span>Ju</span><span>Vi</span><span>Sá</span><span>Do</span>
-        </div>
-        <div id="calendario-dias" class="calendario__dias"></div>
-        <ul class="calendario__leyenda" aria-hidden="true">
-          <li><span class="muestra muestra--disponible"></span>Disponible</li>
-          <li><span class="muestra muestra--cerrado"></span>No disponible</li>
-          <li><span class="muestra muestra--elegido"></span>Elegido</li>
-        </ul>
+      <!-- En el celular, el total y el botón quedan siempre a mano. -->
+      <div class="barra-movil">
+        <p class="barra-movil__total">Total <strong id="total-movil">$0</strong></p>
+        <button type="submit" form="formulario" class="boton">Comprar</button>
       </div>
-      <p id="fecha-elegida" class="nota" aria-live="polite">Cerrado los lunes, el 25/12 y el 1/1.</p>
-      <p id="error-fechaVisita" class="campo-error" hidden></p>
+    </div>
 
-      <div class="pie-fijo">
-        <button type="button" id="continuar" class="boton-principal" disabled>Continuar</button>
-      </div>
-    </section>
-
-    <!-- ===================== Paso 2: entradas ===================== -->
-    <form id="formulario" class="paso" aria-labelledby="titulo-compra" novalidate hidden>
-      <header class="tarjeta encabezado">
-        <div class="encabezado__marca">
-          <img class="encabezado__logo" src="icono.svg" alt="" width="44" height="44">
+    <section id="confirmacion" class="confirmacion" hidden aria-labelledby="confirmacion-titulo">
+      <div class="ticket ticket--confirmado">
+        <div class="ticket__cabecera">
+          <span class="sello" aria-hidden="true"><svg class="icono"><use href="#i-check"/></svg></span>
           <div>
-            <h1 id="titulo-compra" class="encabezado__titulo" tabindex="-1">EcoHarmony Park</h1>
-            <p class="encabezado__resumen">
-              <button type="button" id="cambiar-fecha" class="enlace" aria-label="Cambiar la fecha de visita">
-                <span id="resumen-fecha"></span>
-              </button>
-              <span aria-hidden="true"> · </span>Abierto de 8:30 a 19:00
-            </p>
+            <h2 id="confirmacion-titulo">¡Compra confirmada!</h2>
+            <p id="confirmacion-texto" class="confirmacion__texto"></p>
           </div>
         </div>
-        <div class="chips" role="group" aria-label="Opciones de la compra">
-          <button type="button" id="chip-tipoPase" class="chip" data-selector="tipoPase" aria-haspopup="dialog">
-            <span class="chip__texto">Tipo de pase</span>
-            <svg class="chip__flecha" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
-          </button>
-          <button type="button" id="chip-formaPago" class="chip" data-selector="formaPago" aria-haspopup="dialog">
-            <span class="chip__texto">Forma de pago</span>
-            <svg class="chip__flecha" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
-          </button>
+        <div class="ticket__cuerpo">
+          <ul id="confirmacion-detalle" class="detalle"></ul>
         </div>
-        <p id="error-tipoPase" class="campo-error" hidden></p>
-        <p id="error-formaPago" class="campo-error" hidden></p>
-      </header>
-
-      <h2 class="seccion__titulo">¿Quiénes vienen?</h2>
-      <!-- Una fila por categoría de precio. Las categorías salen de CalculadoraPrecios (ver app.js). -->
-      <div id="categorias" class="categorias"></div>
-      <p id="error-edades" class="campo-error" hidden></p>
-
-      <div class="pie-fijo">
-        <p class="total" aria-live="polite">
-          <span id="total-cantidad">0 entradas</span>
-          <span id="total-monto" class="total__monto"></span>
-        </p>
-        <p id="error-cantidad" class="campo-error" hidden></p>
-        <p id="error" class="banner" role="alert" hidden></p>
-        <button type="submit" id="confirmar" class="boton-principal" disabled>Confirmar compra</button>
-      </div>
-    </form>
-
-    <!-- ===================== Paso 3: compra confirmada (CA 8) ===================== -->
-    <section id="confirmacion" class="paso" aria-labelledby="titulo-confirmacion" hidden>
-      <div class="tarjeta final">
-        <span class="sello" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
-        </span>
-        <h1 id="titulo-confirmacion" class="final__titulo" tabindex="-1">¡Compra confirmada!</h1>
-        <p id="confirmacion-texto" class="final__texto"></p>
-        <ul id="confirmacion-detalle" class="detalle"></ul>
-        <p class="total total--final"><span>Total</span><span id="confirmacion-total" class="total__monto"></span></p>
-        <p id="confirmacion-pago" class="nota"></p>
-      </div>
-      <div class="pie-fijo">
-        <button type="button" id="nueva-compra" class="boton-principal">Hacer otra compra</button>
+        <div class="ticket__pie">
+          <p class="total">Total <span id="confirmacion-total"></span></p>
+          <p id="confirmacion-pago" class="ticket__nota"></p>
+          <button type="button" id="nueva-compra" class="boton boton--secundario">Hacer otra compra</button>
+        </div>
       </div>
     </section>
   </main>
 
-  <!-- Selector de un chip (tipo de pase o forma de pago), como hoja inferior en el celular. -->
-  <dialog id="hoja" class="hoja" aria-labelledby="hoja-titulo">
-    <p id="hoja-titulo" class="hoja__titulo"></p>
-    <div id="hoja-opciones" class="hoja__opciones"></div>
-    <form method="dialog">
-      <button class="hoja__cerrar">Cancelar</button>
-    </form>
-  </dialog>
+  <footer class="pie">
+    <div class="contenedor">
+      <p>EcoHarmony Park · TP 6 de Ingeniería y Calidad de Software, UTN FRC 2026</p>
+    </div>
+  </footer>
 
-  <!-- Pantalla simulada de Mercado Pago (FAQ 4): no hay integración real. -->
-  <section id="pantalla-pago" class="cortina" hidden>
-    <div class="cortina__tarjeta" role="dialog" aria-modal="true" aria-labelledby="pantalla-pago-titulo">
-      <span class="etiqueta">Simulación</span>
-      <span class="sello" aria-hidden="true">
-        <svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
-      </span>
-      <h2 id="pantalla-pago-titulo" class="cortina__titulo">Mercado Pago Compra Exitosa</h2>
-      <p id="pantalla-pago-monto" class="cortina__monto"></p>
-      <p class="nota">Pago aprobado con tarjeta.</p>
-      <button type="button" id="volver-del-pago" class="boton-principal">Volver a EcoHarmony Park</button>
+  <!-- Pantalla simulada de Mercado Pago (no hay integración real: ver decisiones_de_diseno.md). -->
+  <section id="pantalla-pago" class="pantalla-pago" hidden>
+    <div class="pantalla-pago__tarjeta" role="dialog" aria-modal="true" aria-labelledby="pantalla-pago-titulo">
+      <span class="pantalla-pago__etiqueta">Simulación</span>
+      <span class="sello sello--grande" aria-hidden="true"><svg class="icono"><use href="#i-check"/></svg></span>
+      <h2 id="pantalla-pago-titulo">Mercado Pago Compra Exitosa</h2>
+      <p class="pantalla-pago__monto" id="pantalla-pago-monto"></p>
+      <p class="pantalla-pago__detalle">Pago aprobado con tarjeta.</p>
+      <button type="button" id="volver-del-pago" class="boton boton--ancho">Volver a EcoHarmony Park</button>
     </div>
   </section>
 
-  <!-- Modal del mail (FAQ 5), con el mail del usuario de la sesión simulada. -->
   <dialog id="modal-mail" class="modal" aria-labelledby="modal-mail-titulo">
-    <span class="modal__icono" aria-hidden="true">
-      <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 6.5 8.5 7 8.5-7"/></svg>
-    </span>
+    <span class="modal__icono" aria-hidden="true"><svg class="icono"><use href="#i-sobre"/></svg></span>
     <h2 id="modal-mail-titulo" class="modal__titulo">Mail enviado a <span id="modal-mail-destinatario"></span></h2>
-    <p class="nota">Te enviamos la confirmación con el detalle de tu compra.</p>
+    <p>Te enviamos la confirmación con el detalle de tu compra.</p>
     <form method="dialog">
-      <button class="boton-principal">Aceptar</button>
+      <button class="boton boton--ancho">Aceptar</button>
     </form>
   </dialog>
 

@@ -50,7 +50,7 @@ Como visitante quiero comprar una entrada para asegurar mi visita al parque
 | Simular el mail con un modal "Mail enviado a ..." | FAQ 5 | Se resuelve en la interfaz. En las pruebas, el mail se reemplaza por un espía que registra a quién se envió (P01, P02, F22). | Modal con el mail del usuario de la sesión. |
 | Logo de EcoHarmony Park | FAQ 17 | Es diseño visual. | Propuesta del grupo en SVG con la paleta oficial, pendiente de validación del PO. |
 | Sesión y usuario mockeados | FAQ 19 | La autenticación real no es parte de esta US. La regla de negocio (solo usuarios registrados) sí se prueba con un stub (F19, V02). | Sesión simulada con dos usuarios de prueba. |
-| App mobile / web responsive | FAQ 24 | Es diseño visual. | Diseño *mobile first*, verificado en seis tamaños, de 320 px a 1920 px, incluido el celular horizontal (ADR 11). |
+| App mobile / web responsive | FAQ 24 | Es diseño visual. | Diseño *mobile first*, verificado a 360 px y a 1280 px. |
 | Solo DNI | — | No aplica: esta US no pide documento. Es de "Inscribirme a actividad". | — |
 
 

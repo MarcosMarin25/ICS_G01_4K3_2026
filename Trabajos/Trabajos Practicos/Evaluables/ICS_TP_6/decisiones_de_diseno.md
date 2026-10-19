@@ -272,7 +272,8 @@ La implementación evalúa los rangos de menor a mayor y devuelve el primero que
 - **La validación la hace el servicio, y se ve en el momento.** El formulario tiene `novalidate`. Mientras el usuario completa el formulario, la página llama a `servicio.validarCampos()` (ADR 12) y muestra debajo de cada campo el error que corresponde, con el mismo mensaje que daría `comprar()`:
   - Un campo muestra su error cuando el usuario terminó con él (sale del campo o elige una opción o una fecha). Desde ahí se revalida con cada cambio, así el error desaparece apenas se corrige.
   - Las edades no se marcan mientras queden campos de edad sin completar.
-  - Al tocar "Confirmar compra", un **banner arriba del botón** muestra el mensaje exacto que lanza `comprar()`, que sigue siendo la autoridad final, y se marcan los errores de todos los campos.
+  - Al tocar Comprar se muestran los errores de todos los campos y el foco va al primero inválido. `comprar()` sigue siendo la autoridad final.
+  - Además, el resumen muestra el precio estimado (usando `CalculadoraPrecios`).
 - **Calendario propio con los días no disponibles deshabilitados (FAQ 2).** El `input type="date"` del navegador no permite deshabilitar días sueltos, como los lunes. Por eso la fecha se elige en un calendario propio (`src/web/app.js` y `index.html`):
   - **Sin duplicar reglas.** Un día se puede elegir solo si las reglas de fecha de la lógica no lo rechazan. Para cada día, el calendario llama a `servicio.validarCampos()` con la solicitud actual cambiando solo la fecha; esto funciona porque las reglas de fecha no dependen de otros campos. Así quedan deshabilitados los lunes, el 25/12 y el 1/1 (`CalendarioParque.estaAbierto()`, a través de la regla de parque abierto), los días pasados, los que superan el mes de anticipación y el día de hoy después de las 17:30, con la misma tabla `REGLAS` que usa `comprar()`.
   - **El motivo de cada día deshabilitado** es el mismo mensaje del servicio (por ejemplo, "El parque está cerrado en la fecha seleccionada"). Se muestra al pasar el mouse, lo lee el lector de pantalla y aparece debajo del calendario si se toca el día.
@@ -283,26 +284,18 @@ La implementación evalúa los rangos de menor a mayor y devuelve el primero que
   - La sesión y los usuarios están simulados (FAQ 19: el PO permite la sesión y el usuario mockeados). Los usuarios registrados de prueba son `visitante@mail.com` y `otro@mail.com`, y el encabezado muestra el usuario de la sesión.
   - Las compras se guardan en memoria mientras la página está abierta.
   - Mercado Pago y el mail son implementaciones simuladas que muestran lo que pide el PO: la pantalla "Mercado Pago Compra Exitosa" con el monto (FAQ 4) y el modal "Mail enviado a <mail del usuario>" (FAQ 5). El mail del modal es el que `comprar()` le pasa a `mail.enviarConfirmacion()`, es decir, el usuario de la sesión simulada; se verificó con los dos usuarios de prueba.
-- **Pantalla de compra con contadores por categoría (CA 1).** La compra se hace en tres pasos: (1) día de la visita y sesión, (2) entradas y (3) Mercado Pago (con tarjeta) o la confirmación directa (en efectivo), con el modal del mail y una pantalla final con la cantidad y la fecha (CA 8). El paso 2 sigue el estilo de una app de reservas:
-  - **Encabezado tipo tarjeta:** el logo, "EcoHarmony Park", la fecha elegida ("Mié, 21 oct", que se puede tocar para cambiarla) y el horario, y dos **chips**: tipo de pase y forma de pago. Al tocar un chip se abre su selector, como una hoja inferior en el celular. Un chip con un valor elegido se muestra en verde con texto blanco, y uno sin elegir, con borde verde.
-  - **Una fila por categoría de precio** (Adultos, Menores, Mayores y Bebés), con un contador − N +. La suma de todas va de 1 a 10: el − se deshabilita en 0, y el + se deshabilita cuando una entrada más daría error. Para saberlo, la página le pregunta a `validarCampos()` en lugar de repetir el 10, así que también tiene en cuenta las compras anteriores del usuario para esa fecha (R6).
-  - **Edad de cada visitante (CA 1).** Los contadores no reemplazan la edad individual: cuando una categoría tiene N > 0, debajo de su fila se despliegan N campos "Edad visitante X", con el rango de esa categoría como ayuda. El arreglo `edades` que recibe el servicio se arma con esos campos. Una edad fuera del rango de su categoría (por ejemplo, 30 en Menores) se marca en el momento ("Para menores, de 4 a 15 años") y se envía como inválida, así que el servicio la rechaza con su mensaje ("Edad inválida").
-  - **Las categorías no repiten las reglas de precio.** Los rangos (0 a 3, 4 a 15, 16 a 59 y 60 o más) y los descuentos ("50% off", "sin cargo") no están escritos en la interfaz: la página le pide a `CalculadoraPrecios` el precio de cada edad y arma una categoría nueva cada vez que el precio cambia. Si el PO cambiara un rango de R3, los contadores se actualizarían solos.
-  - **Total en vivo:** "3 entradas · $40.000", calculado con `CalculadoraPrecios`.
-  - **Botón principal fijo abajo:** "Confirmar compra" (52 px de alto), deshabilitado con 0 entradas.
-  - **Sesión simulada:** en el paso 1 se elige el usuario. Uno de los tres no está registrado, para poder mostrar el error del servicio (CA 9). "Continuar" se habilita solo con una fecha elegida y sin errores de usuario ni de fecha según `validarCampos()`.
 - **Campo de edad vacío.** Se envía como `NaN`, y no como `0`, para que el servicio lo rechace ("Edad inválida"). Si se enviara como 0, sería la edad de un bebé, que es válida.
 - **Paleta oficial del PO (FAQ 3).** Se usa la paleta [386641-6a994e-a7c957-f2e8cf-bc4749](https://coolors.co/palette/386641-6a994e-a7c957-f2e8cf-bc4749), en variables CSS de `:root`. Hasta que apareció el FAQ, la web usaba una paleta provisoria definida por el grupo, que se reemplazó cambiando solo esas variables.
 
   | Variable | Color | Uso |
   |---|---|---|
-  | `--color-primario` | `#386641` | Chips activos, números de los contadores, botón principal (texto blanco encima) |
-  | `--color-secundario` | `#6A994E` | Bordes de los chips y de los botones − y + |
-  | `--color-acento` | `#A7C957` | Destacados: etiqueta "Simulación", total de la pantalla final (texto oscuro encima) |
-  | `--color-fondo` | `#F2E8CF` | Base del fondo general (muy suave) y de la fila activa |
-  | `--color-error` | `#BC4749` | Banner de error y mensajes de validación |
+  | `--color-primario` | `#386641` | Encabezado, botones principales (texto blanco encima) |
+  | `--color-secundario` | `#6A994E` | Bordes y elementos secundarios |
+  | `--color-acento` | `#A7C957` | Destacados, total a pagar (texto oscuro encima) |
+  | `--color-fondo` | `#F2E8CF` | Fondo general |
+  | `--color-error` | `#BC4749` | Mensajes de validación |
 
-  Además, se usan colores de apoyo que el PO no define: blanco (`#FFFFFF`) para las tarjetas, `#1F2A1F` para el texto principal y `#5C665C` (gris) para el texto secundario.
+  Además, se usan tres colores de apoyo que el PO no define: blanco (`#FFFFFF`) para las tarjetas, `#1F2A1F` para el texto, y el primario como color de éxito.
 
   **Contraste (WCAG 2.1, nivel AA).** Se calculó la relación de contraste de cada combinación de texto y fondo que usa la página. El mínimo es 4,5:1 para el texto normal, y 3:1 para los íconos y los bordes.
 
@@ -313,47 +306,33 @@ La implementación evalúa los rangos de menor a mayor y devuelve el primero que
   | Texto sobre acento (total, etiquetas) | 7,90:1 | Cumple |
   | Primario sobre blanco (títulos, precios) | 6,68:1 | Cumple |
   | Error sobre blanco | 5,08:1 | Cumple |
-  | Error sobre el fondo rosado del banner | 4,68:1 | Cumple (con un tinte del 9% daba 4,47:1 y no cumplía: se aclaró al 6%) |
-  | Texto secundario gris sobre blanco, sobre el fondo y sobre la fila activa | 5,98:1, 5,54:1 y 5,31:1 | Cumple |
-  | Número del contador (primario) sobre la fila activa | 5,93:1 | Cumple |
+  | Error sobre el fondo rosado de los mensajes | 4,54:1 | Cumple |
+  | Acento sobre primario (íconos del encabezado) | 3,54:1 | Cumple (no es texto) |
   | Secundario sobre blanco (bordes) | 3,34:1 | Cumple (no es texto) |
   | **Texto blanco sobre secundario** | **3,34:1** | **No cumple** |
 
   Por el último caso, el secundario **no se usa como fondo de texto ni como color de texto**. El FAQ lo sugiere para el *hover*, pero los botones tienen texto blanco, así que para el *hover* se usa el primario oscurecido un 20% (8,87:1). Es un ajuste de accesibilidad sobre la paleta oficial, sin agregar colores nuevos.
 
-- **Logo (FAQ 17): propuesta del grupo, pendiente de validación del PO.** El FAQ no define un logo, así que el grupo diseñó uno en SVG con la paleta oficial: una vuelta al mundo con cabinas en los colores de la paleta. Está en `src/web/logo.svg` (logo completo, con el nombre) y `src/web/icono.svg` (solo el ícono), con versiones en imagen (`logo.jpg` e `icono.png`). Dónde se usa:
-  - **Encabezado de cada paso y pestaña del navegador:** el ícono (`icono.svg`), a la izquierda del nombre "EcoHarmony Park".
-  - **README:** el logo completo (`logo.jpg`). Se usa la versión en imagen porque `logo.svg`, cargado con `<img>`, no puede traer la fuente Lato (el navegador bloquea el `@import` externo) y el nombre queda cortado.
-  - El servidor local sirve los tipos `image/svg+xml`, `image/png` e `image/jpeg`.
-
-  La fuente es Lato (400 y 700, de Google Fonts) en todo el sitio. El diseño es *mobile first*:
-  - **Celular (360 a 430 px):** una columna con 20 px de margen lateral, filas de 64 px de alto y áreas táctiles de 44 px como mínimo. El botón principal queda fijo abajo.
-  - **Escritorio:** la misma columna, centrada, con 480 px de ancho como máximo.
-  - **Accesibilidad:** cada botón tiene `aria-label` ("Sumar adulto", "Restar menor"), el foco es visible y el contraste cumple AA. El total, los contadores y los errores se anuncian a los lectores de pantalla (`aria-live`). Las animaciones se desactivan si el sistema pide reducir el movimiento.
-  - **Verificación en seis tamaños (FAQ 24: app mobile y web responsive).** En cada uno se recorrió el flujo (calendario, contadores, edades, selectores de los chips, Mercado Pago, confirmación y modal del mail). Se midió que no haya desplazamiento horizontal ni elementos fuera de la pantalla, y que la hoja de selección, la pantalla de Mercado Pago y el modal entren enteros:
-
-    | Dispositivo | Tamaño | Columna | Resultado |
-    |---|---|---|---|
-    | Celular chico | 320 × 568 | 320 px | Sin desbordes; la hoja de selección queda pegada al borde inferior |
-    | Celular | 375 × 667 | 375 px | Sin desbordes |
-    | Celular horizontal | 812 × 375 | 480 px, centrada | Sin desbordes |
-    | Tablet vertical | 768 × 1024 | 480 px, centrada | Sin desbordes |
-    | Tablet horizontal | 1024 × 768 | 480 px, centrada | Sin desbordes |
-    | Pantalla grande | 1920 × 1080 | 480 px, centrada | Sin desbordes |
-  - **Otros detalles:** los colores derivados (fondos suaves, bordes, fila activa) se obtienen mezclando la paleta con `color-mix`, sin agregar colores nuevos.
+- **Logo (FAQ 17): propuesta del grupo, pendiente de validación del PO.** El FAQ no define un logo, así que el grupo diseñó uno en SVG con la paleta oficial: una vuelta al mundo con cabinas en los colores de la paleta. Está en `src/web/logo.svg` (logo completo, con el nombre) y `src/web/icono.svg` (solo el ícono), con versiones en imagen (`logo.jpg` e `icono.png`). El encabezado usa `icono.svg`, que tiene fondo blanco y se lee bien sobre el verde, junto al nombre del parque; el mismo ícono es el de la pestaña del navegador. El servidor local sirve los tipos `image/svg+xml`, `image/png` e `image/jpeg`.
+  La fuente es Lato (Google Fonts) en todo el sitio. El diseño es *mobile first*:
+  - **Formulario:** está dividido en cuatro pasos numerados (fecha, visitantes, pase y forma de pago), con tarjetas seleccionables y botones − y + para la cantidad.
+  - **Celular:** se muestra en una sola columna, con una barra fija abajo que deja siempre a mano el total y el botón Comprar.
+  - **Escritorio (desde 900 px de ancho):** se muestra en dos columnas, y el resumen, con forma de entrada, queda fijo al costado.
+  - **Otros detalles:** los colores derivados (bordes y fondos suaves) se obtienen mezclando la paleta con `color-mix`, sin agregar colores nuevos, y las animaciones se desactivan si el sistema pide reducir el movimiento.
 
 **Por qué no se prueba con Jest.**
 - **Toda la lógica de negocio que usa la web ya está probada.** `app.js` no decide nada: arma la solicitud a partir del formulario, llama a `comprar()` y muestra el resultado o el mensaje de error. Probarlo con Jest sería probar el DOM y no reglas de negocio.
 - **Es otro nivel de prueba.** El comportamiento visual (diseño responsive, colores, fuente, la pantalla de Mercado Pago, el modal) se verifica con pruebas de extremo a extremo en un navegador real, por ejemplo con Playwright o Cypress. Esas herramientas exceden el alcance de un TP de TDD unitario (ver "Fuera del alcance de las pruebas unitarias").
 - **La cobertura se mide solo sobre `src/logica/`** (`collectCoverageFrom` en `package.json`). Incluir `src/web/` bajaría la cobertura sin aportar información sobre la calidad de la lógica, y haría fallar el umbral del 100%.
-- **Verificación realizada.** Se recorrieron estos flujos en Chrome, a 360 px y en escritorio, con el reloj real del 19/10/2026 (lunes):
-  - **Día cerrado:** el 26/10 (lunes) aparece deshabilitado, con el motivo "El parque está cerrado en la fecha seleccionada"; al tocarlo no se elige. Hoy (lunes), los días pasados y los de más de un mes también aparecen deshabilitados.
-  - **Usuario no registrado:** con `invitado@mail.com` aparece "Solo los usuarios registrados pueden comprar entradas" y "Continuar" queda deshabilitado.
-  - **Compra válida con tarjeta:** VIP, 2 adultos (30 y 28 años) y 1 bebé (2 años). El total muestra "3 entradas · $40.000"; después aparece "Mercado Pago Compra Exitosa" por $40.000, la pantalla final "Compraste 3 entradas VIP para el miércoles, 21 de octubre de 2026" y el modal "Mail enviado a visitante@mail.com".
-  - **Compra en efectivo:** no aparece la pantalla de Mercado Pago; se muestran directamente la pantalla final ("Pagás en efectivo en la boletería del parque") y el modal del mail.
-  - **Sin forma de pago:** el banner muestra "Debe seleccionar una forma de pago", y el chip de pago se marca en rojo con el mismo mensaje.
-  - **Diez entradas:** al llegar a 10 se deshabilitan todos los +, y los toques siguientes no suman.
-  - **Edad fuera de su categoría:** 30 en Menores muestra "Para menores, de 4 a 15 años".
+- **Verificación realizada.** Se verificó en Chrome, en escritorio y con un ancho de celular de 360 px, sin desplazamiento horizontal. Se recorrieron estos flujos:
+  - Enviar el formulario vacío muestra "Debe indicar la fecha de visita".
+  - Con el reloj real del 19/10/2026 (lunes), en el calendario aparecen deshabilitados los días pasados, el 19/10 y el 26/10 (lunes, "El parque está cerrado..."), y del 20/11 en adelante ("Solo se pueden comprar entradas con hasta un mes de anticipación..."). El 20/10 y el 19/11 (límite) se pueden elegir, y no se puede navegar a diciembre.
+  - Tocar un día deshabilitado no lo elige y muestra el motivo. Con el teclado, las flechas recorren los días y cambian de mes, y Enter elige.
+  - Con 11 entradas y una fecha inválida no se marca el máximo; al corregir la fecha aparece en el momento "No se pueden comprar más de 10 entradas para una misma fecha" en la cantidad.
+  - Con una sola edad cargada y dos vacías no se marca nada; al completar con 10.5 aparece "Edad inválida".
+  - Al comprar con datos incompletos se marcan todos los campos con error a la vez y el foco va al primero.
+  - Comprar sin forma de pago muestra "Debe seleccionar una forma de pago".
+  - Una compra con tarjeta de 3 entradas VIP (edades 30, 28 y 2) muestra la pantalla "Mercado Pago Compra Exitosa" por $40.000, después la confirmación "Compraste 3 entradas VIP para el 20/10/2026" y el modal "Mail enviado a visitante@mail.com".
 
 **Alternativas consideradas.**
 - **Copiar la lógica en `app.js`.** Se descartó: habría dos versiones de las reglas, y la de la web no estaría probada.
@@ -364,7 +343,6 @@ La implementación evalúa los rangos de menor a mayor y devuelve el primero que
 - La web siempre usa la versión probada de la lógica.
 - Para abrir la web hace falta `npm run web`. Si se abre el HTML directamente como `file://`, la página avisa que necesita el servidor.
 - El calendario propio cumple el FAQ 2 (días cerrados deshabilitados) sin repetir las reglas de fecha: si una regla cambia en la lógica, el calendario la refleja solo.
-- Lo mismo pasa con los contadores: las categorías salen de `CalculadoraPrecios`, y el tope de entradas sale de `validarCampos()`. La interfaz no tiene ningún número de las reglas de negocio.
 
 ---
 

@@ -201,8 +201,7 @@ Elegir tres o cuatro, según el tiempo:
 - **La web** (mostrarla 30 segundos):
   - Reutiliza la misma lógica probada, sin duplicarla.
   - **Calendario propio (FAQ 2):** los lunes, feriados, días pasados y los de más de un mes aparecen deshabilitados. No repite reglas: le pregunta a `validarCampos()` por cada día.
-  - **Contadores por categoría** (Adultos, Menores, Mayores, Bebés), con la edad de cada visitante desplegada debajo (CA 1). Las categorías y sus rangos salen de `CalculadoraPrecios`, y el + se deshabilita al llegar al tope porque se lo pregunta a `validarCampos()`: la interfaz no tiene ningún número de las reglas.
-  - **Valida en el momento:** los errores de cada campo se marcan mientras se completa, y al confirmar el banner muestra el mensaje exacto de `comprar()`. Los mensajes salen de `validarCampos()` (V01 a V09), que usa la misma tabla de reglas que `comprar()`.
+  - **Valida en el momento:** con 11 entradas aparece el error del máximo apenas la fecha es válida. Los mensajes salen de `validarCampos()`, que se hizo con TDD (V01 a V09) y usa la misma tabla de reglas que `comprar()`.
   - Mercado Pago y el mail son simulados, como pidió el PO.
   - No se prueba con Jest porque no tiene reglas de negocio: es otro nivel de prueba (*end-to-end*).
 - **Lección:** TDD es una técnica de **diseño**. Las pruebas definieron la interfaz del servicio y obligaron a inyectar el reloj y las dependencias.
