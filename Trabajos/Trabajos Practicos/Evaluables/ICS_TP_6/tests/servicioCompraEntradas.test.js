@@ -365,4 +365,9 @@ describe("ServicioCompraEntradas - validación por campo", () => {
         formaPago: "La forma de pago debe ser tarjeta o efectivo",
       });
   });
+
+  test("V04 - informa las reglas de fecha en el campo de la fecha", () => {
+    expect(servicio.validarCampos(solicitudValida({ fechaVisita: FECHA_CERRADA })))
+      .toEqual({ fechaVisita: "El parque está cerrado en la fecha seleccionada" });
+  });
 });
