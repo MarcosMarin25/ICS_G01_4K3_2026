@@ -1,0 +1,397 @@
+# TP 6 - TDD: Decisiones de diseño
+
+User Story **Comprar entradas** (EcoHarmony Park), implementada con TDD (Red → Green → Refactor).
+
+Este documento justifica las decisiones de diseño de la implementación. Las decisiones importantes siguen un formato ADR (*Architecture Decision Record*) liviano: **contexto**, **decisión**, **alternativas consideradas** y **consecuencias**. Las secciones que siguen a los ADR describen el diseño de las pruebas, el proceso, la guía de estilo, la trazabilidad y las métricas.
+
+Documentos relacionados:
+
+| Documento | Contenido |
+|---|---|
+| [`pruebas_comprar_entradas.md`](pruebas_comprar_entradas.md) | User Story, criterios de aceptación, reglas del PO, supuestos y las 58 pruebas (en lenguaje natural y en pseudocódigo), con trazabilidad |
+| [`registro_ejecucion_pruebas.md`](registro_ejecucion_pruebas.md) | Para cada prueba: lo obtenido en Red y en Green, la estrategia usada, el refactor y el commit de cada paso |
+| [`reportes/reporte-pruebas.html`](reportes/reporte-pruebas.html) | Reporte de la última ejecución de `npm test` |
+
+---
+
+## Índice de decisiones
+
+| # | Decisión |
+|---|---|
+| ADR 1 | Separar la lógica en tres clases con responsabilidad única |
+| ADR 2 | Inyectar las dependencias y reemplazarlas por dobles de prueba |
+| ADR 3 | Inyectar el reloj |
+| ADR 4 | Manejar las fechas en la zona horaria local, sin `new Date("AAAA-MM-DD")` |
+| ADR 5 | Rechazar una solicitud inválida con una excepción y sin efectos secundarios |
+| ADR 6 | Validar en un orden fijo e informar solo el primer error |
+| ADR 7 | Validar en el servicio, que es la frontera de entrada, y no en la calculadora |
+| ADR 8 | Descuentos que no se acumulan: un solo precio por edad |
+| ADR 9 | Montos en pesos enteros |
+| ADR 10 | Centralizar los valores válidos y las funciones de fecha |
+
+---
+
+## ADR 1. Separar la lógica en tres clases con responsabilidad única
+
+**Contexto.** La User Story mezcla tres asuntos que cambian por motivos distintos: cuánto cuesta una entrada (R2 y R3), qué días abre el parque (R1) y qué condiciones tiene que cumplir una compra (los criterios de aceptación y R4 a R7).
+
+**Decisión.** Se separan en tres clases, cada una con una sola responsabilidad (Principio de Responsabilidad Única, SRP):
+
+| Clase | Responsabilidad | Reglas |
+|---|---|---|
+| `CalculadoraPrecios` | Precio de una entrada según la edad y el tipo de pase | R2, R3, R8 |
+| `CalendarioParque` | Si el parque abre en una fecha | R1 |
+| `ServicioCompraEntradas` | Validar la solicitud y, si es válida, concretar la compra (registrarla, redirigir al pago y enviar el mail) | CA 1 a 9, R4 a R7 |
+
+Además hay dos módulos de apoyo, que salieron de refactors: `fechas.js` (funciones de fecha compartidas) y `valores.js` (valores válidos de pase y de forma de pago). Ver el ADR 10.
+
+**Alternativas consideradas.**
+- **Una sola función `comprar()` con todo adentro.** Se descartó: cada regla nueva obligaría a tocar la misma función, las pruebas de precio necesitarían armar una solicitud completa, y un cambio en los precios podría romper la validación de fechas.
+- **Separar también las validaciones en una clase `ValidadorSolicitud`.** Se evaluó en el refactor final de la sección D. Se descartó porque las validaciones necesitan cuatro de las siete dependencias del servicio (reloj, calendario, usuarios y compras), y moverlas a otra clase habría duplicado la inyección sin bajar el acoplamiento. Se optó por métodos privados con nombre, uno por paso (ADR 6).
+
+**Consecuencias.**
+- Cada clase se prueba por separado: la calculadora y el calendario no necesitan dobles de prueba.
+- El servicio usa el calendario y la calculadora reales, porque son lógica propia, rápida y determinista. Los dobles se reservan para lo que es externo o no determinista (ADR 2).
+- Un cambio de precios solo toca `CalculadoraPrecios`, y uno de feriados solo toca `CalendarioParque`.
+
+---
+
+## ADR 2. Inyectar las dependencias y reemplazarlas por dobles de prueba
+
+**Contexto.** Para concretar una compra, el servicio necesita saber si el usuario está registrado, cuántas entradas compró antes, la fecha y hora actuales, y además tiene que enviar un mail y redirigir a Mercado Pago. En una prueba unitaria, nada de eso puede depender de una base de datos, de la red ni de servicios externos: las pruebas serían lentas, frágiles y no repetibles.
+
+**Decisión.** El servicio recibe todas sus dependencias por el constructor:
+
+```js
+new ServicioCompraEntradas({ reloj, calendario, calculadora, usuarios, compras, mail, mercadoPago });
+```
+
+El servicio depende de **interfaces** (qué métodos espera), no de implementaciones concretas. Las interfaces están documentadas con JSDoc en `src/logica/servicioCompraEntradas.js`. Es el **Principio de Inversión de Dependencias** (DIP): la lógica de negocio no conoce a Mercado Pago ni al proveedor de mail.
+
+En las pruebas, las dependencias externas se reemplazan por **dobles de prueba** (en `tests/dobles/`, fuera de `src/`), clasificados según la taxonomía de Gerard Meszaros:
+
+| Doble | Tipo | Qué hace | Para qué se usa |
+|---|---|---|---|
+| `RelojFijo` | **Stub** | Devuelve una fecha y hora fijas, que se pueden cambiar con `fijar()` | Darle al servicio respuestas controladas |
+| `RepositorioUsuariosFalso` | **Stub** | Responde `estaRegistrado()` a partir de una lista fija | Darle al servicio respuestas controladas |
+| `RepositorioComprasFalso` | **Fake** | Repositorio en memoria que funciona de verdad (`registrar()` y `cantidadComprada()`) | Simular la persistencia sin base de datos |
+| `ServicioMailEspia` | **Spy** | Registra a quién se envió la confirmación | Verificar después si se llamó y a quién |
+| `PasarelaMercadoPagoEspia` | **Spy** | Registra si se pidió la redirección y con qué monto | Verificar después si se llamó y con qué monto |
+
+Diferencias, según Meszaros:
+- **Stub:** devuelve respuestas preparadas para que el código bajo prueba pueda avanzar. No verifica nada.
+- **Fake:** una implementación que funciona de verdad pero simplificada (acá, en memoria).
+- **Spy:** registra cómo fue usado, y la prueba lo consulta **después** de actuar.
+- **Mock:** trae las expectativas programadas **antes** de actuar y falla solo si no se cumplen. No se usaron mocks: los espías dejan las aserciones en la prueba, a la vista, siguiendo el patrón AAA.
+
+**Alternativas consideradas.**
+- **Crear las dependencias dentro del servicio** (`new MercadoPago()`). Se descartó: acopla la lógica a un proveedor concreto y hace imposible probarla sin red.
+- **Usar `jest.fn()` y `jest.mock()`.** Se descartó para estos dobles: las clases propias tienen nombre, documentan la interfaz esperada y se pueden reutilizar fuera de Jest.
+
+**Consecuencias.**
+- Las 58 pruebas corren en unos 2 segundos y no necesitan red, base de datos ni configuración.
+- Se puede cambiar Mercado Pago por otra pasarela, o el proveedor de mail, sin tocar `ServicioCompraEntradas`.
+- La integración real con Mercado Pago y con el mail queda fuera de las pruebas unitarias (ver "Fuera del alcance de las pruebas unitarias").
+
+---
+
+## ADR 3. Inyectar el reloj
+
+**Contexto.** Varias reglas dependen del momento actual: la fecha de visita no puede ser pasada (CA 2), hay un horizonte de un mes (R4) y un límite de las 17:30 para el día actual (R5). Si el servicio usara `new Date()` directamente, el resultado de las pruebas cambiaría según el día y la hora en que se corran: una prueba que pasa hoy fallaría mañana.
+
+**Decisión.** La fecha y la hora actuales se obtienen de una dependencia `reloj` con el método `ahora()`. En las pruebas, `RelojFijo` fija el momento en el jueves 2026-10-15 a las 10:00, y cada prueba puede cambiarlo con `reloj.fijar()`. Por ejemplo, 17:30 y 17:31 para el límite horario, o 2026-12-20 para los feriados.
+
+**Alternativas consideradas.**
+- **`jest.useFakeTimers()` con `setSystemTime()`.** Se descartó: oculta la dependencia del tiempo en lugar de hacerla explícita en el diseño, y ata la lógica a una herramienta de prueba.
+- **Pasar la fecha actual como parámetro de `comprar()`.** Se descartó: la solicitud viene del usuario, y el momento actual no puede ser un dato que el usuario elija.
+
+**Consecuencias.** Las pruebas son **deterministas y repetibles** (la R de FIRST): dan el mismo resultado cualquier día. Los bordes horarios (17:30 y 17:31) y los de calendario (fin de mes, feriados) se prueban con exactitud.
+
+---
+
+## ADR 4. Manejar las fechas en la zona horaria local, sin `new Date("AAAA-MM-DD")`
+
+**Contexto.** La fecha de visita llega como texto `"AAAA-MM-DD"`. JavaScript tiene dos trampas con las fechas, y las dos aparecieron durante el TDD:
+
+1. **Zona horaria.** `new Date("2026-10-19")` interpreta la cadena en **UTC**. En Argentina (UTC-3) eso cae el día anterior. Evidencia obtenida en la máquina de desarrollo (zona `America/Buenos_Aires`):
+
+   ```
+   new Date("2026-10-19").getDay() = 0   (domingo)
+   new Date(2026, 9, 19).getDay()  = 1   (lunes)
+   ```
+
+   Con el primer parseo, el parque cerraría los domingos en lugar de los lunes.
+
+2. **Fechas imposibles convertidas en silencio.** `Date` no rechaza una fecha que no existe: la corre. `new Date(2026, 1, 30)` (30 de febrero) da el 02/03/2026, y `new Date(2026, 12, 45)` da el 14/02/2027. Lo mismo pasa al sumar un mes desde el 31/01: `new Date(2027, 1, 31)` da el 03/03.
+
+**Decisión.** Toda la lógica de fechas está en `src/logica/fechas.js`:
+
+| Función | Qué resuelve |
+|---|---|
+| `crearFechaLocal(fecha)` | Arma la fecha con año, mes y día, en la zona local (trampa 1) |
+| `esFechaExistente(fecha)` | Crea la fecha y verifica que el año, el mes y el día sean los ingresados (trampa 2) |
+| `mismoDiaDelMesSiguiente(fecha)` | Límite de un mes; si el mes siguiente no tiene ese día, devuelve su último día (trampa 2) |
+| `inicioDelDia(momento)` | Compara días sin tener en cuenta la hora |
+| `minutosDelDia(momento)` | Compara horas (límite de las 17:30) |
+
+**Alternativas consideradas.**
+- **Una biblioteca de fechas** (date-fns, Luxon o Day.js). Se descartó: para cinco funciones chicas no se justifica una dependencia, y escribirlas con TDD permitió probar cada trampa.
+- **Validar el mes y el día solo por rango** (mes de 1 a 12, día de 1 a 31). Fue el Green de F25, y F27 (`"2026-02-30"`) mostró que no alcanzaba. Se reemplazó por la verificación de ida y vuelta.
+- **Sumar un mes con `new Date(año, mes + 1, día)`.** Fue el Green de F07, y F26 mostró que fallaba a fin de mes.
+
+**Consecuencias.** El día de la semana sale bien en cualquier zona horaria, porque la fecha se arma en la zona local. Las pruebas K03, F25, F26 y F27 documentan cada trampa. El calendario y el servicio comparten la misma función de parseo.
+
+---
+
+## ADR 5. Rechazar una solicitud inválida con una excepción y sin efectos secundarios
+
+**Contexto.** Una solicitud inválida (sin forma de pago, para un lunes, con 11 entradas, etc.) no puede concretarse a medias: no puede quedar registrada, cobrarse ni confirmarse por mail.
+
+**Decisión.**
+- `comprar()` lanza un `Error` con un **mensaje descriptivo** para el usuario, el mismo que definen las pruebas F (por ejemplo, "Debe seleccionar una forma de pago").
+- **Todas las validaciones corren antes de cualquier efecto secundario.** Recién cuando la solicitud pasó las cinco etapas de validación, el servicio registra la compra, redirige a Mercado Pago (si el pago es con tarjeta) y envía el mail.
+
+**Evidencia.** F22 verifica, con los espías y con el fake, que una compra rechazada no envía el mail, no redirige y no registra nada. Elige a propósito un caso que falla en la **última** validación, después de pasar todas las demás. F22 pasó sin cambios en el código, y para comprobar que igual protege se hizo un experimento de mutación sin commitear: al mover `compras.registrar()` al principio de `comprar()`, F22 falló (`Expected: 7, Received: 11`), igual que P07 y P13.
+
+**Alternativas consideradas.**
+- **Devolver un resultado `{ confirmada: false, error }`.** Se descartó: el código que llama podría ignorar el error sin darse cuenta. Con una excepción, una solicitud inválida no puede pasar desapercibida.
+- **Juntar todos los errores en una lista.** Se descartó: los criterios y las pruebas piden un mensaje por caso, y varios errores dependen de otros (no tiene sentido validar la fecha si no se indicó). Ver el ADR 6.
+- **Una clase propia `ErrorValidacion extends Error`.** Permitiría distinguir un error de negocio de un bug. El Red de F06 mostró por qué importa: sin la validación, el servicio no daba un error de negocio, sino que explotaba con `TypeError: Cannot read properties of null (reading 'split')`. **No se implementó**, porque ninguna prueba lo exige y en TDD no se escribe código que ninguna prueba pida. Queda como mejora: primero se agregaría la prueba al documento de pruebas y después la clase.
+
+**Consecuencias.** Una solicitud se procesa entera o no se procesa. La interfaz puede mostrar el mensaje del error tal como viene, sin traducirlo.
+
+---
+
+## ADR 6. Validar en un orden fijo e informar solo el primer error
+
+**Contexto.** Una solicitud puede tener más de un dato inválido. Algunas pruebas dependen de qué error se informa primero:
+- **F11** (`cantidad: -1, edades: []`): la cantidad de edades tampoco coincide, pero se espera el error de cantidad.
+- **F20** (`cantidad: 2.5` con 3 edades): se espera el error de número entero. En su Red, el código informaba "Debe indicar la edad de cada visitante", y eso demostró que el orden importa.
+
+**Decisión.** Cinco etapas, en este orden, cada una en un método privado de `ServicioCompraEntradas`:
+
+| # | Etapa | Método | Pruebas |
+|---|---|---|---|
+| 1 | Usuario registrado | `#validarUsuario` | F19 |
+| 2 | Datos obligatorios presentes: fecha, tipo de pase, forma de pago | `#validarDatosObligatorios` | F06, F17, F01 |
+| 3 | Valores válidos: fecha existente, pase, forma de pago, cantidad entera y ≥ 1, una edad por entrada, edades enteras ≥ 0 | `#validarValores` | F25, F27, F18, F23, F20, F10, F11, F14, F24, F15, F21 |
+| 4 | Reglas de fecha: no pasada, parque abierto, hasta un mes, 17:30 para hoy | `#validarReglasDeFecha` | F05, F02, F03, F04, F07, F26, F08 |
+| 5 | Máximo de 10 por usuario y por fecha | `#validarMaximoPorFecha` | F09, F12, F13, F22 |
+
+Con este orden, `comprar()` se lee como una lista de pasos.
+
+**Justificación del orden.**
+- **Primero quién compra, después qué compra.** Un usuario no registrado no puede comprar, así que no tiene sentido revisar el resto de la solicitud.
+- **Primero los datos, después las reglas.** Las reglas de negocio consultan el calendario, el reloj y el repositorio. No tiene sentido consultarlos con una fecha que no existe o una cantidad decimal.
+- **La cantidad se valida completa antes que las edades** (F11, F20): sin una cantidad válida no se puede comparar cuántas edades corresponden.
+- **El máximo va al final** porque es la única validación que consulta compras anteriores, y es la más costosa en un sistema real.
+
+**Alternativas consideradas.**
+- **Validar en el orden de los criterios de aceptación.** Se descartó: ese orden no tiene en cuenta las dependencias entre validaciones, y F11 y F20 fallarían.
+- **Una clase `ValidadorSolicitud`.** Ver el ADR 1.
+
+**Consecuencias.** El orden está documentado como supuesto en `pruebas_comprar_entradas.md` y garantizado por las pruebas. Por eso F26 usa el 2027-03-02 y no el 2027-03-01: el 01/03 es lunes y, con este orden, daría primero el error de parque cerrado.
+
+---
+
+## ADR 7. Validar en el servicio, que es la frontera de entrada, y no en la calculadora
+
+**Contexto.** `CalculadoraPrecios` trata como regular cualquier tipo de pase que no sea `"VIP"`: un `"PREMIUM"` o un `null` devolverían el precio regular.
+
+**Decisión.** El tipo de pase se valida en `ServicioCompraEntradas` (F17 y F18), que es por donde entran los datos del usuario. La calculadora solo recibe datos ya validados y se ocupa únicamente de calcular precios.
+
+**Alternativas consideradas.**
+- **Que la calculadora también valide.** Se descartó: duplicaría la regla en dos lugares y mezclaría dos responsabilidades (SRP). Si la regla cambiara, habría que actualizarla en los dos lados.
+
+**Consecuencias.** Las validaciones están en un solo lugar, la frontera de entrada. La calculadora sigue siendo simple y sus pruebas (C01 a C09) solo hablan de precios. Los valores válidos se comparten desde `valores.js` (ADR 10), así que la calculadora y el servicio no pueden quedar desalineados.
+
+---
+
+## ADR 8. Descuentos que no se acumulan: un solo precio por edad
+
+**Contexto.** R3 define dos descuentos del 50%: hasta 15 años y desde 60 años. Además, hasta 3 años no se paga. Había que definir si los descuentos se acumulan y qué pasa en los bordes.
+
+**Decisión.** Los descuentos no se acumulan. A cada edad le corresponde un solo precio, según una tabla de rangos sin superposición:
+
+| Edad | Precio | Bordes probados |
+|---|---|---|
+| 0 a 3 | $0 | C03 (0), C04 (3) |
+| 4 a 15 | 50% | C05 (4), C06 (15) |
+| 16 a 59 | 100% | C07 (16), C08 (59) |
+| 60 o más | 50% | C09 (60) |
+
+La implementación evalúa los rangos de menor a mayor y devuelve el primero que corresponde.
+
+**Alternativas consideradas.**
+- **Descuentos acumulables** (por ejemplo, un menor de 3 años con un 50% sobre $0). Se descartó: no tiene sentido para el negocio y el PO no lo pidió.
+- **Una edad máxima** (por ejemplo, 120). Se descartó: el PO no la especifica. Usar la esperanza de vida (81,44 años en mujeres, INDEC 2020) tampoco sirve, porque es un promedio y no un límite: rechazaría a visitantes reales. Está documentado como supuesto.
+
+**Consecuencias.** Cada borde de cada rango tiene su prueba, lo que aplica partición de equivalencias y valores límite (ver "Diseño de las pruebas"). La edad 0 es válida (un bebé menor de 1 año), recibe una entrada de $0 (R8, P12) y cuenta en el máximo de 10 (R7, F13).
+
+---
+
+## ADR 9. Montos en pesos enteros
+
+**Contexto.** Los precios son $20.000 (VIP) y $10.000 (regular), con un 50% de descuento. En JavaScript los números son de punto flotante, y operaciones como `0.1 + 0.2` dan `0.30000000000000004`.
+
+**Decisión.** Los montos se manejan en **pesos enteros**, sin centavos. El descuento se expresa como porcentaje entero: `precioBase * (PORCENTAJE_TOTAL - PORCENTAJE_DESCUENTO) / PORCENTAJE_TOTAL`, con `PORCENTAJE_DESCUENTO = 50` y `PORCENTAJE_TOTAL = 100`. Como los precios son múltiplos de 100, el resultado siempre es entero. El total se calcula sumando el precio de cada entrada, y las pruebas lo comparan con `toBe`, es decir, de forma exacta.
+
+**Alternativas consideradas.**
+- **Multiplicar por `0.5`.** Funciona con estos precios, pero introduce un decimal en una operación de dinero y oculta la regla del PO ("50% off").
+- **Trabajar en centavos o con una biblioteca decimal.** Se descartó: los precios del PO no tienen centavos.
+
+**Consecuencias.** No hay errores de redondeo y las comparaciones son exactas. Si en el futuro hubiera precios con centavos, habría que pasar a centavos enteros.
+
+---
+
+## ADR 10. Centralizar los valores válidos y las funciones de fecha
+
+**Contexto.** Durante el TDD aparecieron duplicaciones: `"VIP"` estaba escrito en la calculadora y en el servicio, y el parseo de fechas estaba repetido en el calendario y en el servicio.
+
+**Decisión.** Se crearon dos módulos, como resultado de refactors y no diseñados de antemano:
+- **`valores.js`**, con `TIPO_PASE` (`VIP`, `REGULAR`) y `FORMA_PAGO` (`TARJETA`, `EFECTIVO`), congelados con `Object.freeze`. Surgió en el refactor de F18.
+- **`fechas.js`**, con las funciones del ADR 4. Surgió en el refactor de F05, cuando el servicio necesitó la misma función de parseo que el calendario. Antes de eso, `crearFechaLocal` quedó dentro del calendario a propósito (YAGNI: no se extrae algo que todavía nadie más necesita).
+
+**Alternativas consideradas.**
+- **Dejar los literales repetidos.** Se descartó: un cambio en un valor obligaría a buscarlo en varios archivos, y un error de tipeo no lo detectaría nadie.
+- **Crear los módulos desde el principio.** Se descartó por YAGNI. En TDD, la estructura surge cuando la duplicación aparece.
+
+**Consecuencias.** Cada valor y cada regla de fecha está definido en un solo lugar.
+
+---
+
+## Diseño de las pruebas
+
+### Partición de equivalencias y valores límite
+
+Las pruebas se diseñaron con técnicas de caja negra, a partir de los criterios de aceptación y de las reglas del PO, **antes** de escribir el código:
+- **Partición de equivalencias:** cada entrada se dividió en clases que el sistema debería tratar igual (por ejemplo, edades de 4 a 15: mitad de precio). Se probó al menos un representante de cada clase, válida e inválida.
+- **Valores límite:** en cada borde entre clases se probaron los dos lados.
+
+| Regla | Borde | Lado válido | Lado inválido o siguiente clase |
+|---|---|---|---|
+| Entrada gratis (R3) | 3 / 4 años | C04 (3: $0) | C05 (4: 50%) |
+| Menores (R3) | 15 / 16 años | C06 (15: 50%) | C07 (16: 100%) |
+| Mayores (R3) | 59 / 60 años | C08 (59: 100%) | C09 (60: 50%) |
+| Edad mínima | 0 / -1 | C03, P12 (0) | F15 (-1) |
+| Cantidad (CA 7) | 1 y 10 | P08 (1), P07 (10) | F10 (0), F09 (11) |
+| Máximo acumulado (R6) | 10 / 11 por fecha | P13 (7 + 3) | F12 (7 + 4), F13 (9 + 2) |
+| Límite horario (R5) | 17:30 / 17:31 | P05 (17:30) | F08 (17:31) |
+| Horizonte (R4) | Un mes justo | P06 (15/11), P18 (28/02) | F07 (17/11), F26 (02/03) |
+| Fecha actual (CA 2) | Hoy / ayer | P04 (hoy) | F05 (ayer) |
+| Días de apertura (R1) | Domingo / lunes | K02 (domingo) | K03 (lunes) |
+
+El TP 8/9 (pruebas de caja negra) usa estas mismas técnicas. En este TP ya se aplicaron para diseñar las pruebas de la US implementada.
+
+### Estructura de cada prueba
+
+- **Patrón AAA (Arrange, Act, Assert):** se prepara el escenario (`reloj.fijar()` y `compras.registrar()`), se ejecuta una sola acción (`servicio.comprar()`) y se verifica el resultado.
+- **Helper `solicitudValida(cambios)`:** devuelve una solicitud válida, y cada prueba cambia **un solo dato**. Así, si una prueba F falla, el motivo es exactamente el dato que cambió.
+- **Un código por prueba** (C, K, P o F) que aparece igual en el diseño, en el test, en el registro y en la trazabilidad.
+
+### Propiedades FIRST
+
+| Propiedad | Cómo se cumple |
+|---|---|
+| **F**ast (rápidas) | 58 pruebas en unos 2 segundos, sin red ni base de datos (ADR 2) |
+| **I**ndependent (independientes) | `beforeEach` crea dobles nuevos para cada prueba, y ninguna depende de otra |
+| **R**epeatable (repetibles) | El reloj inyectado (ADR 3) y las fechas locales (ADR 4) dan el mismo resultado cualquier día y en cualquier zona |
+| **S**elf-validating (autoverificables) | Cada prueba pasa o falla con `expect`, sin revisión manual |
+| **T**imely (oportunas) | Cada prueba se escribió **antes** del código que la hace pasar (TDD) |
+
+---
+
+## Proceso TDD y refactors
+
+### El ciclo
+
+Cada prueba siguió el ciclo **Red → Green → Refactor**, respetando las tres leyes de TDD de Robert C. Martin:
+1. No se escribe código de producción sin una prueba que falle.
+2. No se escribe más prueba de la necesaria para que falle.
+3. No se escribe más código del necesario para que pase.
+
+Para pasar a verde se usaron las estrategias de Kent Beck: **fake it** (devolver una constante), **triangulación** (una segunda prueba obliga a generalizar) e **implementación obvia** (el código es trivial y se escribe directo). Por ejemplo:
+- **P01, fake it:** redirigía a Mercado Pago por un 50000 fijo. P10 triangulaba otro total, y el refactor de P10 reemplazó el 50000 por el monto calculado.
+- **F09 y F12, triangulación:** F09 se resolvió con `cantidad > 10`, y F12 obligó a sumar las compras previas del usuario.
+
+### Pruebas que pasaron sin cambios
+
+18 pruebas pasaron sin tocar el código (por ejemplo K02, P04 a P08 y F11). **No son ciclos Red**, y no se forzó un Red artificial. Son **confirmaciones de borde**: verifican que la generalización hecha antes ya cubre ese valor límite. Igual cumplen una función:
+- **En la sección C**, pasaron porque todavía no existían validaciones. Después funcionaron como red de seguridad: al implementar F08 se verificó que P05 (17:30) siguiera pasando, lo que confirma que el código usa `>` y no `>=`.
+- **F22** se verificó con mutación (ADR 5).
+
+### Evidencia en git
+
+Cada paso tiene su commit en la rama `TP_6`, con el sufijo `[RED]`, `[GREEN]` o `[REFACTOR]`, o con "(pasa sin cambios)". El registro de ejecución tiene la tabla de commits de cada sección. La sección A se desarrolló en el PR #5, que se mergeó con *squash*, y sus commits paso a paso se pueden ver en la pestaña *Commits* de ese PR.
+
+### Refactors realizados
+
+| Sección | Refactor | Motivo |
+|---|---|---|
+| A | Números sueltos → `PRECIO_REGULAR`, `EDAD_MAXIMA_GRATIS`, etc. | Nombres que expresan la regla |
+| A | `/ 2` → `PORCENTAJE_DESCUENTO` y `PORCENTAJE_TOTAL` | Lo detectó ESLint (`no-magic-numbers`); expresa "50% off" |
+| B (K03) | `LUNES` y `crearFechaLocal()` | Nombre del día y trampa de UTC encapsulada |
+| B (K05) | `FERIADOS_FIJOS` (mes de 1 a 12) y `esFeriadoFijo()` | Generalización de la triangulación; `estaAbierto()` queda en una línea |
+| C (P10) | Redirigir por el monto calculado | Elimina el 50000 del *fake it* (duplicación entre prueba y código) |
+| C (P11) | El total se calcula desde las entradas emitidas | El precio de cada edad se calculaba dos veces |
+| C (cierre) | JSDoc de las interfaces de las dependencias | Inversión de dependencias documentada |
+| D (F05) | `fechas.js` con `crearFechaLocal()` e `inicioDelDia()` | Parseo duplicado entre el calendario y el servicio |
+| D (F08) | Constantes de la hora límite y `minutosDelDia()` | Números mágicos; el reloj se consulta una sola vez |
+| D (F09) | `MAXIMO_ENTRADAS_POR_FECHA` | Número mágico |
+| D (F18) | `valores.js` con `TIPO_PASE` y `FORMA_PAGO` | Literales duplicados entre la calculadora y el servicio |
+| D (F26) | `mismoDiaDelMesSiguiente()` | Lógica de calendario fuera del servicio |
+| D (F27) | `esFechaExistente()` | Lógica de calendario fuera del servicio |
+| D (cierre) | Validaciones en cinco métodos privados y `#emitirEntradas()` | `comprar()` se lee como una lista de pasos (ADR 6) |
+
+Algunos refactors se **postergaron a propósito** (K04 hasta K05, P01 hasta P10 y F25 hasta F27): con un solo caso todavía no se veía la forma de la generalización.
+
+---
+
+## Fuera del alcance de las pruebas unitarias
+
+| Qué | Por qué no se prueba con pruebas unitarias | Cómo se probaría |
+|---|---|---|
+| Mercado Pago real | Es un servicio externo: una prueba unitaria no puede depender de la red ni cobrar de verdad. Se reemplaza por `PasarelaMercadoPagoEspia`. | Prueba de integración contra el entorno de pruebas (*sandbox*) de Mercado Pago |
+| Envío real del mail | Es un servicio externo. Se reemplaza por `ServicioMailEspia`. | Prueba de integración con un servidor de correo de prueba |
+| Persistencia real de usuarios y compras | No hay base de datos en esta US. Se reemplaza por un stub y un fake. | Prueba de integración con la base de datos |
+| Interfaz (calendario visual con días deshabilitados, paleta, fuente Lato, diseño responsive) | Es comportamiento visual. La lógica que decide qué días están cerrados sí se prueba (K01 a K05), y el servicio igual rechaza una fecha cerrada por si llega una (F02 a F04). | Prueba de extremo a extremo (*end-to-end*) en el navegador, y revisión visual |
+
+El nivel unitario verifica **la lógica de negocio**. La integración con los servicios externos y la interfaz corresponden a otros niveles de prueba.
+
+---
+
+## Guía de estilo
+
+En el TP 2 el grupo no definió una guía de estilo de código. Para este TP se adoptó una **guía de estilo del grupo, basada en el código existente y verificada con ESLint** (`eslint.config.js`):
+
+| Regla | Qué exige |
+|---|---|
+| Nombres | camelCase para variables y métodos, PascalCase para clases, MAYÚSCULAS para constantes (`camelcase`, `new-cap`) |
+| Idioma | Identificadores, comentarios y mensajes en español |
+| Formato | Comillas dobles, punto y coma, sangría de 2 espacios, coma final en literales de varias líneas, líneas de hasta 120 caracteres (`@stylistic/*`) |
+| Buenas prácticas | `===` (`eqeqeq`), `const` y `let` en lugar de `var` (`no-var`, `prefer-const`), llaves siempre en los `if` (`curly`) |
+| Constantes con nombre | `no-magic-numbers` en `src/`. En `tests/` está desactivada, porque ahí los números son los datos del caso (edades, precios, cantidades) |
+
+`npm run lint` no da errores. La regla `no-magic-numbers` marcó números sueltos en varios Green, y su corrección formó parte del refactor siguiente.
+
+---
+
+## Trazabilidad
+
+La tabla completa de **criterios de aceptación y reglas del PO → pruebas**, y la de **supuestos de diseño → pruebas**, están en [`pruebas_comprar_entradas.md`](pruebas_comprar_entradas.md#trazabilidad-criterios-y-reglas--pruebas). Cada criterio de aceptación (CA 1 a 9) y cada regla del PO (R1 a R8) tiene al menos una prueba.
+
+---
+
+## Métricas finales
+
+| Métrica | Valor |
+|---|---|
+| Pruebas | **58**: 9 de precios (C), 5 de calendario (K), 18 de compras válidas (P) y 26 de validaciones (F) |
+| Resultado | 58 de 58 pasan |
+| Cobertura (`npm run test:coverage`) | **100%** de sentencias, ramas, funciones y líneas en los cinco módulos de `src/logica/` |
+| Lint (`npm run lint`) | Sin errores |
+| Tiempo de ejecución | Unos 2 segundos para las 58 pruebas. La primera corrida tarda más porque incluye la carga inicial de Jest |
+| Ciclos registrados en `TP_6` (secciones B, C y D) | 31 RED, 31 GREEN, 13 REFACTOR y 18 confirmaciones de borde, cada uno en su commit |
+| Sección A | 9 pruebas, con los commits de cada paso en el PR #5 |
+
+**La cobertura al 100% es necesaria, pero no suficiente.** Indica que cada línea y cada rama se ejecutó en alguna prueba, pero no que las aserciones sean buenas. La confianza en la suficiencia de las pruebas viene de la combinación de tres cosas: la **trazabilidad** contra los criterios y las reglas, el diseño con **partición de equivalencias y valores límite**, y la verificación por **mutación** de F22, que mostró que una prueba que pasó sin cambios detecta un defecto real.
