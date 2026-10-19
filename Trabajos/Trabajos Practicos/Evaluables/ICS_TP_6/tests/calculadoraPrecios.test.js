@@ -38,4 +38,8 @@ describe("CalculadoraPrecios", () => {
   test("C08 - una persona de 59 años paga entero", () => {
     expect(calculadora.precioEntrada(59, "VIP")).toBe(20000);
   });
+
+  test("C09 - una persona de 60 años paga la mitad", () => {
+    expect(calculadora.precioEntrada(60, "REGULAR")).toBe(5000);
+  });
 });
