@@ -296,4 +296,9 @@ describe("ServicioCompraEntradas - validaciones", () => {
     expect(() => servicio.comprar(solicitudValida({ usuario: "desconocido@mail.com" })))
       .toThrow("Solo los usuarios registrados pueden comprar entradas");
   });
+
+  test("F20 - rechaza una cantidad de entradas decimal (flotante)", () => {
+    expect(() => servicio.comprar(solicitudValida({ cantidad: 2.5 })))
+      .toThrow("La cantidad de entradas debe ser un número entero");
+  });
 });
