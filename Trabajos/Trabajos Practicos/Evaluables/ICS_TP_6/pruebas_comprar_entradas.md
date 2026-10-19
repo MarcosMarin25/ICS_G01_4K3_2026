@@ -92,6 +92,10 @@ Como visitante quiero comprar una entrada para asegurar mi visita al parque
   5. Máximo de 10 entradas por usuario y por fecha (F09, F12, F13, F22).
 
   El orden importa cuando una solicitud tiene más de un dato inválido. F11 (`cantidad: -1, edades: []`) y F20 (`cantidad: 2.5` con 3 edades) esperan el error de la cantidad y no el de las edades, por eso la cantidad se valida completa antes de compararla con las edades. Por el mismo motivo, F26 usa el 2027-03-02 y no el 2027-03-01: el 01/03 es lunes y daría primero el error de parque cerrado. Los datos se revisan antes que las reglas de negocio, para no consultar el calendario, el reloj o el repositorio con datos que no tienen sentido.
+- Para que la interfaz pueda avisar los errores **en el momento**, mientras el usuario completa el formulario, el servicio ofrece además `validarCampos(solicitud)`. Este método aplica las **mismas reglas** que `comprar()`, pero en lugar de cortar en el primer error devuelve un objeto con **el primer error de cada campo** (por ejemplo `{ fechaVisita: "...", cantidad: "..." }`), o `{}` si no hay errores. No registra la compra, no envía el mail y no redirige. Una regla que depende de otro campo no se evalúa si ese campo es inválido:
+  - Las edades no se comparan con la cantidad si la cantidad es inválida.
+  - El máximo por fecha no se evalúa si el usuario, la fecha o la cantidad son inválidos.
+  - Los errores de las reglas de fecha y del máximo se informan en el campo `fechaVisita` y en el campo `cantidad`, respectivamente.
 - Para los ejemplos, "ahora" es el **jueves 2026-10-15 a las 10:00**. Las pruebas de feriados cambian el reloj al **domingo 2026-12-20 a las 10:00**, para que el 25/12 y el 1/1 queden dentro del mes de anticipación.
 
 
@@ -183,6 +187,20 @@ Las pruebas están en el orden sugerido para el ciclo **Red → Green → Refact
 **Nota sobre F26.** El 2027-03-01 es lunes y el parque está cerrado, así que se usa el 2027-03-02 para que el único motivo de rechazo sea el horizonte. Esta prueba detecta un defecto concreto: sumar un mes con `setMonth(mes + 1)` desde el 31/01 da el 03/03, porque febrero no tiene día 31, y con esa implementación el 02/03 se aceptaría.
 
 **Nota sobre F25 y F27.** Son dos clases de equivalencia distintas de fechas inválidas. En F25 el mes y el día están fuera de rango (mes 13). En F27 cada valor está en rango, pero la combinación no existe (30 de febrero). F27 es necesaria porque una validación que solo revise los rangos (mes de 1 a 12, día de 1 a 31) aceptaría el `2026-02-30`, y `Date` la convertiría en el 02/03 sin dar error.
+
+### E. Validación por campo (`validarCampos`)
+
+| # | Prueba | Datos de entrada | Resultado esperado | Criterio / Regla |
+|---|---|---|---|---|
+| V01 | Una solicitud válida no tiene errores | Solicitud válida | `{}` | CA 1 |
+| V02 | Usuario no registrado | Usuario que no existe | `{ usuario: "Solo los usuarios registrados pueden comprar entradas" }` | CA 9 |
+| V03 | Errores de varios campos a la vez | Tipo de pase vacío y forma de pago `"CHEQUE"` | `{ tipoPase: "Debe indicar el tipo de pase", formaPago: "La forma de pago debe ser tarjeta o efectivo" }` | CA 1, 6 |
+| V04 | Las reglas de fecha se informan en la fecha | Fecha = 2026-10-19 (lunes) | `{ fechaVisita: "El parque está cerrado en la fecha seleccionada" }` | CA 5, R1 |
+| V05 | Edad inválida | Edades [30, -1, 8] | `{ edades: "Edad inválida" }` | CA 1 |
+| V06 | Las edades no se comparan si la cantidad es inválida | 2.5 entradas con 3 edades | `{ cantidad: "La cantidad de entradas debe ser un número entero" }` (sin error en `edades`) | CA 1, 7 |
+| V07 | El máximo por fecha se informa en la cantidad | El usuario ya compró 7 para el 2026-10-20 y pide 4 más | `{ cantidad: "No se pueden comprar más de 10 entradas para una misma fecha" }` | CA 7, R6 |
+| V08 | Validar no tiene efectos secundarios | Solicitud válida | No se envía el mail, no se redirige y el repositorio sigue en 0 | CA 3, 4 |
+| V09 | El máximo no se evalúa si la fecha es inválida | Fecha `"2026-13-45"` y 11 entradas | `{ fechaVisita: "Fecha de visita inválida" }` (sin error en `cantidad`) | CA 1, 7 |
 
 ## Parte 2: Pruebas en pseudocódigo
 
@@ -602,6 +620,67 @@ describe("ServicioCompraEntradas - validaciones", () => {
 });
 ```
 
+### E. Validación por campo
+
+```js
+describe("ServicioCompraEntradas - validación por campo", () => {
+  test("V01 - una solicitud válida no tiene errores por campo", () => {
+    expect(servicio.validarCampos(solicitudValida())).toEqual({});
+  });
+
+  test("V02 - informa si el usuario no está registrado", () => {
+    expect(servicio.validarCampos(solicitudValida({ usuario: "desconocido@mail.com" })))
+      .toEqual({ usuario: "Solo los usuarios registrados pueden comprar entradas" });
+  });
+
+  test("V03 - informa a la vez los errores de varios campos", () => {
+    expect(servicio.validarCampos(solicitudValida({ tipoPase: null, formaPago: "CHEQUE" })))
+      .toEqual({
+        tipoPase: "Debe indicar el tipo de pase",
+        formaPago: "La forma de pago debe ser tarjeta o efectivo",
+      });
+  });
+
+  test("V04 - informa las reglas de fecha en el campo de la fecha", () => {
+    expect(servicio.validarCampos(solicitudValida({ fechaVisita: FECHA_CERRADA })))
+      .toEqual({ fechaVisita: "El parque está cerrado en la fecha seleccionada" });
+  });
+
+  test("V05 - informa una edad inválida en el campo de las edades", () => {
+    expect(servicio.validarCampos(solicitudValida({ edades: [30, -1, 8] })))
+      .toEqual({ edades: "Edad inválida" });
+  });
+
+  test("V06 - no compara las edades si la cantidad es inválida", () => {
+    expect(servicio.validarCampos(solicitudValida({ cantidad: 2.5 })))
+      .toEqual({ cantidad: "La cantidad de entradas debe ser un número entero" });
+  });
+
+  test("V07 - informa el máximo por fecha en el campo de la cantidad", () => {
+    compras.registrar(USUARIO, FECHA_ABIERTA, 7);
+
+    expect(servicio.validarCampos(solicitudValida({ cantidad: 4, edades: [30, 28, 8, 40] })))
+      .toEqual({ cantidad: "No se pueden comprar más de 10 entradas para una misma fecha" });
+  });
+
+  test("V08 - validar los campos no registra la compra, no envía el mail ni redirige", () => {
+    servicio.validarCampos(solicitudValida());
+
+    expect(mail.fueEnviadoA(USUARIO)).toBe(false);
+    expect(mercadoPago.fueLlamada()).toBe(false);
+    expect(compras.cantidadComprada(USUARIO, FECHA_ABIERTA)).toBe(0);
+  });
+
+  test("V09 - no evalúa el máximo por fecha si la fecha es inválida", () => {
+    expect(servicio.validarCampos(solicitudValida({
+      fechaVisita: "2026-13-45",
+      cantidad: 11,
+      edades: Array(11).fill(30),
+    }))).toEqual({ fechaVisita: "Fecha de visita inválida" });
+  });
+});
+```
+
 
 ## Trazabilidad: criterios y reglas → pruebas
 
@@ -615,7 +694,7 @@ describe("ServicioCompraEntradas - validaciones", () => {
 | CA 6. Forma de pago efectivo o tarjeta | P01, P02, F01, F23 |
 | CA 7. Máximo 10 entradas | P07, P08, F09, F10, F11, F20 |
 | CA 8. Informar cantidad y fecha | P03 |
-| CA 9. Solo usuarios registrados | F19 |
+| CA 9. Solo usuarios registrados | F19, V02 |
 | R1. Días de apertura | K01, K02, K03, K04, K05, F02, F03, F04 |
 | R2. Precio de las entradas | C01, C02, P01, P09, P10 |
 | R3. Descuentos por edad | C03 a C09, P10, P12 |
@@ -639,6 +718,7 @@ describe("ServicioCompraEntradas - validaciones", () => {
 | La compra válida queda registrada | P15 |
 | Una compra inválida no tiene efectos secundarios | F22 |
 | Valores válidos de tipo de pase y forma de pago | F18, F23 |
+| Validación por campo con las mismas reglas, sin efectos secundarios | V01 a V09 |
 
 ### Cantidad de pruebas
 
@@ -648,4 +728,5 @@ describe("ServicioCompraEntradas - validaciones", () => {
 | B. Días de apertura | K01 a K05 | 5 |
 | C. Compras que deben pasar | P01 a P18 | 18 |
 | D. Compras que deben fallar | F01 a F27, sin F16 (retirada) | 26 |
-| **Total** | | **58** |
+| E. Validación por campo | V01 a V09 | 9 |
+| **Total** | | **67** |
