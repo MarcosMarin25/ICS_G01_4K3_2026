@@ -1,5 +1,42 @@
+/**
+ * Interfaces que el servicio espera de sus dependencias (inversión de dependencias:
+ * el servicio depende de estas abstracciones, no de Mercado Pago ni de un mail reales).
+ *
+ * @typedef {Object} Reloj
+ * @property {() => Date} ahora Fecha y hora actuales.
+ *
+ * @typedef {Object} Calendario
+ * @property {(fecha: string) => boolean} estaAbierto Indica si el parque abre en la fecha "AAAA-MM-DD".
+ *
+ * @typedef {Object} Calculadora
+ * @property {(edad: number, tipoPase: string) => number} precioEntrada Precio de una entrada.
+ *
+ * @typedef {Object} RepositorioUsuarios
+ * @property {(usuario: string) => boolean} estaRegistrado Indica si el usuario está registrado.
+ *
+ * @typedef {Object} RepositorioCompras
+ * @property {(usuario: string, fecha: string, cantidad: number) => void} registrar Guarda una compra.
+ * @property {(usuario: string, fecha: string) => number} cantidadComprada Entradas ya compradas para la fecha.
+ *
+ * @typedef {Object} ServicioMail
+ * @property {(usuario: string) => void} enviarConfirmacion Envía el mail de confirmación.
+ *
+ * @typedef {Object} PasarelaPago
+ * @property {(monto: number) => void} redirigir Redirige al pago con tarjeta por el monto indicado.
+ */
+
 // Valida una solicitud de compra de entradas y, si es válida, concreta la compra.
 class ServicioCompraEntradas {
+  /**
+   * @param {Object} dependencias
+   * @param {Reloj} dependencias.reloj
+   * @param {Calendario} dependencias.calendario
+   * @param {Calculadora} dependencias.calculadora
+   * @param {RepositorioUsuarios} dependencias.usuarios
+   * @param {RepositorioCompras} dependencias.compras
+   * @param {ServicioMail} dependencias.mail
+   * @param {PasarelaPago} dependencias.mercadoPago
+   */
   constructor({ reloj, calendario, calculadora, usuarios, compras, mail, mercadoPago }) {
     this.reloj = reloj;
     this.calendario = calendario;
