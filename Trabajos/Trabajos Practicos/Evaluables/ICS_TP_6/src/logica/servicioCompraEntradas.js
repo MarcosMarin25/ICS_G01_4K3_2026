@@ -1,4 +1,9 @@
-const { crearFechaLocal, inicioDelDia } = require("./fechas");
+const { crearFechaLocal, inicioDelDia, minutosDelDia, MINUTOS_POR_HORA } = require("./fechas");
+
+// Para visitar el día actual se puede comprar hasta las 17:30 inclusive (R5).
+const HORA_LIMITE_MISMO_DIA = 17;
+const MINUTO_LIMITE_MISMO_DIA = 30;
+const LIMITE_MISMO_DIA_EN_MINUTOS = HORA_LIMITE_MISMO_DIA * MINUTOS_POR_HORA + MINUTO_LIMITE_MISMO_DIA;
 
 /**
  * Interfaces que el servicio espera de sus dependencias (inversión de dependencias:
@@ -57,7 +62,8 @@ class ServicioCompraEntradas {
       throw new Error("Debe seleccionar una forma de pago");
     }
     const fechaVisita = crearFechaLocal(solicitud.fechaVisita);
-    const hoy = inicioDelDia(this.reloj.ahora());
+    const ahora = this.reloj.ahora();
+    const hoy = inicioDelDia(ahora);
     if (fechaVisita < hoy) {
       throw new Error("La fecha de visita no puede ser anterior a hoy");
     }
@@ -68,9 +74,8 @@ class ServicioCompraEntradas {
     if (fechaVisita > limite) {
       throw new Error("Solo se pueden comprar entradas con hasta un mes de anticipación");
     }
-    const ahora = this.reloj.ahora();
     const esHoy = fechaVisita.getTime() === hoy.getTime();
-    if (esHoy && ahora.getHours() * 60 + ahora.getMinutes() > 17 * 60 + 30) {
+    if (esHoy && minutosDelDia(ahora) > LIMITE_MISMO_DIA_EN_MINUTOS) {
       throw new Error("Las entradas para hoy se pueden comprar hasta las 17:30");
     }
 

@@ -12,4 +12,11 @@ function inicioDelDia(momento) {
   return new Date(momento.getFullYear(), momento.getMonth(), momento.getDate());
 }
 
-module.exports = { crearFechaLocal, inicioDelDia };
+const MINUTOS_POR_HORA = 60;
+
+// Devuelve cuántos minutos pasaron desde las 00:00 (por ejemplo, 17:30 son 1050).
+function minutosDelDia(momento) {
+  return momento.getHours() * MINUTOS_POR_HORA + momento.getMinutes();
+}
+
+module.exports = { crearFechaLocal, inicioDelDia, minutosDelDia, MINUTOS_POR_HORA };
