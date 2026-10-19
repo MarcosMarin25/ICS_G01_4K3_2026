@@ -51,6 +51,9 @@ class ServicioCompraEntradas {
     if (!solicitud.formaPago) {
       throw new Error("Debe seleccionar una forma de pago");
     }
+    if (!this.calendario.estaAbierto(solicitud.fechaVisita)) {
+      throw new Error("El parque está cerrado en la fecha seleccionada");
+    }
 
     const entradas = solicitud.edades.map((edad) => ({
       edad,
