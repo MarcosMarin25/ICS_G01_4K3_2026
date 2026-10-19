@@ -5,6 +5,9 @@ const HORA_LIMITE_MISMO_DIA = 17;
 const MINUTO_LIMITE_MISMO_DIA = 30;
 const LIMITE_MISMO_DIA_EN_MINUTOS = HORA_LIMITE_MISMO_DIA * MINUTOS_POR_HORA + MINUTO_LIMITE_MISMO_DIA;
 
+// Un usuario puede comprar como máximo 10 entradas para una misma fecha (CA 7, R6).
+const MAXIMO_ENTRADAS_POR_FECHA = 10;
+
 /**
  * Interfaces que el servicio espera de sus dependencias (inversión de dependencias:
  * el servicio depende de estas abstracciones, no de Mercado Pago ni de un mail reales).
@@ -78,7 +81,7 @@ class ServicioCompraEntradas {
     if (esHoy && minutosDelDia(ahora) > LIMITE_MISMO_DIA_EN_MINUTOS) {
       throw new Error("Las entradas para hoy se pueden comprar hasta las 17:30");
     }
-    if (solicitud.cantidad > 10) {
+    if (solicitud.cantidad > MAXIMO_ENTRADAS_POR_FECHA) {
       throw new Error("No se pueden comprar más de 10 entradas para una misma fecha");
     }
 
