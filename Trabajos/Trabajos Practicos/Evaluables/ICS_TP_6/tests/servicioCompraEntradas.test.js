@@ -370,4 +370,9 @@ describe("ServicioCompraEntradas - validación por campo", () => {
     expect(servicio.validarCampos(solicitudValida({ fechaVisita: FECHA_CERRADA })))
       .toEqual({ fechaVisita: "El parque está cerrado en la fecha seleccionada" });
   });
+
+  test("V05 - informa una edad inválida en el campo de las edades", () => {
+    expect(servicio.validarCampos(solicitudValida({ edades: [30, -1, 8] })))
+      .toEqual({ edades: "Edad inválida" });
+  });
 });
