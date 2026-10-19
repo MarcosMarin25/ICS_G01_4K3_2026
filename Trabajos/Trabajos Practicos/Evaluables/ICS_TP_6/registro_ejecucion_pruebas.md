@@ -75,7 +75,74 @@ En cada refactor las 14 pruebas siguieron pasando. Al final, el lint no da error
 
 ## C. Compras que deben pasar (`ServicioCompraEntradas`)
 
-_Pendiente._
+Antes de P01 se agregaron los dobles de prueba en `tests/dobles/` (commit `ac5a0c3`), según la taxonomía de Gerard Meszaros:
+
+| Doble | Tipo | Responsabilidad |
+|---|---|---|
+| `RelojFijo` | Stub | Devuelve una fecha y hora fijas, que se pueden cambiar con `fijar()` |
+| `RepositorioUsuariosFalso` | Stub | Responde `estaRegistrado()` a partir de una lista fija |
+| `RepositorioComprasFalso` | Fake | Repositorio en memoria que funciona de verdad: `registrar()` y `cantidadComprada()` |
+| `ServicioMailEspia` | Spy | Registra a quién se envió la confirmación |
+| `PasarelaMercadoPagoEspia` | Spy | Registra si se pidió la redirección y con qué monto |
+
+| # | Prueba | Esperado | Obtenido en Red | Obtenido en Green | Estrategia | Cambio en el código | Estado |
+|---|---|---|---|---|---|---|---|
+| P01 | Compra válida con tarjeta | Confirmada, Mercado Pago por 50000 y mail enviado | `Cannot find module '../src/logica/servicioCompraEntradas'` | Lo esperado | Fake it | Se crea el servicio con las dependencias inyectadas. `comprar()` redirige por 50000 fijo, envía el mail y devuelve `confirmada: true` | ✅ Pasa |
+| P02 | Compra en efectivo | Mercado Pago no se llama | `true` (se llamó) | `false` | Implementación obvia | Se redirige solo si `formaPago` es `"TARJETA"` | ✅ Pasa |
+| P03 | Informa cantidad y fecha | `3` y `"2026-10-20"` | `undefined` | `3` y `"2026-10-20"` | Implementación obvia | El resultado devuelve `cantidadEntradas` y `fechaVisita` | ✅ Pasa |
+| P04 | Hoy antes de las 17:30 | Confirmada | Pasó sin cambios | Confirmada | Confirmación de borde | — | ✅ Pasa |
+| P05 | Hoy justo a las 17:30 | Confirmada | Pasó sin cambios | Confirmada | Confirmación de borde | — | ✅ Pasa |
+| P06 | Justo un mes antes (2026-11-15) | Confirmada | Pasó sin cambios | Confirmada | Confirmación de borde | — | ✅ Pasa |
+| P07 | 10 entradas | Confirmada, 10 entradas | Pasó sin cambios | Confirmada, 10 entradas | Confirmación de borde | — | ✅ Pasa |
+| P08 | Una sola entrada | Confirmada | Pasó sin cambios | Confirmada | Confirmación de borde | — | ✅ Pasa |
+| P09 | Pase regular | `"REGULAR"` | `undefined` | `"REGULAR"` | Implementación obvia | El resultado devuelve `tipoPase` | ✅ Pasa |
+| P10 | Total con descuentos `[35, 10, 2, 65]` | `20000` | `undefined` | `20000` | Triangulación | El total se calcula sumando `calculadora.precioEntrada()` de cada edad | ✅ Pasa |
+| P11 | Entrada de $0 `[30, 2]` | 2 entradas: 20000 y 0 | `TypeError: Cannot read properties of undefined (reading 'length')` | 2 entradas: 20000 y 0 | Implementación obvia | El resultado devuelve `entradas`, con la edad y el precio de cada una | ✅ Pasa |
+| P12 | Edad 0 `[30, 0]` | Confirmada, entrada de 0 | Pasó sin cambios | Confirmada, entrada de 0 | Confirmación de borde | — | ✅ Pasa |
+| P13 | 7 previas + 3 | Confirmada | Pasó sin cambios | Confirmada | Confirmación de borde | — | ✅ Pasa |
+| P14 | 10 previas en otra fecha | Confirmada | Pasó sin cambios | Confirmada | Confirmación de borde | — | ✅ Pasa |
+| P15 | La compra queda registrada | `3` | `0` | `3` | Implementación obvia | `comprar()` llama a `compras.registrar()` | ✅ Pasa |
+| P16 | Mañana después de las 17:30 | Confirmada | Pasó sin cambios | Confirmada | Confirmación de borde | — | ✅ Pasa |
+| P17 | Compras de otro usuario | Confirmada | Pasó sin cambios | Confirmada | Confirmación de borde | — | ✅ Pasa |
+| P18 | Fin de mes (2027-01-31 → 2027-02-28) | Confirmada | Pasó sin cambios | Confirmada | Confirmación de borde | — | ✅ Pasa |
+
+**Por qué hay tantas confirmaciones.** En esta sección todavía no existe ninguna regla que rechace una compra: las validaciones llegan en la sección D. Por eso P04 a P08, P12 a P14 y P16 a P18 pasan sin cambios. No se forzó un Red artificial. Estas pruebas son el **lado válido de cada valor límite**, y cobran valor en la sección D como red de seguridad. Por ejemplo, P05 (17:30) obliga a que F08 (17:31) se implemente con `>` y no con `>=`. P06 y P18 protegen el horizonte. P07 y P13 protegen el máximo de 10. P12 protege la edad mínima.
+
+**Refactor:**
+- **P01:** postergado a propósito. El 50000 fijo del *fake it* se mantuvo hasta que otra prueba obligara a calcularlo.
+- **P02, P03, P09 y P15:** no hubo nada que refactorizar. El literal `"TARJETA"` aparece una sola vez, y se va a centralizar cuando la sección D agregue más valores de pase y de forma de pago.
+- **P10:** se eliminó la duplicación entre la prueba y el código. La redirección a Mercado Pago pasó a usar el monto calculado en lugar del 50000 fijo de P01, que era el paso que faltaba para cerrar el *fake it*.
+- **P11:** el precio de cada edad se calculaba dos veces, una para el total y otra para las entradas. Ahora primero se arman las entradas y el total se obtiene sumando sus precios.
+- **Al cerrar la sección:** se documentó con JSDoc la interfaz que el servicio espera de cada dependencia (Principio de Inversión de Dependencias).
+
+En cada refactor las pruebas siguieron pasando y el lint no dio errores. La cobertura quedó en 100%.
+
+**Commits** (rama `TP_6`):
+
+| Paso | RED | GREEN | REFACTOR |
+|---|---|---|---|
+| Dobles de prueba | — | — | `ac5a0c3` (agregado) |
+| P01 | `b54bae8` | `1662631` | — (postergado a P10) |
+| P02 | `f882732` | `922d8a2` | — |
+| P03 | `f052fed` | `af7a219` | — |
+| P04 | `8e54732` (pasó sin cambios) | — | — |
+| P05 | `5d4ebb9` (pasó sin cambios) | — | — |
+| P06 | `fb3990c` (pasó sin cambios) | — | — |
+| P07 | `41bb8e5` (pasó sin cambios) | — | — |
+| P08 | `762c1c1` (pasó sin cambios) | — | — |
+| P09 | `1a5ced1` | `5db9357` | — |
+| P10 | `8f8c272` | `c61d446` | `5498511` |
+| P11 | `16b2271` | `da0d907` | `df21d0c` |
+| P12 | `a375e37` (pasó sin cambios) | — | — |
+| P13 | `b159820` (pasó sin cambios) | — | — |
+| P14 | `43617ec` (pasó sin cambios) | — | — |
+| P15 | `c2e1bc7` | `1b75426` | — |
+| P16 | `4733f61` (pasó sin cambios) | — | — |
+| P17 | `59ac185` (pasó sin cambios) | — | — |
+| P18 | `e0a2219` (pasó sin cambios) | — | — |
+| Cierre de la sección | — | — | `027f67a` (JSDoc de las interfaces) |
+
+**Resultado final:** 18 de 18 pruebas pasan.
 
 
 ## D. Compras que deben fallar (validaciones)
@@ -89,6 +156,6 @@ _Pendiente._
 |---|---|---|---|
 | A. Precio de cada entrada | 9 | 9 | 0 |
 | B. Días de apertura | 5 | 5 | 0 |
-| C. Compras que deben pasar | 18 | — | — |
+| C. Compras que deben pasar | 18 | 18 | 0 |
 | D. Compras que deben fallar | 26 | — | — |
-| **Total** | **58** | **14** | **0** |
+| **Total** | **58** | **32** | **0** |
