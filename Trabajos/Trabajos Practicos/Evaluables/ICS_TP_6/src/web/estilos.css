@@ -13,10 +13,19 @@
   --color-error: #C62828;            /* mensajes de validación */
   --color-exito: #2E7D32;
 
+  /* Derivados de la paleta (mezclas), para no agregar colores nuevos. */
+  --color-texto-suave: color-mix(in srgb, var(--color-texto) 68%, var(--color-fondo));
+  --color-borde: color-mix(in srgb, var(--color-secundario) 35%, var(--color-superficie));
+  --color-primario-suave: color-mix(in srgb, var(--color-primario) 9%, var(--color-superficie));
+  --color-acento-suave: color-mix(in srgb, var(--color-acento) 20%, var(--color-superficie));
+
   --fuente: "Lato", system-ui, sans-serif;
-  --radio: 12px;
+  --radio: 16px;
+  --radio-chico: 10px;
   --espacio: 16px;
-  --sombra: 0 2px 8px rgba(31, 42, 31, 0.08);
+  --sombra: 0 1px 2px rgba(31, 42, 31, 0.06), 0 8px 24px rgba(31, 42, 31, 0.07);
+  --sombra-fuerte: 0 12px 40px rgba(31, 42, 31, 0.22);
+  --alto-barra-movil: 76px;
 }
 
 *,
@@ -37,60 +46,158 @@ body {
   line-height: 1.5;
   color: var(--color-texto);
   background: var(--color-fondo);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, p {
+  margin: 0;
 }
 
 code {
   font-family: ui-monospace, monospace;
+  font-size: 0.9em;
+}
+
+.oculto {
+  position: absolute;
+}
+
+.solo-lectores {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.icono {
+  width: 1.25em;
+  height: 1.25em;
+  flex-shrink: 0;
 }
 
 .contenedor {
   width: 100%;
-  max-width: 1040px;
+  max-width: 1120px;
   margin: 0 auto;
   padding: 0 var(--espacio);
 }
 
-/* Encabezado */
-.encabezado {
-  background: var(--color-primario);
+/* ---------- Portada ---------- */
+.portada {
+  position: relative;
   color: var(--color-superficie);
-  padding: var(--espacio) 0;
-  border-bottom: 4px solid var(--color-acento);
+  background:
+    radial-gradient(circle at 85% -10%, color-mix(in srgb, var(--color-acento) 45%, transparent) 0, transparent 38%),
+    radial-gradient(circle at 10% 120%, color-mix(in srgb, var(--color-primario-hover) 90%, transparent) 0, transparent 55%),
+    linear-gradient(160deg, var(--color-primario) 0%, var(--color-primario-hover) 100%);
+  padding-bottom: 72px;
+  overflow: hidden;
 }
 
-.encabezado__contenido {
+.portada__barra {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
-  gap: 8px var(--espacio);
+  gap: 10px var(--espacio);
+  padding-top: var(--espacio);
+  padding-bottom: var(--espacio);
 }
 
-.encabezado__marca {
-  margin: 0;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  font-size: 0.85rem;
-  color: var(--color-acento);
-}
-
-.encabezado__titulo {
-  margin: 0;
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-weight: 900;
-  font-size: 1.75rem;
+  font-size: 1.05rem;
+  letter-spacing: 0.02em;
 }
 
-.encabezado__sesion {
-  margin: 0;
-  font-size: 0.9rem;
+.marca .icono {
+  color: var(--color-acento);
+  width: 1.5em;
+  height: 1.5em;
+}
+
+.sesion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  background: color-mix(in srgb, var(--color-superficie) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-superficie) 22%, transparent);
+  border-radius: 999px;
   overflow-wrap: anywhere;
 }
 
-/* Disposición: una columna en el celular, dos en pantallas anchas */
-main.contenedor {
-  padding-top: calc(var(--espacio) * 1.5);
-  padding-bottom: calc(var(--espacio) * 3);
+.sesion__punto {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--color-acento);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-acento) 35%, transparent);
+}
+
+.portada__contenido {
+  padding-top: 20px;
+}
+
+.portada__titulo {
+  font-size: clamp(2rem, 6vw, 3.25rem);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.portada__bajada {
+  margin-top: 8px;
+  font-size: 1.1rem;
+  opacity: 0.92;
+}
+
+.datos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.datos li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  background: color-mix(in srgb, var(--color-superficie) 12%, transparent);
+  border-radius: 999px;
+}
+
+.datos .icono {
+  color: var(--color-acento);
+}
+
+.portada__colinas {
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: 100%;
+  height: 70px;
+  color: var(--color-fondo);
+}
+
+/* ---------- Disposición ---------- */
+.principal {
+  position: relative;
+  margin-top: -40px;
+  padding-bottom: calc(var(--alto-barra-movil) + var(--espacio) * 2);
 }
 
 .disposicion {
@@ -98,46 +205,67 @@ main.contenedor {
   gap: var(--espacio);
 }
 
-@media (min-width: 800px) {
-  .disposicion {
-    grid-template-columns: 1fr 320px;
-    align-items: start;
-  }
-
-  .resumen {
-    position: sticky;
-    top: var(--espacio);
-  }
+.formulario {
+  display: grid;
+  gap: var(--espacio);
+  min-width: 0;
 }
 
-/* Tarjetas */
+/* ---------- Tarjetas y pasos ---------- */
 .tarjeta {
   background: var(--color-superficie);
-  border: 1px solid color-mix(in srgb, var(--color-secundario) 30%, transparent);
+  border: 1px solid var(--color-borde);
   border-radius: var(--radio);
   box-shadow: var(--sombra);
-  padding: calc(var(--espacio) * 1.25);
+  padding: 20px;
 }
 
-.tarjeta__titulo {
-  margin: 0 0 var(--espacio);
-  font-size: 1.25rem;
+.paso__titulo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+  font-size: 1.2rem;
   font-weight: 900;
-  color: var(--color-primario);
 }
 
-/* Campos del formulario */
+.paso__numero {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  font-size: 0.95rem;
+  color: var(--color-superficie);
+  background: var(--color-primario);
+  border-radius: 50%;
+}
+
+.campos-dos {
+  display: grid;
+  gap: 18px var(--espacio);
+}
+
+.campos-dos > .campo + .campo {
+  margin-top: 0;
+}
+
+/* ---------- Campos ---------- */
 .campo {
-  margin: 0 0 calc(var(--espacio) * 1.25);
+  margin: 0;
   padding: 0;
   border: 0;
   min-width: 0;
 }
 
+.campo + .campo {
+  margin-top: 18px;
+}
+
 .campo > label,
 .campo > legend {
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   font-weight: 700;
 }
 
@@ -145,97 +273,258 @@ main.contenedor {
 .campo input[type="date"],
 .campo input[type="number"] {
   width: 100%;
-  min-height: 44px;
-  padding: 8px 12px;
+  min-height: 48px;
+  padding: 10px 14px;
   font: inherit;
   color: inherit;
   background: var(--color-superficie);
-  border: 1px solid var(--color-secundario);
-  border-radius: 8px;
+  border: 1.5px solid var(--color-borde);
+  border-radius: var(--radio-chico);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.campo input:hover {
+  border-color: var(--color-secundario);
 }
 
 .campo input:focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--color-primario) 40%, transparent);
-  outline-offset: 1px;
+  outline: none;
   border-color: var(--color-primario);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-primario) 18%, transparent);
 }
 
 .campo__ayuda {
-  margin: 6px 0 0;
-  font-size: 0.875rem;
-  color: color-mix(in srgb, var(--color-texto) 70%, transparent);
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color: var(--color-texto-suave);
 }
 
 .campo__aviso {
-  margin: 6px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 6px 10px;
   font-size: 0.875rem;
   font-weight: 700;
   color: var(--color-error);
+  background: color-mix(in srgb, var(--color-error) 8%, var(--color-superficie));
+  border-radius: 8px;
+}
+
+/* Contador de entradas */
+.contador {
+  display: flex;
+  align-items: stretch;
+  max-width: 220px;
+}
+
+.contador input[type="number"] {
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: 900;
+  border-radius: 0;
+  border-left: 0;
+  border-right: 0;
+  appearance: textfield;
+}
+
+.contador input::-webkit-outer-spin-button,
+.contador input::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+.contador__boton {
+  width: 52px;
+  flex-shrink: 0;
+  font: inherit;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-primario);
+  background: var(--color-primario-suave);
+  border: 1.5px solid var(--color-borde);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.contador__boton:first-child {
+  border-radius: var(--radio-chico) 0 0 var(--radio-chico);
+}
+
+.contador__boton:last-child {
+  border-radius: 0 var(--radio-chico) var(--radio-chico) 0;
+}
+
+.contador__boton:hover {
+  background: color-mix(in srgb, var(--color-primario) 18%, var(--color-superficie));
+}
+
+.contador__boton:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--color-primario) 40%, transparent);
+  outline-offset: 1px;
+}
+
+/* Edades */
+#campo-edades {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px dashed var(--color-borde);
 }
 
 .edades {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: 10px;
 }
 
 .edades label {
   display: block;
-  font-size: 0.875rem;
   margin-bottom: 4px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-texto-suave);
 }
 
-/* Opciones (tipo de pase y forma de pago) */
+/* ---------- Opciones seleccionables ---------- */
 .opciones {
   display: grid;
-  gap: 8px;
-}
-
-@media (min-width: 480px) {
-  .opciones {
-    grid-template-columns: 1fr 1fr;
-  }
+  gap: 10px;
 }
 
 .opcion {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 10px;
-  min-height: 44px;
-  padding: 10px 12px;
-  border: 1px solid var(--color-secundario);
-  border-radius: 8px;
+  gap: 14px;
+  min-height: 72px;
+  padding: 14px 16px;
+  background: var(--color-superficie);
+  border: 1.5px solid var(--color-borde);
+  border-radius: var(--radio-chico);
   cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+
+.opcion:hover {
+  border-color: var(--color-secundario);
+  transform: translateY(-1px);
+}
+
+.opcion input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.opcion__icono {
+  width: 40px;
+  height: 40px;
+  padding: 8px;
+  flex-shrink: 0;
+  color: var(--color-primario);
+  background: var(--color-primario-suave);
+  border-radius: 10px;
+}
+
+.opcion__texto {
+  display: grid;
+  flex: 1;
+  line-height: 1.3;
+}
+
+.opcion__texto strong {
+  font-size: 1.05rem;
+}
+
+.opcion__precio {
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: var(--color-primario);
+}
+
+.opcion__detalle {
+  font-size: 0.875rem;
+  color: var(--color-texto-suave);
+}
+
+.opcion__check {
+  width: 26px;
+  height: 26px;
+  padding: 4px;
+  flex-shrink: 0;
+  color: var(--color-superficie);
+  background: var(--color-primario);
+  border-radius: 50%;
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 0.15s, transform 0.15s;
 }
 
 .opcion:has(input:checked) {
   border-color: var(--color-primario);
-  background: color-mix(in srgb, var(--color-primario) 8%, var(--color-superficie));
+  background: var(--color-primario-suave);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primario) 15%, transparent);
 }
 
-.opcion input {
-  accent-color: var(--color-primario);
-  width: 18px;
-  height: 18px;
-  margin: 0;
+.opcion:has(input:checked) .opcion__icono {
+  color: var(--color-superficie);
+  background: var(--color-primario);
 }
 
-/* Botones */
+.opcion:has(input:checked) .opcion__check {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.opcion:has(input:focus-visible) {
+  outline: 3px solid var(--color-acento);
+  outline-offset: 2px;
+}
+
+.descuentos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.85rem;
+}
+
+.descuentos li {
+  padding: 4px 12px;
+  background: var(--color-acento-suave);
+  border-radius: 999px;
+}
+
+/* ---------- Botones ---------- */
 .boton {
-  display: inline-block;
-  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 52px;
   padding: 12px 28px;
   font: inherit;
-  font-weight: 700;
+  font-size: 1.05rem;
+  font-weight: 900;
   color: var(--color-superficie);
   background: var(--color-primario);
   border: 0;
   border-radius: 999px;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--color-primario) 35%, transparent);
   cursor: pointer;
+  transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
 }
 
 .boton:hover {
   background: var(--color-primario-hover);
+  transform: translateY(-1px);
+}
+
+.boton:active {
+  transform: translateY(0);
 }
 
 .boton:focus-visible {
@@ -243,134 +532,440 @@ main.contenedor {
   outline-offset: 2px;
 }
 
+.boton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.boton--ancho {
+  width: 100%;
+}
+
 .boton--secundario {
   color: var(--color-primario);
   background: transparent;
   border: 2px solid var(--color-primario);
+  box-shadow: none;
 }
 
 .boton--secundario:hover {
   color: var(--color-superficie);
 }
 
-form > .boton {
-  width: 100%;
-}
-
-@media (min-width: 480px) {
-  form > .boton {
-    width: auto;
-  }
-}
-
-/* Avisos */
+/* ---------- Avisos ---------- */
 .aviso {
-  margin: 0 0 var(--espacio);
-  padding: 12px var(--espacio);
-  border-radius: 8px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: var(--espacio);
+  padding: 14px var(--espacio);
   font-weight: 700;
+  border-radius: var(--radio-chico);
+}
+
+.formulario .aviso {
+  margin-bottom: 0;
 }
 
 .aviso--error {
   color: var(--color-error);
   background: color-mix(in srgb, var(--color-error) 8%, var(--color-superficie));
-  border-left: 4px solid var(--color-error);
+  border: 1px solid color-mix(in srgb, var(--color-error) 30%, transparent);
+  border-left: 5px solid var(--color-error);
 }
 
-/* Resumen y confirmación */
+.aviso--error .icono {
+  margin-top: 2px;
+}
+
+/* ---------- Ticket (resumen y confirmación) ---------- */
+.ticket {
+  position: relative;
+  background: var(--color-superficie);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  overflow: hidden;
+}
+
+.ticket__cabecera {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 20px;
+  color: var(--color-superficie);
+  background: linear-gradient(135deg, var(--color-primario), var(--color-primario-hover));
+}
+
+.ticket__cabecera h2 {
+  font-size: 1.2rem;
+  font-weight: 900;
+}
+
+.ticket__cabecera > .icono {
+  width: 1.6em;
+  height: 1.6em;
+  color: var(--color-acento);
+}
+
+.ticket__cuerpo {
+  padding: 16px 20px 8px;
+}
+
+/* Borde perforado entre el cuerpo y el pie, como una entrada de verdad. */
+.ticket__pie {
+  position: relative;
+  padding: 18px 20px 20px;
+  border-top: 2px dashed var(--color-borde);
+}
+
+.ticket__pie::before,
+.ticket__pie::after {
+  content: "";
+  position: absolute;
+  top: -12px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--color-fondo);
+}
+
+.ticket__pie::before {
+  left: -11px;
+}
+
+.ticket__pie::after {
+  right: -11px;
+}
+
+.ticket__nota {
+  margin-top: 10px;
+  font-size: 0.8rem;
+  text-align: center;
+  color: var(--color-texto-suave);
+}
+
+.resumen__vacio {
+  padding: 8px 0 12px;
+  font-size: 0.9rem;
+  color: var(--color-texto-suave);
+}
+
 .detalle {
-  list-style: none;
-  margin: 0 0 var(--espacio);
+  margin: 0;
   padding: 0;
+  list-style: none;
 }
 
 .detalle li {
   display: flex;
   justify-content: space-between;
   gap: var(--espacio);
-  padding: 6px 0;
-  border-bottom: 1px dashed color-mix(in srgb, var(--color-secundario) 40%, transparent);
+  padding: 8px 0;
+  font-size: 0.95rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-borde) 60%, transparent);
 }
 
-.resumen__total {
+.detalle li:last-child {
+  border-bottom: 0;
+}
+
+.detalle li span:last-child {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.total {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  margin: 0;
-  padding: 10px 12px;
+  margin-bottom: 14px;
+  padding: 12px 14px;
   font-weight: 900;
-  font-size: 1.125rem;
-  background: color-mix(in srgb, var(--color-acento) 22%, var(--color-superficie));
-  border-left: 4px solid var(--color-acento);
-  border-radius: 8px;
+  font-size: 1.1rem;
+  background: var(--color-acento-suave);
+  border-left: 5px solid var(--color-acento);
+  border-radius: var(--radio-chico);
 }
 
+.total span {
+  font-size: 1.4rem;
+}
+
+/* En el celular el botón del resumen lo reemplaza la barra inferior. */
+.resumen .boton {
+  display: none;
+}
+
+/* ---------- Barra inferior (solo celular) ---------- */
+.barra-movil {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio);
+  min-height: var(--alto-barra-movil);
+  padding: 12px var(--espacio) calc(12px + env(safe-area-inset-bottom));
+  background: var(--color-superficie);
+  border-top: 1px solid var(--color-borde);
+  box-shadow: 0 -6px 24px rgba(31, 42, 31, 0.1);
+}
+
+.barra-movil__total {
+  display: grid;
+  font-size: 0.8rem;
+  color: var(--color-texto-suave);
+  line-height: 1.2;
+}
+
+.barra-movil__total strong {
+  font-size: 1.35rem;
+  color: var(--color-texto);
+}
+
+.barra-movil .boton {
+  flex-shrink: 0;
+  padding: 12px 32px;
+}
+
+/* ---------- Confirmación ---------- */
 .confirmacion {
-  margin-top: var(--espacio);
-  border-top: 4px solid var(--color-exito);
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.ticket--confirmado .ticket__cabecera {
+  align-items: flex-start;
+  padding: 22px 20px;
+}
+
+.ticket--confirmado h2 {
+  font-size: 1.4rem;
 }
 
 .confirmacion__texto {
-  font-size: 1.125rem;
+  margin-top: 4px;
+  font-size: 1.05rem;
+  opacity: 0.95;
 }
 
-.confirmacion .boton {
-  margin-top: var(--espacio);
+.ticket--confirmado .boton {
+  width: 100%;
+  margin-top: 14px;
 }
 
-/* Pantalla simulada de Mercado Pago */
+.ticket--confirmado .ticket__nota {
+  margin-top: 0;
+}
+
+.sello {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  color: var(--color-primario);
+  background: var(--color-acento);
+  border-radius: 50%;
+}
+
+.sello .icono {
+  width: 26px;
+  height: 26px;
+}
+
+.sello--grande {
+  width: 76px;
+  height: 76px;
+  margin: 8px auto 16px;
+  color: var(--color-superficie);
+  background: var(--color-exito);
+  box-shadow: 0 0 0 10px color-mix(in srgb, var(--color-exito) 15%, transparent);
+  animation: aparecer 0.4s ease-out;
+}
+
+.sello--grande .icono {
+  width: 40px;
+  height: 40px;
+}
+
+/* ---------- Pantalla simulada de Mercado Pago ---------- */
 .pantalla-pago {
   position: fixed;
   inset: 0;
+  z-index: 20;
   display: grid;
   place-items: center;
   padding: var(--espacio);
-  background: color-mix(in srgb, var(--color-texto) 70%, transparent);
+  background: color-mix(in srgb, var(--color-texto) 72%, transparent);
+  backdrop-filter: blur(3px);
 }
 
 .pantalla-pago__tarjeta {
   width: 100%;
-  max-width: 420px;
-  padding: calc(var(--espacio) * 2);
+  max-width: 400px;
+  padding: 28px 24px 24px;
   text-align: center;
   background: var(--color-superficie);
   border-radius: var(--radio);
-  border-top: 6px solid var(--color-exito);
-}
-
-.pantalla-pago__tarjeta h2 {
-  margin: 0 0 8px;
-  color: var(--color-exito);
+  box-shadow: var(--sombra-fuerte);
+  animation: subir 0.3s ease-out;
 }
 
 .pantalla-pago__etiqueta {
   display: inline-block;
-  margin: 0 0 8px;
-  padding: 2px 10px;
-  font-size: 0.75rem;
-  font-weight: 700;
+  padding: 3px 12px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--color-texto);
   background: var(--color-acento);
   border-radius: 999px;
 }
 
-/* Modal de mail */
+.pantalla-pago__tarjeta h2 {
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: var(--color-exito);
+}
+
+.pantalla-pago__monto {
+  margin: 10px 0 2px;
+  font-size: 2.2rem;
+  font-weight: 900;
+}
+
+.pantalla-pago__detalle {
+  margin-bottom: 20px;
+  color: var(--color-texto-suave);
+}
+
+/* ---------- Modal del mail ---------- */
 .modal {
-  width: min(420px, calc(100% - 2 * var(--espacio)));
-  padding: calc(var(--espacio) * 1.5);
+  width: min(400px, calc(100% - 2 * var(--espacio)));
+  padding: 28px 24px 24px;
+  text-align: center;
   color: var(--color-texto);
   border: 0;
-  border-top: 6px solid var(--color-primario);
   border-radius: var(--radio);
+  box-shadow: var(--sombra-fuerte);
+}
+
+.modal[open] {
+  animation: subir 0.3s ease-out;
 }
 
 .modal::backdrop {
   background: color-mix(in srgb, var(--color-texto) 55%, transparent);
+  backdrop-filter: blur(2px);
+}
+
+.modal__icono {
+  display: inline-grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  margin-bottom: 12px;
+  color: var(--color-primario);
+  background: var(--color-primario-suave);
+  border-radius: 50%;
+}
+
+.modal__icono .icono {
+  width: 30px;
+  height: 30px;
 }
 
 .modal__titulo {
-  margin: 0 0 8px;
-  font-size: 1.125rem;
+  margin-bottom: 8px;
+  font-size: 1.2rem;
+  font-weight: 900;
   overflow-wrap: anywhere;
+}
+
+.modal p {
+  margin-bottom: 20px;
+  color: var(--color-texto-suave);
+}
+
+/* ---------- Pie ---------- */
+.pie {
+  padding: 20px 0 calc(var(--alto-barra-movil) + 20px);
+  font-size: 0.85rem;
+  text-align: center;
+  color: var(--color-texto-suave);
+}
+
+/* ---------- Animaciones ---------- */
+@keyframes subir {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes aparecer {
+  from { opacity: 0; transform: scale(0.5); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ---------- Pantallas medianas ---------- */
+@media (min-width: 560px) {
+  .tarjeta {
+    padding: 24px;
+  }
+
+  .opciones {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .campos-dos {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ---------- Escritorio: dos columnas, sin barra inferior ---------- */
+@media (min-width: 900px) {
+  .portada {
+    padding-bottom: 96px;
+  }
+
+  .principal {
+    margin-top: -56px;
+    padding-bottom: calc(var(--espacio) * 3);
+  }
+
+  .disposicion {
+    grid-template-columns: minmax(0, 1fr) 340px;
+    align-items: start;
+    gap: 24px;
+  }
+
+  .resumen {
+    position: sticky;
+    top: var(--espacio);
+  }
+
+  .resumen .boton {
+    display: inline-flex;
+  }
+
+  .barra-movil {
+    display: none;
+  }
+
+  .pie {
+    padding-bottom: 24px;
+  }
 }

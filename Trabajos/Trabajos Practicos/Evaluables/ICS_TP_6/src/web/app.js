@@ -170,8 +170,10 @@
         ? edadesValidas.map((edad) => ({ edad, precio: calculadora.precioEntrada(edad, tipoPase) }))
         : [];
       dibujarDetalle($("detalle"), entradas);
-      const total = entradas.reduce((suma, entrada) => suma + entrada.precio, 0);
-      $("total").textContent = formatoPesos.format(total);
+      $("resumen-vacio").hidden = entradas.length > 0;
+      const total = formatoPesos.format(entradas.reduce((suma, entrada) => suma + entrada.precio, 0));
+      $("total").textContent = total;
+      $("total-movil").textContent = total;
     }
 
     function avisarSiEstaCerrado() {
@@ -251,6 +253,15 @@
       dibujarCamposDeEdad();
       actualizarResumen();
     });
+    // Botones − y +: solo ayudan a cargar la cantidad; el máximo de 10 lo valida el servicio.
+    document.querySelectorAll(".contador__boton").forEach((boton) => {
+      boton.addEventListener("click", () => {
+        const actual = Number($("cantidad").value) || 0;
+        const nueva = Math.max(1, actual + Number(boton.dataset.paso));
+        $("cantidad").value = nueva;
+        $("cantidad").dispatchEvent(new Event("input"));
+      });
+    });
     $("edades").addEventListener("input", actualizarResumen);
     document.querySelectorAll("input[name='tipoPase']")
       .forEach((opcion) => opcion.addEventListener("change", actualizarResumen));
@@ -261,6 +272,8 @@
     .then(iniciar)
     .catch(() => {
       $("aviso-servidor").hidden = false;
-      $("formulario").querySelector("button[type='submit']").disabled = true;
+      document.querySelectorAll("button[type='submit']").forEach((boton) => {
+        boton.disabled = true;
+      });
     });
 })();

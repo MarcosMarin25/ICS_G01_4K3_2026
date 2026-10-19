@@ -289,7 +289,11 @@ La implementación evalúa los rangos de menor a mayor y devuelve el primero que
   | `--color-error` | `#C62828` | Mensajes de validación |
   | `--color-exito` | `#2E7D32` | Confirmaciones |
 
-  La fuente es Lato (Google Fonts) en todo el sitio. El diseño es *mobile first*: una columna en el celular y dos (formulario y resumen) desde 800 px de ancho.
+  La fuente es Lato (Google Fonts) en todo el sitio. El diseño es *mobile first*:
+  - **Formulario:** está dividido en cuatro pasos numerados (fecha, visitantes, pase y forma de pago), con tarjetas seleccionables y botones − y + para la cantidad.
+  - **Celular:** se muestra en una sola columna, con una barra fija abajo que deja siempre a mano el total y el botón Comprar.
+  - **Escritorio (desde 900 px de ancho):** se muestra en dos columnas, y el resumen, con forma de entrada, queda fijo al costado.
+  - **Otros detalles:** los colores derivados (bordes y fondos suaves) se obtienen mezclando la paleta con `color-mix`, sin agregar colores nuevos, y las animaciones se desactivan si el sistema pide reducir el movimiento.
 
 **Por qué no se prueba con Jest.**
 - **Toda la lógica de negocio que usa la web ya está probada.** `app.js` no decide nada: arma la solicitud a partir del formulario, llama a `comprar()` y muestra el resultado o el mensaje de error. Probarlo con Jest sería probar el DOM y no reglas de negocio.

@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#2E7D32">
   <title>Comprar entradas - EcoHarmony Park</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -10,120 +11,224 @@
   <link rel="stylesheet" href="estilos.css">
 </head>
 <body>
-  <header class="encabezado">
-    <div class="contenedor encabezado__contenido">
-      <div>
-        <p class="encabezado__marca">EcoHarmony Park</p>
-        <h1 class="encabezado__titulo">Comprar entradas</h1>
-      </div>
-      <p class="encabezado__sesion">
-        Sesión simulada: <strong id="usuario-sesion">visitante@mail.com</strong>
+  <!-- Íconos reutilizables -->
+  <svg width="0" height="0" class="oculto" aria-hidden="true">
+    <symbol id="i-hoja" viewBox="0 0 24 24"><path d="M5 21c0-9 6-15 16-16-1 10-7 16-16 16Zm0 0 8-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-calendario" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 10h18M8 3v4M16 3v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-reloj" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-personas" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M2.5 20c.5-3.5 3.2-5.5 6.5-5.5s6 2 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18.5 14.8c1.7.8 2.8 2.6 3 5.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-entrada" viewBox="0 0 24 24"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M14 6v12" stroke="currentColor" stroke-width="2" stroke-dasharray="2 2"/></symbol>
+    <symbol id="i-estrella" viewBox="0 0 24 24"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-tarjeta" viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M2.5 10h19M6 15h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-efectivo" viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 9.5v5M18 9.5v5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-sobre" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="m3.5 6.5 8.5 7 8.5-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-alerta" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7.5v5.5M12 16.5v.1" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></symbol>
+  </svg>
+
+  <header class="portada">
+    <div class="contenedor portada__barra">
+      <p class="marca">
+        <svg class="icono" aria-hidden="true"><use href="#i-hoja"/></svg>
+        EcoHarmony Park
+      </p>
+      <p class="sesion">
+        <span class="sesion__punto" aria-hidden="true"></span>
+        <span>Sesión simulada: <strong id="usuario-sesion">visitante@mail.com</strong></span>
       </p>
     </div>
+    <div class="contenedor portada__contenido">
+      <h1 class="portada__titulo">Comprá tus entradas</h1>
+      <p class="portada__bajada">Asegurá tu visita al parque en pocos pasos.</p>
+      <ul class="datos">
+        <li><svg class="icono" aria-hidden="true"><use href="#i-calendario"/></svg>Abierto de martes a domingo</li>
+        <li><svg class="icono" aria-hidden="true"><use href="#i-reloj"/></svg>Compras para hoy hasta las 17:30</li>
+        <li><svg class="icono" aria-hidden="true"><use href="#i-entrada"/></svg>Hasta 10 entradas por fecha</li>
+      </ul>
+    </div>
+    <svg class="portada__colinas" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 60c160-40 320-50 480-20s300 40 480 0 340-50 480-10v60H0Z" fill="currentColor" opacity=".35"/>
+      <path d="M0 75c200-30 380-35 560-10s360 30 540 0 240-25 340-15v40H0Z" fill="currentColor"/>
+    </svg>
   </header>
 
-  <main class="contenedor">
+  <main class="contenedor principal">
     <p id="aviso-servidor" class="aviso aviso--error" hidden>
-      Esta página necesita un servidor local para cargar la lógica. Abrila con <code>npm run web</code>
-      y entrá a <code>http://localhost:8080/src/web/</code>.
+      <svg class="icono" aria-hidden="true"><use href="#i-alerta"/></svg>
+      <span>Esta página necesita un servidor local para cargar la lógica. Abrila con <code>npm run web</code>
+      y entrá a <code>http://localhost:8080/src/web/</code>.</span>
     </p>
 
     <div class="disposicion">
       <!-- novalidate: la validación la hace ServicioCompraEntradas, la misma lógica que prueba Jest. -->
-      <form id="formulario" class="tarjeta" novalidate>
-        <h2 class="tarjeta__titulo">Tu visita</h2>
+      <form id="formulario" class="formulario" novalidate>
 
-        <div class="campo">
-          <label for="usuario">Usuario</label>
-          <input id="usuario" name="usuario" type="email" value="visitante@mail.com" autocomplete="email">
-          <p class="campo__ayuda">Usuarios registrados de prueba: visitante@mail.com y otro@mail.com.</p>
-        </div>
-
-        <div class="campo">
-          <label for="fecha">Fecha de visita</label>
-          <input id="fecha" name="fecha" type="date">
-          <p class="campo__ayuda">Abre todos los días menos los lunes, el 25/12 y el 1/1. Hasta un mes de anticipación.</p>
-          <p id="aviso-fecha" class="campo__aviso" hidden></p>
-        </div>
-
-        <div class="campo">
-          <label for="cantidad">Cantidad de entradas</label>
-          <input id="cantidad" name="cantidad" type="number" min="1" max="10" step="1" inputmode="numeric">
-          <p class="campo__ayuda">Máximo 10 entradas por fecha. Los menores de hasta 3 años también cuentan.</p>
-        </div>
-
-        <fieldset class="campo" id="campo-edades" hidden>
-          <legend>Edad de cada visitante</legend>
-          <div id="edades" class="edades"></div>
-        </fieldset>
-
-        <fieldset class="campo">
-          <legend>Tipo de pase</legend>
-          <div class="opciones">
-            <label class="opcion">
-              <input type="radio" name="tipoPase" value="VIP">
-              <span class="opcion__texto"><strong>VIP</strong> $20.000</span>
-            </label>
-            <label class="opcion">
-              <input type="radio" name="tipoPase" value="REGULAR">
-              <span class="opcion__texto"><strong>Regular</strong> $10.000</span>
-            </label>
+        <section class="paso tarjeta" aria-labelledby="paso-1">
+          <h2 id="paso-1" class="paso__titulo"><span class="paso__numero" aria-hidden="true">1</span>¿Cuándo nos visitás?</h2>
+          <div class="campos-dos">
+            <div class="campo">
+              <label for="usuario">Usuario</label>
+              <input id="usuario" name="usuario" type="email" value="visitante@mail.com" autocomplete="email">
+              <p class="campo__ayuda">De prueba: visitante@mail.com u otro@mail.com.</p>
+            </div>
+            <div class="campo">
+              <label for="fecha">Fecha de visita</label>
+              <input id="fecha" name="fecha" type="date">
+              <p class="campo__ayuda">Cerrado los lunes, el 25/12 y el 1/1.</p>
+              <p id="aviso-fecha" class="campo__aviso" hidden></p>
+            </div>
           </div>
-          <p class="campo__ayuda">Hasta 3 años no pagan. Hasta 15 años y desde 60 años pagan la mitad.</p>
-        </fieldset>
+        </section>
 
-        <fieldset class="campo">
-          <legend>Forma de pago</legend>
-          <div class="opciones">
-            <label class="opcion">
-              <input type="radio" name="formaPago" value="TARJETA">
-              <span class="opcion__texto"><strong>Tarjeta</strong> con Mercado Pago</span>
-            </label>
-            <label class="opcion">
-              <input type="radio" name="formaPago" value="EFECTIVO">
-              <span class="opcion__texto"><strong>Efectivo</strong> en boletería</span>
-            </label>
+        <section class="paso tarjeta" aria-labelledby="paso-2">
+          <h2 id="paso-2" class="paso__titulo"><span class="paso__numero" aria-hidden="true">2</span>¿Quiénes vienen?</h2>
+          <div class="campo">
+            <label for="cantidad">Cantidad de entradas</label>
+            <div class="contador">
+              <button type="button" class="contador__boton" data-paso="-1" aria-label="Una entrada menos">−</button>
+              <input id="cantidad" name="cantidad" type="number" min="1" max="10" step="1" inputmode="numeric" placeholder="0">
+              <button type="button" class="contador__boton" data-paso="1" aria-label="Una entrada más">+</button>
+            </div>
+            <p class="campo__ayuda">Los menores de hasta 3 años también llevan entrada (de $0) y cuentan en el máximo.</p>
           </div>
-        </fieldset>
+          <fieldset class="campo" id="campo-edades" hidden>
+            <legend>Edad de cada visitante</legend>
+            <div id="edades" class="edades"></div>
+          </fieldset>
+        </section>
+
+        <section class="paso tarjeta" aria-labelledby="paso-3">
+          <h2 id="paso-3" class="paso__titulo"><span class="paso__numero" aria-hidden="true">3</span>Elegí tu pase</h2>
+          <fieldset class="campo">
+            <legend class="solo-lectores">Tipo de pase</legend>
+            <div class="opciones">
+              <label class="opcion">
+                <input type="radio" name="tipoPase" value="REGULAR">
+                <svg class="opcion__icono" aria-hidden="true"><use href="#i-entrada"/></svg>
+                <span class="opcion__texto">
+                  <strong>Regular</strong>
+                  <span class="opcion__precio">$10.000</span>
+                </span>
+                <svg class="opcion__check" aria-hidden="true"><use href="#i-check"/></svg>
+              </label>
+              <label class="opcion">
+                <input type="radio" name="tipoPase" value="VIP">
+                <svg class="opcion__icono" aria-hidden="true"><use href="#i-estrella"/></svg>
+                <span class="opcion__texto">
+                  <strong>VIP</strong>
+                  <span class="opcion__precio">$20.000</span>
+                </span>
+                <svg class="opcion__check" aria-hidden="true"><use href="#i-check"/></svg>
+              </label>
+            </div>
+            <ul class="descuentos">
+              <li><strong>Hasta 3 años:</strong> gratis</li>
+              <li><strong>Hasta 15 años:</strong> 50% off</li>
+              <li><strong>Desde 60 años:</strong> 50% off</li>
+            </ul>
+          </fieldset>
+        </section>
+
+        <section class="paso tarjeta" aria-labelledby="paso-4">
+          <h2 id="paso-4" class="paso__titulo"><span class="paso__numero" aria-hidden="true">4</span>¿Cómo pagás?</h2>
+          <fieldset class="campo">
+            <legend class="solo-lectores">Forma de pago</legend>
+            <div class="opciones">
+              <label class="opcion">
+                <input type="radio" name="formaPago" value="TARJETA">
+                <svg class="opcion__icono" aria-hidden="true"><use href="#i-tarjeta"/></svg>
+                <span class="opcion__texto">
+                  <strong>Tarjeta</strong>
+                  <span class="opcion__detalle">Con Mercado Pago</span>
+                </span>
+                <svg class="opcion__check" aria-hidden="true"><use href="#i-check"/></svg>
+              </label>
+              <label class="opcion">
+                <input type="radio" name="formaPago" value="EFECTIVO">
+                <svg class="opcion__icono" aria-hidden="true"><use href="#i-efectivo"/></svg>
+                <span class="opcion__texto">
+                  <strong>Efectivo</strong>
+                  <span class="opcion__detalle">En la boletería</span>
+                </span>
+                <svg class="opcion__check" aria-hidden="true"><use href="#i-check"/></svg>
+              </label>
+            </div>
+          </fieldset>
+        </section>
 
         <p id="error" class="aviso aviso--error" role="alert" hidden></p>
-
-        <button type="submit" class="boton">Comprar</button>
       </form>
 
-      <aside class="tarjeta resumen" aria-live="polite">
-        <h2 class="tarjeta__titulo">Resumen</h2>
-        <ul id="detalle" class="detalle"></ul>
-        <p class="resumen__total">Total <span id="total">$0</span></p>
-        <p class="campo__ayuda">El total final lo confirma el sistema al comprar.</p>
+      <aside class="resumen" aria-labelledby="resumen-titulo">
+        <div class="ticket">
+          <div class="ticket__cabecera">
+            <svg class="icono" aria-hidden="true"><use href="#i-entrada"/></svg>
+            <h2 id="resumen-titulo">Tu compra</h2>
+          </div>
+          <div class="ticket__cuerpo" aria-live="polite">
+            <p id="resumen-vacio" class="resumen__vacio">Completá la cantidad, las edades y el pase para ver el precio.</p>
+            <ul id="detalle" class="detalle"></ul>
+          </div>
+          <div class="ticket__pie">
+            <p class="total">Total <span id="total">$0</span></p>
+            <button type="submit" form="formulario" class="boton boton--ancho">Comprar</button>
+            <p class="ticket__nota">El total final lo confirma el sistema al comprar.</p>
+          </div>
+        </div>
       </aside>
+
+      <!-- En el celular, el total y el botón quedan siempre a mano. -->
+      <div class="barra-movil">
+        <p class="barra-movil__total">Total <strong id="total-movil">$0</strong></p>
+        <button type="submit" form="formulario" class="boton">Comprar</button>
+      </div>
     </div>
 
-    <section id="confirmacion" class="tarjeta confirmacion" hidden aria-live="polite">
-      <h2 class="tarjeta__titulo">¡Compra confirmada!</h2>
-      <p id="confirmacion-texto" class="confirmacion__texto"></p>
-      <ul id="confirmacion-detalle" class="detalle"></ul>
-      <p class="resumen__total">Total <span id="confirmacion-total"></span></p>
-      <p id="confirmacion-pago" class="campo__ayuda"></p>
-      <button type="button" id="nueva-compra" class="boton boton--secundario">Hacer otra compra</button>
+    <section id="confirmacion" class="confirmacion" hidden aria-labelledby="confirmacion-titulo">
+      <div class="ticket ticket--confirmado">
+        <div class="ticket__cabecera">
+          <span class="sello" aria-hidden="true"><svg class="icono"><use href="#i-check"/></svg></span>
+          <div>
+            <h2 id="confirmacion-titulo">¡Compra confirmada!</h2>
+            <p id="confirmacion-texto" class="confirmacion__texto"></p>
+          </div>
+        </div>
+        <div class="ticket__cuerpo">
+          <ul id="confirmacion-detalle" class="detalle"></ul>
+        </div>
+        <div class="ticket__pie">
+          <p class="total">Total <span id="confirmacion-total"></span></p>
+          <p id="confirmacion-pago" class="ticket__nota"></p>
+          <button type="button" id="nueva-compra" class="boton boton--secundario">Hacer otra compra</button>
+        </div>
+      </div>
     </section>
   </main>
+
+  <footer class="pie">
+    <div class="contenedor">
+      <p>EcoHarmony Park · TP 6 de Ingeniería y Calidad de Software, UTN FRC 2026</p>
+    </div>
+  </footer>
 
   <!-- Pantalla simulada de Mercado Pago (no hay integración real: ver decisiones_de_diseno.md). -->
   <section id="pantalla-pago" class="pantalla-pago" hidden>
     <div class="pantalla-pago__tarjeta" role="dialog" aria-modal="true" aria-labelledby="pantalla-pago-titulo">
-      <p class="pantalla-pago__etiqueta">Simulación</p>
+      <span class="pantalla-pago__etiqueta">Simulación</span>
+      <span class="sello sello--grande" aria-hidden="true"><svg class="icono"><use href="#i-check"/></svg></span>
       <h2 id="pantalla-pago-titulo">Mercado Pago Compra Exitosa</h2>
-      <p>Se pagó <strong id="pantalla-pago-monto"></strong> con tarjeta.</p>
-      <button type="button" id="volver-del-pago" class="boton">Volver a EcoHarmony Park</button>
+      <p class="pantalla-pago__monto" id="pantalla-pago-monto"></p>
+      <p class="pantalla-pago__detalle">Pago aprobado con tarjeta.</p>
+      <button type="button" id="volver-del-pago" class="boton boton--ancho">Volver a EcoHarmony Park</button>
     </div>
   </section>
 
   <dialog id="modal-mail" class="modal" aria-labelledby="modal-mail-titulo">
+    <span class="modal__icono" aria-hidden="true"><svg class="icono"><use href="#i-sobre"/></svg></span>
     <h2 id="modal-mail-titulo" class="modal__titulo">Mail enviado a <span id="modal-mail-destinatario"></span></h2>
-    <p>Te enviamos la confirmación de tu compra.</p>
+    <p>Te enviamos la confirmación con el detalle de tu compra.</p>
     <form method="dialog">
-      <button class="boton">Aceptar</button>
+      <button class="boton boton--ancho">Aceptar</button>
     </form>
   </dialog>
 
