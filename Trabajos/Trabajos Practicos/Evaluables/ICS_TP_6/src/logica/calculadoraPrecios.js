@@ -1,12 +1,17 @@
 class CalculadoraPrecios {
   precioEntrada(edad, tipoPase) {
+    let precio = 10000;
+    if (tipoPase === "VIP") {
+      precio = 20000;
+    }
+
     if (edad <= 3) {
       return 0;
     }
-    if (tipoPase === "VIP") {
-      return 20000;
+    if (edad <= 15) {
+      return precio / 2;
     }
-    return 10000;
+    return precio;
   }
 }
 
