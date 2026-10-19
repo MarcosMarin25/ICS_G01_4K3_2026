@@ -16,7 +16,7 @@ Duración objetivo: **12 minutos** de exposición más preguntas. Conviene repar
 ## Antes de la exposición (lista de control)
 
 - [ ] `npm install` hecho en la máquina que se va a usar.
-- [ ] `npm test` da 58 de 58, `npm run test:coverage` da 100% y `npm run lint` no da errores.
+- [ ] `npm test` da 67 de 67, `npm run test:coverage` da 100% y `npm run lint` no da errores.
 - [ ] La rama de la demo creada y probada (ver el bloque 4).
 - [ ] La terminal y el editor con letra grande (mínimo 18 pt) y el tema claro, porque se lee mejor en el proyector.
 - [ ] Abiertos en pestañas: `pruebas_comprar_entradas.md`, `decisiones_de_diseno.md`, `reportes/reporte-pruebas.html`, `reportes/cobertura.png` y la web (`npm run web`).
@@ -41,7 +41,7 @@ Puntos para decir:
 ## 2. Cómo se diseñaron las pruebas (2 min)
 
 Puntos para decir:
-- **Las 58 pruebas se diseñaron antes de programar**, en lenguaje natural y en pseudocódigo, con técnicas de caja negra: **partición de equivalencias** y **valores límite**. Son las mismas técnicas del TP 8/9.
+- **Las 67 pruebas se diseñaron antes de programar**, en lenguaje natural y en pseudocódigo, con técnicas de caja negra: **partición de equivalencias** y **valores límite**. Son las mismas técnicas del TP 8/9.
 - En cada borde se prueban los dos lados. Mostrar la tabla de "Diseño de las pruebas" en `decisiones_de_diseno.md`. Ejemplos para decir en voz alta:
   - 3 años paga $0 y 4 años paga la mitad (C04 y C05).
   - A las 17:30 se puede comprar para hoy, y a las 17:31 no (P05 y F08).
@@ -86,7 +86,7 @@ Puntos para decir:
 ```bash
 git switch TP_6
 git switch -c demo-tdd
-npm test            # 58 de 58
+npm test            # 67 de 67
 ```
 
 La demo se hace en la rama `demo-tdd`, así no afecta la entrega. Ensayarla completa al menos una vez y después volver a empezar: `git switch TP_6`, `git branch -D demo-tdd` y repetir la preparación.
@@ -142,13 +142,13 @@ En `src/logica/servicioCompraEntradas.js`, importar la clase debajo de `require(
 const ErrorValidacion = require("./errorValidacion");
 ```
 
-Y reemplazar `throw new Error(` por `throw new ErrorValidacion(` en todo el archivo (en VS Code: Ctrl+H y "Reemplazar todo"). Correr `npm test`:
+Y reemplazar `throw new Error(` por `throw new ErrorValidacion(`. Hay un solo `throw` en todo el servicio, el de la tabla de reglas, así que es un único cambio. Correr `npm test`:
 
 ```
-Tests:       59 passed, 59 total
+Tests:       68 passed, 68 total
 ```
 
-Decir: "Implementación obvia: el cambio es mecánico y se escribe directo. Todas las validaciones son errores de negocio, así que se reemplazan todas".
+Decir: "Implementación obvia: el cambio es mecánico y se escribe directo. Como todas las reglas están en una sola tabla, un único `throw` cubre todas las validaciones".
 
 ### Paso 3. REFACTOR (30 s)
 
@@ -182,9 +182,9 @@ npm run lint
 ```
 
 Puntos para decir:
-- **Cada paso tiene su commit:** 31 RED, 31 GREEN y 13 REFACTOR en las secciones B, C y D, más 18 confirmaciones de borde. La sección A está en los commits del PR #5.
+- **Cada paso tiene su commit:** 39 RED, 39 GREEN y 14 REFACTOR en las secciones B a E, más 19 confirmaciones de borde. La sección A está en los commits del PR #5.
 - El registro de ejecución tiene, para cada prueba, **lo que realmente salió en el Red**, la estrategia y el hash del commit.
-- **Cobertura:** 100% (106/106 sentencias y 53/53 ramas). Mostrar `reportes/cobertura.png`. **Lint:** sin errores.
+- **Cobertura:** 100% (98/98 sentencias y 31/31 ramas). Mostrar `reportes/cobertura.png`. **Lint:** sin errores.
 - Mostrar `reportes/reporte-pruebas.html` en el navegador.
 
 ---
@@ -200,7 +200,7 @@ Elegir tres o cuatro, según el tiempo:
 - **Sin efectos secundarios:** una compra rechazada no cobra, no envía mail y no registra nada (F22), y se verificó con una **mutación**.
 - **La web** (mostrarla 30 segundos):
   - Reutiliza la misma lógica probada, sin duplicarla.
-  - Los errores que muestra son los del servicio.
+  - **Valida en el momento:** elegir un lunes marca la fecha al instante, y con 11 entradas aparece el error del máximo apenas la fecha es válida. Los mensajes salen de `validarCampos()`, que se hizo con TDD (V01 a V09) y usa la misma tabla de reglas que `comprar()`.
   - Mercado Pago y el mail son simulados, como pidió el PO.
   - No se prueba con Jest porque no tiene reglas de negocio: es otro nivel de prueba (*end-to-end*).
 - **Lección:** TDD es una técnica de **diseño**. Las pruebas definieron la interfaz del servicio y obligaron a inyectar el reloj y las dependencias.
@@ -241,7 +241,7 @@ La cobertura es necesaria pero no suficiente: dice que cada línea se ejecutó, 
 - Constantes con nombre (`MAXIMO_ENTRADAS_POR_FECHA`, `PORCENTAJE_DESCUENTO`).
 - `fechas.js`, cuando el servicio necesitó el mismo parseo que el calendario.
 - `valores.js`, cuando `"VIP"` estaba repetido.
-- Las validaciones en métodos privados por paso.
+- Las validaciones, primero en métodos privados por paso y después en una tabla única de reglas que comparten `comprar()` y `validarCampos()`. La cobertura lo pidió: con las reglas duplicadas había bajado al 96%.
 - Algunos refactors se postergaron a propósito (K04 hasta K05), porque con un solo caso no se veía la generalización.
 
 **¿Por qué el reloj es una dependencia?**
@@ -261,6 +261,9 @@ El PR #5 se mergeó con *squash*, que junta todos los commits en uno. Los commit
 
 **¿Por qué no probaron la web?**
 La web no tiene reglas de negocio: arma la solicitud, llama al servicio (que está probado al 100%) y muestra el resultado. Probarla con Jest sería probar el DOM. Lo visual se prueba con pruebas *end-to-end* (Playwright o Cypress) y revisión manual, y eso lo hicimos en el navegador en escritorio y en celular.
+
+**¿Cómo valida la web en el momento sin duplicar las reglas?**
+Agregamos con TDD un método `validarCampos()` (V01 a V09) que devuelve el error de cada campo sin comprar nada. Al terminar los Green, las reglas estaban repetidas entre `comprar()` y `validarCampos()`, y la cobertura bajó al 96%. El refactor las pasó a una tabla única de reglas que usan los dos métodos. Las 58 pruebas anteriores siguieron pasando sin cambios, y eso demuestra que `comprar()` no cambió su comportamiento. Es un ejemplo de refactor guiado por las pruebas y por la cobertura.
 
 **¿Cómo se relaciona con el aseguramiento de calidad?**
 La calidad se construye desde el inicio, no se inspecciona al final. TDD reduce defectos (F26 encontró uno antes de que existiera en producción), documenta el comportamiento (las pruebas son una especificación ejecutable) y da una red de seguridad para refactorizar. El lint asegura la guía de estilo y la cobertura mide qué se ejecutó.

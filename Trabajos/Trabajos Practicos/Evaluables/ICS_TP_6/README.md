@@ -8,7 +8,7 @@ Implementación con **TDD (Red → Green → Refactor)** de la User Story:
 
 | | |
 |---|---|
-| Pruebas | **58 de 58** pasan (Jest) |
+| Pruebas | **67 de 67** pasan (Jest) |
 | Cobertura | **100%** de sentencias, ramas, funciones y líneas en `src/logica/` |
 | Lint | Sin errores (ESLint) |
 | Evidencia del ciclo | Un commit por cada paso RED, GREEN y REFACTOR en la rama `TP_6` |
@@ -26,7 +26,7 @@ npm install
 
 | Comando | Qué hace |
 |---|---|
-| `npm test` | Corre las 58 pruebas y genera [`reportes/reporte-pruebas.html`](reportes/reporte-pruebas.html) |
+| `npm test` | Corre las 67 pruebas y genera [`reportes/reporte-pruebas.html`](reportes/reporte-pruebas.html) |
 | `npm run test:coverage` | Corre las pruebas con cobertura (exige 100%) y genera `coverage/` |
 | `npm run lint` | Verifica la guía de estilo con ESLint |
 | `npm run web` | Levanta la interfaz web en http://localhost:8080/src/web/ |
@@ -39,14 +39,14 @@ ICS_TP_6/
 │   ├── logica/                      Lógica de negocio (probada al 100%)
 │   │   ├── calculadoraPrecios.js    Precio de una entrada según la edad y el pase
 │   │   ├── calendarioParque.js      Días en que abre el parque
-│   │   ├── servicioCompraEntradas.js  Valida la solicitud y concreta la compra
+│   │   ├── servicioCompraEntradas.js  Valida la solicitud (también campo por campo) y concreta la compra
 │   │   ├── fechas.js                Funciones de fecha (zona local, fechas inexistentes, un mes)
 │   │   └── valores.js               Tipos de pase y formas de pago válidos
-│   └── web/                         Interfaz web (usa la lógica de src/logica)
+│   └── web/                         Interfaz web: valida en el momento con la lógica de src/logica
 ├── tests/
 │   ├── calculadoraPrecios.test.js   C01 a C09
 │   ├── calendarioParque.test.js     K01 a K05
-│   ├── servicioCompraEntradas.test.js  P01 a P18 y F01 a F27
+│   ├── servicioCompraEntradas.test.js  P01 a P18, F01 a F27 y V01 a V09
 │   └── dobles/                      Stubs, fake y spies (reloj, usuarios, compras, mail, Mercado Pago)
 ├── scripts/servidorWeb.js           Servidor local para `npm run web`
 └── reportes/                        Reporte HTML de las pruebas y cobertura (cobertura.txt y cobertura.png)
@@ -56,7 +56,7 @@ ICS_TP_6/
 
 | Documento | Contenido |
 |---|---|
-| [`pruebas_comprar_entradas.md`](pruebas_comprar_entradas.md) | Criterios de aceptación, reglas del PO, supuestos, las 58 pruebas en lenguaje natural y en pseudocódigo, y la trazabilidad |
+| [`pruebas_comprar_entradas.md`](pruebas_comprar_entradas.md) | Criterios de aceptación, reglas del PO, supuestos, las 67 pruebas en lenguaje natural y en pseudocódigo, y la trazabilidad |
 | [`registro_ejecucion_pruebas.md`](registro_ejecucion_pruebas.md) | Para cada prueba: lo obtenido en Red y en Green, la estrategia usada, el refactor y el commit de cada paso |
 | [`decisiones_de_diseno.md`](decisiones_de_diseno.md) | Decisiones de diseño en formato ADR, diseño de las pruebas, proceso TDD y métricas |
 | [`reportes/reporte-pruebas.html`](reportes/reporte-pruebas.html) | Reporte de la última ejecución de las pruebas |

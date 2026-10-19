@@ -238,6 +238,52 @@ En cada refactor las pruebas siguieron pasando. Al final hay 58/58 pruebas, el l
 **Resultado final:** 26 de 26 pruebas pasan.
 
 
+## E. Validación por campo (`validarCampos`)
+
+Esta sección se agregó para que la interfaz web pueda avisar los errores **en el momento**, mientras se completa el formulario. `comprar()` sigue cortando en el primer error. `validarCampos()` aplica las mismas reglas, pero devuelve el primer error de cada campo y no tiene efectos secundarios. Las pruebas V01 a V09 se diseñaron primero en `pruebas_comprar_entradas.md` (commit `0ea4e72`).
+
+| # | Prueba | Esperado | Obtenido en Red | Obtenido en Green | Estrategia | Cambio en el código | Estado |
+|---|---|---|---|---|---|---|---|
+| V01 | Solicitud válida | `{}` | `TypeError: servicio.validarCampos is not a function` | `{}` | Fake it | `validarCampos()` devuelve `{}` | ✅ Pasa |
+| V02 | Usuario no registrado | `{ usuario: "Solo los usuarios registrados..." }` | `{}` | Lo esperado | Implementación obvia | Se valida el usuario | ✅ Pasa |
+| V03 | Pase vacío y pago `"CHEQUE"` | Los dos errores a la vez | `{}` | Lo esperado | Implementación obvia | Se validan el tipo de pase y la forma de pago, cada uno en su campo | ✅ Pasa |
+| V04 | Lunes | `{ fechaVisita: "El parque está cerrado..." }` | `{}` | Lo esperado | Implementación obvia | Se valida la fecha: obligatoria, existente y las reglas de fecha (se reutiliza `#validarReglasDeFecha`) | ✅ Pasa |
+| V05 | Edades [30, -1, 8] | `{ edades: "Edad inválida" }` | `{}` | Lo esperado | Implementación obvia | Se validan las edades | ✅ Pasa |
+| V06 | 2.5 entradas con 3 edades | `{ cantidad: "...número entero" }` | `{ edades: "Debe indicar la edad de cada visitante" }` (\*) | Lo esperado | Triangulación | Se valida la cantidad, y las edades solo se comparan si la cantidad es válida | ✅ Pasa |
+| V07 | 7 previas + 4 | `{ cantidad: "No se pueden comprar más de 10..." }` | `{}` | Lo esperado | Implementación obvia | Se evalúa el máximo si la cantidad es válida (se reutiliza `#validarMaximoPorFecha`) | ✅ Pasa |
+| V08 | Sin efectos secundarios | Sin mail, sin Mercado Pago y el repositorio en 0 | Pasó sin cambios | Lo esperado | Confirmación de borde | — | ✅ Pasa |
+| V09 | Fecha `2026-13-45` y 11 entradas | `{ fechaVisita: "Fecha de visita inválida" }` | El esperado más `cantidad: "No se pueden comprar más de 10..."` (\*\*) | Lo esperado | Triangulación | El máximo se evalúa solo si el usuario, la fecha y la cantidad son válidos | ✅ Pasa |
+
+(\*) **V06** repite la lección de F20 en la validación por campo: una cantidad inválida no se puede comparar con las edades.
+
+(\*\*) **V09:** con una fecha inexistente, el máximo se calculaba igual sobre esa fecha. Una regla que depende de otro campo no tiene que evaluarse si ese campo es inválido.
+
+**Refactor:**
+- **V01 a V09:** cada Green agregó una condición en su lugar dentro de `validarCampos()`. Al terminar la sección, las reglas estaban **duplicadas**: una vez en los métodos privados de `comprar()` y otra en `validarCampos()`. La cobertura lo mostró: bajó al 96%, porque algunas ramas de `validarCampos()` no tenían una prueba propia.
+- **Cierre de la sección:** todas las reglas pasaron a una **tabla única** (`REGLAS`), en el orden del ADR 6. Cada regla indica en qué campo informa su error, de qué campos depende (`requiere`) y cuándo se incumple.
+  - `comprar()` lanza el error de la primera regla que no se cumple, igual que antes.
+  - `validarCampos()` recorre la tabla y guarda el primer error de cada campo, salteando las reglas cuyo campo ya tiene un error o que dependen de un campo inválido.
+  - Las 58 pruebas anteriores siguieron pasando sin cambios, así que el comportamiento de `comprar()` y el orden de las validaciones no cambiaron.
+  - La cobertura volvió al 100%: cada regla tiene una sola definición, cubierta por las pruebas F, y las V cubren cómo se combinan.
+
+**Commits** (rama `TP_6`):
+
+| Paso | RED | GREEN | REFACTOR |
+|---|---|---|---|
+| V01 | `961b9ea` | `d116672` | — |
+| V02 | `6362721` | `2f19a3d` | — |
+| V03 | `d8eaeb3` | `7b8f6a6` | — |
+| V04 | `52b0afe` | `04e660d` | — |
+| V05 | `b5d4b02` | `5f04547` | — |
+| V06 | `b922fca` | `5451d90` | — |
+| V07 | `30d29c8` | `be495f0` | — |
+| V08 | `2fe0a65` (pasó sin cambios) | — | — |
+| V09 | `034b86e` | `ef5ada8` | — |
+| Cierre de la sección | — | — | `22693d3` (tabla única de reglas) |
+
+**Resultado final:** 9 de 9 pruebas pasan.
+
+
 ## Resumen
 
 | Sección | Pruebas | Pasan | Fallan |
@@ -246,6 +292,7 @@ En cada refactor las pruebas siguieron pasando. Al final hay 58/58 pruebas, el l
 | B. Días de apertura | 5 | 5 | 0 |
 | C. Compras que deben pasar | 18 | 18 | 0 |
 | D. Compras que deben fallar | 26 | 26 | 0 |
-| **Total** | **58** | **58** | **0** |
+| E. Validación por campo | 9 | 9 | 0 |
+| **Total** | **67** | **67** | **0** |
 
-**Cobertura** (`npm run test:coverage`): 100% de sentencias (106/106), ramas (53/53), funciones (14/14) y líneas (103/103) en los cinco módulos de `src/logica/` (`calculadoraPrecios.js`, `calendarioParque.js`, `fechas.js`, `servicioCompraEntradas.js` y `valores.js`). Evidencia: [`reportes/cobertura.txt`](reportes/cobertura.txt) y [`reportes/cobertura.png`](reportes/cobertura.png). **Lint** (`npm run lint`): sin errores.
+**Cobertura** (`npm run test:coverage`): 100% de sentencias (98/98), ramas (31/31), funciones (34/34) y líneas (93/93) en los cinco módulos de `src/logica/` (`calculadoraPrecios.js`, `calendarioParque.js`, `fechas.js`, `servicioCompraEntradas.js` y `valores.js`). Después del refactor de la sección E hay menos ramas y más funciones que antes, porque cada regla de validación pasó a ser una función de la tabla `REGLAS` en lugar de un `if`. Evidencia: [`reportes/cobertura.txt`](reportes/cobertura.txt) y [`reportes/cobertura.png`](reportes/cobertura.png). **Lint** (`npm run lint`): sin errores.

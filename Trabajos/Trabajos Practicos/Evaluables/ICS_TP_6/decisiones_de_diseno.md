@@ -8,7 +8,7 @@ Documentos relacionados:
 
 | Documento | Contenido |
 |---|---|
-| [`pruebas_comprar_entradas.md`](pruebas_comprar_entradas.md) | User Story, criterios de aceptación, reglas del PO, supuestos y las 58 pruebas (en lenguaje natural y en pseudocódigo), con trazabilidad |
+| [`pruebas_comprar_entradas.md`](pruebas_comprar_entradas.md) | User Story, criterios de aceptación, reglas del PO, supuestos y las 67 pruebas (en lenguaje natural y en pseudocódigo), con trazabilidad |
 | [`registro_ejecucion_pruebas.md`](registro_ejecucion_pruebas.md) | Para cada prueba: lo obtenido en Red y en Green, la estrategia usada, el refactor y el commit de cada paso |
 | [`reportes/reporte-pruebas.html`](reportes/reporte-pruebas.html) | Reporte de la última ejecución de `npm test` |
 
@@ -29,6 +29,7 @@ Documentos relacionados:
 | ADR 9 | Montos en pesos enteros |
 | ADR 10 | Centralizar los valores válidos y las funciones de fecha |
 | ADR 11 | Interfaz web que reutiliza la lógica sin duplicarla, y que no se prueba con Jest |
+| ADR 12 | Validación por campo para avisar los errores en el momento, con una tabla única de reglas |
 
 ---
 
@@ -48,7 +49,7 @@ Además hay dos módulos de apoyo, que salieron de refactors: `fechas.js` (funci
 
 **Alternativas consideradas.**
 - **Una sola función `comprar()` con todo adentro.** Se descartó: cada regla nueva obligaría a tocar la misma función, las pruebas de precio necesitarían armar una solicitud completa, y un cambio en los precios podría romper la validación de fechas.
-- **Separar también las validaciones en una clase `ValidadorSolicitud`.** Se evaluó en el refactor final de la sección D. Se descartó porque las validaciones necesitan cuatro de las siete dependencias del servicio (reloj, calendario, usuarios y compras), y moverlas a otra clase habría duplicado la inyección sin bajar el acoplamiento. Se optó por métodos privados con nombre, uno por paso (ADR 6).
+- **Separar también las validaciones en una clase `ValidadorSolicitud`.** Se evaluó en el refactor final de la sección D. Se descartó porque las validaciones necesitan cuatro de las siete dependencias del servicio (reloj, calendario, usuarios y compras), y moverlas a otra clase habría duplicado la inyección sin bajar el acoplamiento. Primero se optó por métodos privados con nombre, uno por paso, y después por una tabla de reglas dentro del mismo servicio (ADR 6 y ADR 12).
 
 **Consecuencias.**
 - Cada clase se prueba por separado: la calculadora y el calendario no necesitan dobles de prueba.
@@ -90,7 +91,7 @@ Diferencias, según Meszaros:
 - **Usar `jest.fn()` y `jest.mock()`.** Se descartó para estos dobles: las clases propias tienen nombre, documentan la interfaz esperada y se pueden reutilizar fuera de Jest.
 
 **Consecuencias.**
-- Las 58 pruebas corren en unos 2 segundos y no necesitan red, base de datos ni configuración.
+- Las 67 pruebas corren en unos 2 segundos y no necesitan red, base de datos ni configuración.
 - Se puede cambiar Mercado Pago por otra pasarela, o el proveedor de mail, sin tocar `ServicioCompraEntradas`.
 - La integración real con Mercado Pago y con el mail queda fuera de las pruebas unitarias (ver "Fuera del alcance de las pruebas unitarias").
 
@@ -156,7 +157,7 @@ Diferencias, según Meszaros:
 
 **Alternativas consideradas.**
 - **Devolver un resultado `{ confirmada: false, error }`.** Se descartó: el código que llama podría ignorar el error sin darse cuenta. Con una excepción, una solicitud inválida no puede pasar desapercibida.
-- **Juntar todos los errores en una lista.** Se descartó: los criterios y las pruebas piden un mensaje por caso, y varios errores dependen de otros (no tiene sentido validar la fecha si no se indicó). Ver el ADR 6.
+- **Juntar todos los errores en una lista.** Para `comprar()` se descartó: los criterios y las pruebas piden un mensaje por caso, y varios errores dependen de otros (no tiene sentido validar la fecha si no se indicó). Ver el ADR 6. Para la interfaz, en cambio, se agregó `validarCampos()`, que informa el primer error de cada campo sin comprar nada (ADR 12).
 - **Una clase propia `ErrorValidacion extends Error`.** Permitiría distinguir un error de negocio de un bug. El Red de F06 mostró por qué importa: sin la validación, el servicio no daba un error de negocio, sino que explotaba con `TypeError: Cannot read properties of null (reading 'split')`. **No se implementó**, porque ninguna prueba lo exige y en TDD no se escribe código que ninguna prueba pida. Queda como mejora: primero se agregaría la prueba al documento de pruebas y después la clase.
 
 **Consecuencias.** Una solicitud se procesa entera o no se procesa. La interfaz puede mostrar el mensaje del error tal como viene, sin traducirlo.
@@ -169,17 +170,17 @@ Diferencias, según Meszaros:
 - **F11** (`cantidad: -1, edades: []`): la cantidad de edades tampoco coincide, pero se espera el error de cantidad.
 - **F20** (`cantidad: 2.5` con 3 edades): se espera el error de número entero. En su Red, el código informaba "Debe indicar la edad de cada visitante", y eso demostró que el orden importa.
 
-**Decisión.** Cinco etapas, en este orden, cada una en un método privado de `ServicioCompraEntradas`:
+**Decisión.** Cinco etapas, en este orden. Las reglas están definidas en la tabla `REGLAS` de `ServicioCompraEntradas`, en ese mismo orden, y `comprar()` lanza el error de la primera que no se cumple:
 
-| # | Etapa | Método | Pruebas |
-|---|---|---|---|
-| 1 | Usuario registrado | `#validarUsuario` | F19 |
-| 2 | Datos obligatorios presentes: fecha, tipo de pase, forma de pago | `#validarDatosObligatorios` | F06, F17, F01 |
-| 3 | Valores válidos: fecha existente, pase, forma de pago, cantidad entera y ≥ 1, una edad por entrada, edades enteras ≥ 0 | `#validarValores` | F25, F27, F18, F23, F20, F10, F11, F14, F24, F15, F21 |
-| 4 | Reglas de fecha: no pasada, parque abierto, hasta un mes, 17:30 para hoy | `#validarReglasDeFecha` | F05, F02, F03, F04, F07, F26, F08 |
-| 5 | Máximo de 10 por usuario y por fecha | `#validarMaximoPorFecha` | F09, F12, F13, F22 |
+| # | Etapa | Pruebas |
+|---|---|---|
+| 1 | Usuario registrado | F19 |
+| 2 | Datos obligatorios presentes: fecha, tipo de pase, forma de pago | F06, F17, F01 |
+| 3 | Valores válidos: fecha existente, pase, forma de pago, cantidad entera y ≥ 1, una edad por entrada, edades enteras ≥ 0 | F25, F27, F18, F23, F20, F10, F11, F14, F24, F15, F21 |
+| 4 | Reglas de fecha: no pasada, parque abierto, hasta un mes, 17:30 para hoy | F05, F02, F03, F04, F07, F26, F08 |
+| 5 | Máximo de 10 por usuario y por fecha | F09, F12, F13, F22 |
 
-Con este orden, `comprar()` se lee como una lista de pasos.
+Al cerrar la sección D, cada etapa quedó en un método privado (`#validarUsuario`, `#validarDatosObligatorios`, etc.), y `comprar()` se leía como una lista de pasos. Al cerrar la sección E, los métodos se reemplazaron por la tabla `REGLAS`, para que `validarCampos()` usara las mismas reglas sin duplicarlas (ADR 12). El orden y los mensajes no cambiaron, y las 58 pruebas anteriores lo garantizan.
 
 **Justificación del orden.**
 - **Primero quién compra, después qué compra.** Un usuario no registrado no puede comprar, así que no tiene sentido revisar el resto de la solicitud.
@@ -267,8 +268,12 @@ La implementación evalúa los rangos de menor a mayor y devuelve el primero que
 
 **Decisión.**
 - **Ubicación y estructura:** la interfaz está en `src/web/` (`index.html`, `estilos.css` y `app.js`). Se abre con `npm run web`, que levanta un servidor local mínimo (`scripts/servidorWeb.js`, sin dependencias, que solo sirve archivos de `src/` y solo escucha en la máquina local), en `http://localhost:8080/src/web/`.
-- **La web no duplica la lógica.** `app.js` tiene un cargador de pocas líneas que lee cada módulo de `src/logica/` con `fetch` y lo ejecuta con su propio `module` y `require`. Así, la página usa exactamente el mismo código que verifican las 58 pruebas.
-- **La validación la hace el servicio.** El formulario tiene `novalidate`, y los mensajes de error que se muestran son los que lanza `ServicioCompraEntradas`. La interfaz solo guía al usuario: el selector de fecha sugiere el rango de un mes, avisa si el día elegido está cerrado (usando `CalendarioParque`) y muestra un resumen del precio estimado (usando `CalculadoraPrecios`).
+- **La web no duplica la lógica.** `app.js` tiene un cargador de pocas líneas que lee cada módulo de `src/logica/` con `fetch` y lo ejecuta con su propio `module` y `require`. Así, la página usa exactamente el mismo código que verifican las 67 pruebas.
+- **La validación la hace el servicio, y se ve en el momento.** El formulario tiene `novalidate`. Mientras el usuario completa el formulario, la página llama a `servicio.validarCampos()` (ADR 12) y muestra debajo de cada campo el error que corresponde, con el mismo mensaje que daría `comprar()`:
+  - Un campo muestra su error cuando el usuario terminó con él (sale del campo o elige una opción o una fecha). Desde ahí se revalida con cada cambio, así el error desaparece apenas se corrige.
+  - Las edades no se marcan mientras queden campos de edad sin completar.
+  - Al tocar Comprar se muestran los errores de todos los campos y el foco va al primero inválido. `comprar()` sigue siendo la autoridad final.
+  - Además, el selector de fecha sugiere el rango de un mes, y el resumen muestra el precio estimado (usando `CalculadoraPrecios`).
 - **Dependencias del navegador:**
   - El reloj es el real.
   - La sesión y los usuarios están simulados (el PO permite empezar con la sesión mockeada). Los usuarios registrados de prueba son `visitante@mail.com` y `otro@mail.com`.
@@ -301,7 +306,10 @@ La implementación evalúa los rangos de menor a mayor y devuelve el primero que
 - **La cobertura se mide solo sobre `src/logica/`** (`collectCoverageFrom` en `package.json`). Incluir `src/web/` bajaría la cobertura sin aportar información sobre la calidad de la lógica, y haría fallar el umbral del 100%.
 - **Verificación realizada.** Se verificó en Chrome, en escritorio y con un ancho de celular de 360 px, sin desplazamiento horizontal. Se recorrieron estos flujos:
   - Enviar el formulario vacío muestra "Debe indicar la fecha de visita".
-  - Elegir un lunes muestra el aviso de parque cerrado.
+  - Elegir un lunes marca la fecha en el momento con "El parque está cerrado en la fecha seleccionada".
+  - Con 11 entradas y una fecha inválida no se marca el máximo; al corregir la fecha aparece en el momento "No se pueden comprar más de 10 entradas para una misma fecha" en la cantidad.
+  - Con una sola edad cargada y dos vacías no se marca nada; al completar con 10.5 aparece "Edad inválida".
+  - Al comprar con datos incompletos se marcan todos los campos con error a la vez y el foco va al primero.
   - Comprar sin forma de pago muestra "Debe seleccionar una forma de pago".
   - Una compra con tarjeta de 3 entradas VIP (edades 30, 28 y 2) muestra la pantalla "Mercado Pago Compra Exitosa" por $40.000, después la confirmación "Compraste 3 entradas VIP para el 20/10/2026" y el modal "Mail enviado a visitante@mail.com".
 
@@ -313,7 +321,36 @@ La implementación evalúa los rangos de menor a mayor y devuelve el primero que
 **Consecuencias.**
 - La web siempre usa la versión probada de la lógica.
 - Para abrir la web hace falta `npm run web`. Si se abre el HTML directamente como `file://`, la página avisa que necesita el servidor.
-- El calendario nativo del navegador no permite deshabilitar días sueltos. Por eso, en lugar de deshabilitar los lunes y feriados, la interfaz avisa al elegirlos, y el servicio los rechaza si igual se envían.
+- El calendario nativo del navegador no permite deshabilitar días sueltos. Por eso, en lugar de deshabilitar los lunes y feriados, la interfaz marca el error en el momento al elegirlos, y el servicio los rechaza si igual se envían.
+
+---
+
+## ADR 12. Validación por campo para avisar los errores en el momento, con una tabla única de reglas
+
+**Contexto.** Se pidió que la interfaz valide cada dato **en el momento**, mientras se completa el formulario, y no recién al comprar. `comprar()` no sirve para eso por dos motivos: corta en el primer error (ADR 6), así que no puede informar el estado de cada campo, y si la solicitud es válida concreta la compra.
+
+**Decisión.**
+- **Un método nuevo, `validarCampos(solicitud)`, hecho con TDD** (sección E, V01 a V09). Devuelve el primer error de cada campo, por ejemplo `{ fechaVisita: "...", cantidad: "..." }`, o `{}`. No tiene efectos secundarios (V08).
+- **Dependencias entre campos.** Una regla que depende de otro campo no se evalúa si ese campo es inválido. Las edades no se comparan si la cantidad es inválida (V06), y el máximo no se evalúa si el usuario, la fecha o la cantidad son inválidos (V09).
+- **Una sola definición de cada regla.** Al terminar los Green de la sección E, las reglas estaban duplicadas entre `comprar()` y `validarCampos()`, y la cobertura bajó al 96%. El refactor las pasó a una **tabla `REGLAS`**, en el orden del ADR 6. Cada regla indica en qué campo informa su error, de qué campos depende (`requiere`) y cuándo se incumple:
+
+  ```js
+  { campo: "edades", requiere: ["cantidad"], mensaje: "Edad inválida",
+    seIncumple: (solicitud) => solicitud.edades.some((edad) => !Number.isInteger(edad) || edad < 0) }
+  ```
+
+  - `comprar()` busca la primera regla que no se cumple y lanza su mensaje.
+  - `validarCampos()` recorre toda la tabla y guarda el primer error de cada campo.
+
+**Alternativas consideradas.**
+- **Validar en la interfaz, repitiendo las reglas en `app.js`.** Se descartó: duplicaría las reglas sin pruebas y contradice el ADR 11.
+- **Llamar a `comprar()` en cada cambio.** Se descartó: solo informa el primer error, y con una solicitud válida compraría de verdad.
+- **Mantener los métodos privados y repetir las reglas en `validarCampos()`.** Fue el estado después de los Green, y se refactorizó por la duplicación.
+
+**Consecuencias.**
+- La interfaz muestra los mismos mensajes que `comprar()`, desde la misma definición probada.
+- Agregar una regla es agregar una fila a la tabla, y queda disponible para los dos métodos.
+- Las 58 pruebas anteriores pasaron sin cambios después del refactor, lo que confirma que `comprar()` mantuvo su comportamiento y su orden.
 
 ---
 
@@ -350,7 +387,7 @@ El TP 8/9 (pruebas de caja negra) usa estas mismas técnicas. En este TP ya se a
 
 | Propiedad | Cómo se cumple |
 |---|---|
-| **F**ast (rápidas) | 58 pruebas en unos 2 segundos, sin red ni base de datos (ADR 2) |
+| **F**ast (rápidas) | 67 pruebas en unos 2 segundos, sin red ni base de datos (ADR 2) |
 | **I**ndependent (independientes) | `beforeEach` crea dobles nuevos para cada prueba, y ninguna depende de otra |
 | **R**epeatable (repetibles) | El reloj inyectado (ADR 3) y las fechas locales (ADR 4) dan el mismo resultado cualquier día y en cualquier zona |
 | **S**elf-validating (autoverificables) | Cada prueba pasa o falla con `expect`, sin revisión manual |
@@ -399,6 +436,7 @@ Cada paso tiene su commit en la rama `TP_6`, con el sufijo `[RED]`, `[GREEN]` o 
 | D (F26) | `mismoDiaDelMesSiguiente()` | Lógica de calendario fuera del servicio |
 | D (F27) | `esFechaExistente()` | Lógica de calendario fuera del servicio |
 | D (cierre) | Validaciones en cinco métodos privados y `#emitirEntradas()` | `comprar()` se lee como una lista de pasos (ADR 6) |
+| E (cierre) | Tabla única `REGLAS`, usada por `comprar()` y `validarCampos()` | Las reglas estaban duplicadas; la cobertura había bajado al 96% (ADR 12) |
 
 Algunos refactors se **postergaron a propósito** (K04 hasta K05, P01 hasta P10 y F25 hasta F27): con un solo caso todavía no se veía la forma de la generalización.
 
@@ -443,12 +481,12 @@ La tabla completa de **criterios de aceptación y reglas del PO → pruebas**, y
 
 | Métrica | Valor |
 |---|---|
-| Pruebas | **58**: 9 de precios (C), 5 de calendario (K), 18 de compras válidas (P) y 26 de validaciones (F) |
-| Resultado | 58 de 58 pasan |
+| Pruebas | **67**: 9 de precios (C), 5 de calendario (K), 18 de compras válidas (P), 26 de validaciones (F) y 9 de validación por campo (V) |
+| Resultado | 67 de 67 pasan |
 | Cobertura (`npm run test:coverage`) | **100%** de sentencias, ramas, funciones y líneas en los cinco módulos de `src/logica/`. La interfaz de `src/web/` no se mide (ADR 11) |
 | Lint (`npm run lint`) | Sin errores |
-| Tiempo de ejecución | Unos 2 segundos para las 58 pruebas. La primera corrida tarda más porque incluye la carga inicial de Jest |
-| Ciclos registrados en `TP_6` (secciones B, C y D) | 31 RED, 31 GREEN, 13 REFACTOR y 18 confirmaciones de borde, cada uno en su commit |
+| Tiempo de ejecución | Unos 2 segundos para las 67 pruebas. La primera corrida tarda más porque incluye la carga inicial de Jest |
+| Ciclos registrados en `TP_6` (secciones B a E) | 39 RED, 39 GREEN, 14 REFACTOR y 19 confirmaciones de borde, cada uno en su commit |
 | Sección A | 9 pruebas, con los commits de cada paso en el PR #5 |
 
 **La cobertura al 100% es necesaria, pero no suficiente.** Indica que cada línea y cada rama se ejecutó en alguna prueba, pero no que las aserciones sean buenas. La confianza en la suficiencia de las pruebas viene de la combinación de tres cosas: la **trazabilidad** contra los criterios y las reglas, el diseño con **partición de equivalencias y valores límite**, y la verificación por **mutación** de F22, que mostró que una prueba que pasó sin cambios detecta un defecto real.

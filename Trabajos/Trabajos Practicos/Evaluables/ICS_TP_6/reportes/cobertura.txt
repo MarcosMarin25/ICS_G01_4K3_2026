@@ -1,7 +1,7 @@
 Cobertura de src/logica/ - npm run test:coverage - 2026-10-19
 
 Test Suites: 3 passed, 3 total
-Tests:       58 passed, 58 total
+Tests:       67 passed, 67 total
 
 ---------------------------|---------|----------|---------|---------|-------------------
 File                       | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
