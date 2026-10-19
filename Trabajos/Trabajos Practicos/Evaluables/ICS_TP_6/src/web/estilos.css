@@ -1,17 +1,21 @@
 /*
- * Paleta definida por el grupo ante la falta de valores del PO, inspirada en la temática
- * de bioparque. Si aparece la paleta oficial, alcanza con cambiar estas variables.
+ * Paleta oficial del PO (FAQ 3): https://coolors.co/palette/386641-6a994e-a7c957-f2e8cf-bc4749
+ * Contraste verificado con WCAG AA (ver decisiones_de_diseno.md, ADR 11).
  */
 :root {
-  --color-primario: #2E7D32;         /* verde bosque: encabezado, botones principales */
-  --color-primario-hover: #1B5E20;
-  --color-secundario: #8D6E63;       /* tierra: bordes, detalles */
-  --color-acento: #F9A825;           /* amarillo sol: destacados, total a pagar */
-  --color-fondo: #F5F7F2;            /* fondo general */
+  --color-primario: #386641;         /* encabezado, botones principales; texto blanco encima (6,68:1) */
+  --color-secundario: #6A994E;       /* bordes y elementos secundarios; nunca como color de texto (3,34:1) */
+  --color-acento: #A7C957;           /* destacados, total a pagar; texto oscuro encima (7,90:1) */
+  --color-fondo: #F2E8CF;            /* fondo general */
+  --color-error: #BC4749;            /* mensajes de validación (5,08:1 sobre blanco) */
+
+  /* Colores de apoyo, fuera de la paleta del PO. */
   --color-superficie: #FFFFFF;       /* tarjetas y formulario */
-  --color-texto: #1F2A1F;
-  --color-error: #C62828;            /* mensajes de validación */
-  --color-exito: #2E7D32;
+  --color-texto: #1F2A1F;            /* 12,22:1 sobre el fondo */
+  --color-exito: var(--color-primario);
+  /* Hover de los botones con texto blanco: blanco sobre el secundario da 3,34:1 y no cumple AA,
+     así que se oscurece el primario (8,87:1). */
+  --color-primario-hover: color-mix(in srgb, var(--color-primario) 80%, black);
 
   /* Derivados de la paleta (mezclas), para no agregar colores nuevos. */
   --color-texto-suave: color-mix(in srgb, var(--color-texto) 68%, var(--color-fondo));

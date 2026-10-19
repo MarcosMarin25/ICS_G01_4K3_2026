@@ -280,19 +280,33 @@ La implementación evalúa los rangos de menor a mayor y devuelve el primero que
   - Las compras se guardan en memoria mientras la página está abierta.
   - Mercado Pago y el mail son implementaciones simuladas que muestran la pantalla y el modal que pidió el PO.
 - **Campo de edad vacío.** Se envía como `NaN`, y no como `0`, para que el servicio lo rechace ("Edad inválida"). Si se enviara como 0, sería la edad de un bebé, que es válida.
-- **Paleta (supuesto).** El PO no proporcionó los valores de su paleta. Se usa una **paleta definida por el grupo ante la falta de valores del PO, inspirada en la temática de bioparque**. Está en variables CSS de `:root`, para reemplazarla fácilmente si aparece la paleta oficial:
+- **Paleta oficial del PO (FAQ 3).** Se usa la paleta [386641-6a994e-a7c957-f2e8cf-bc4749](https://coolors.co/palette/386641-6a994e-a7c957-f2e8cf-bc4749), en variables CSS de `:root`. Hasta que apareció el FAQ, la web usaba una paleta provisoria definida por el grupo, que se reemplazó cambiando solo esas variables.
 
   | Variable | Color | Uso |
   |---|---|---|
-  | `--color-primario` | `#2E7D32` (verde bosque) | Encabezado, botones principales |
-  | `--color-primario-hover` | `#1B5E20` | Botones al pasar el mouse |
-  | `--color-secundario` | `#8D6E63` (tierra) | Bordes, detalles |
-  | `--color-acento` | `#F9A825` (amarillo sol) | Destacados, total a pagar |
-  | `--color-fondo` | `#F5F7F2` | Fondo general |
-  | `--color-superficie` | `#FFFFFF` | Tarjetas y formulario |
-  | `--color-texto` | `#1F2A1F` | Texto |
-  | `--color-error` | `#C62828` | Mensajes de validación |
-  | `--color-exito` | `#2E7D32` | Confirmaciones |
+  | `--color-primario` | `#386641` | Encabezado, botones principales (texto blanco encima) |
+  | `--color-secundario` | `#6A994E` | Bordes y elementos secundarios |
+  | `--color-acento` | `#A7C957` | Destacados, total a pagar (texto oscuro encima) |
+  | `--color-fondo` | `#F2E8CF` | Fondo general |
+  | `--color-error` | `#BC4749` | Mensajes de validación |
+
+  Además, se usan tres colores de apoyo que el PO no define: blanco (`#FFFFFF`) para las tarjetas, `#1F2A1F` para el texto, y el primario como color de éxito.
+
+  **Contraste (WCAG 2.1, nivel AA).** Se calculó la relación de contraste de cada combinación de texto y fondo que usa la página. El mínimo es 4,5:1 para el texto normal, y 3:1 para los íconos y los bordes.
+
+  | Combinación | Contraste | Resultado |
+  |---|---|---|
+  | Texto blanco sobre primario (encabezado, botones) | 6,68:1 | Cumple |
+  | Texto sobre fondo | 12,22:1 | Cumple |
+  | Texto sobre acento (total, etiquetas) | 7,90:1 | Cumple |
+  | Primario sobre blanco (títulos, precios) | 6,68:1 | Cumple |
+  | Error sobre blanco | 5,08:1 | Cumple |
+  | Error sobre el fondo rosado de los mensajes | 4,54:1 | Cumple |
+  | Acento sobre primario (íconos del encabezado) | 3,54:1 | Cumple (no es texto) |
+  | Secundario sobre blanco (bordes) | 3,34:1 | Cumple (no es texto) |
+  | **Texto blanco sobre secundario** | **3,34:1** | **No cumple** |
+
+  Por el último caso, el secundario **no se usa como fondo de texto ni como color de texto**. El FAQ lo sugiere para el *hover*, pero los botones tienen texto blanco, así que para el *hover* se usa el primario oscurecido un 20% (8,87:1). Es un ajuste de accesibilidad sobre la paleta oficial, sin agregar colores nuevos.
 
   La fuente es Lato (Google Fonts) en todo el sitio. El diseño es *mobile first*:
   - **Formulario:** está dividido en cuatro pasos numerados (fecha, visitantes, pase y forma de pago), con tarjetas seleccionables y botones − y + para la cantidad.
