@@ -128,6 +128,11 @@ class ServicioCompraEntradas {
       } else if (solicitud.edades.some((edad) => !Number.isInteger(edad) || edad < 0)) {
         errores.edades = "Edad inválida";
       }
+      try {
+        this.#validarMaximoPorFecha(solicitud);
+      } catch (error) {
+        errores.cantidad = error.message;
+      }
     }
     return errores;
   }
