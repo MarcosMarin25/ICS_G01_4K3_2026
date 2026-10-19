@@ -269,4 +269,9 @@ describe("ServicioCompraEntradas - validaciones", () => {
     expect(() => servicio.comprar(solicitudValida({ cantidad: 2, edades: [30, 2] })))
       .toThrow("No se pueden comprar más de 10 entradas para una misma fecha");
   });
+
+  test("F14 - rechaza la compra si falta la edad de algún visitante", () => {
+    expect(() => servicio.comprar(solicitudValida({ cantidad: 3, edades: [30, 28] })))
+      .toThrow("Debe indicar la edad de cada visitante");
+  });
 });
