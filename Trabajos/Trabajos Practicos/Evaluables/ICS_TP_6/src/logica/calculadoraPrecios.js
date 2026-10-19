@@ -1,5 +1,7 @@
 class CalculadoraPrecios {
-  precioEntrada(edad, tipoPase) {}
+  precioEntrada(edad, tipoPase) {
+    return 10000;
+  }
 }
 
 module.exports = CalculadoraPrecios;
