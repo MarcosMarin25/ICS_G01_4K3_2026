@@ -324,4 +324,9 @@ describe("ServicioCompraEntradas - validaciones", () => {
     expect(() => servicio.comprar(solicitudValida({ formaPago: "CHEQUE" })))
       .toThrow("La forma de pago debe ser tarjeta o efectivo");
   });
+
+  test("F24 - rechaza la compra si sobran edades", () => {
+    expect(() => servicio.comprar(solicitudValida({ cantidad: 3, edades: [30, 28, 8, 40] })))
+      .toThrow("Debe indicar la edad de cada visitante");
+  });
 });
