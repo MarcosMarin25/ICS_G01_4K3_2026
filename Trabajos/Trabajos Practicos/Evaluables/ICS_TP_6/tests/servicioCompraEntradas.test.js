@@ -274,4 +274,11 @@ describe("ServicioCompraEntradas - validaciones", () => {
     expect(() => servicio.comprar(solicitudValida({ cantidad: 3, edades: [30, 28] })))
       .toThrow("Debe indicar la edad de cada visitante");
   });
+
+  test("F15 - rechaza una edad negativa", () => {
+    expect(() => servicio.comprar(solicitudValida({ edades: [30, -1, 8] })))
+      .toThrow("Edad inválida");
+  });
+
+  // F16 retirada: la edad 0 pasó a ser válida (ver P12).
 });
