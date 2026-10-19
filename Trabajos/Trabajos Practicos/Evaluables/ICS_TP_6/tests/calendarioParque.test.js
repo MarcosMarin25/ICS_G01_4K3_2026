@@ -22,4 +22,8 @@ describe("CalendarioParque", () => {
   test("K04 - el 25 de diciembre el parque está cerrado", () => {
     expect(calendario.estaAbierto("2026-12-25")).toBe(false);
   });
+
+  test("K05 - el 1 de enero el parque está cerrado", () => {
+    expect(calendario.estaAbierto("2027-01-01")).toBe(false);
+  });
 });
