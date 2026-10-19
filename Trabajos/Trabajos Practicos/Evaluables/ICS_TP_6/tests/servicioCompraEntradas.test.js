@@ -133,4 +133,11 @@ describe("ServicioCompraEntradas - compras válidas", () => {
     expect(resultado.entradas[0].precio).toBe(20000);
     expect(resultado.entradas[1].precio).toBe(0);
   });
+
+  test("P12 - acepta una edad de 0 años y emite su entrada de $0", () => {
+    const resultado = servicio.comprar(solicitudValida({ cantidad: 2, edades: [30, 0] }));
+
+    expect(resultado.confirmada).toBe(true);
+    expect(resultado.entradas[1].precio).toBe(0);
+  });
 });
