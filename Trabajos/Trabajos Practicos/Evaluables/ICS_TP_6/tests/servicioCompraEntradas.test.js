@@ -243,4 +243,9 @@ describe("ServicioCompraEntradas - validaciones", () => {
       edades: Array(11).fill(30),
     }))).toThrow("No se pueden comprar más de 10 entradas para una misma fecha");
   });
+
+  test("F10 - rechaza una cantidad de 0 entradas", () => {
+    expect(() => servicio.comprar(solicitudValida({ cantidad: 0, edades: [] })))
+      .toThrow("La cantidad de entradas debe ser al menos 1");
+  });
 });
