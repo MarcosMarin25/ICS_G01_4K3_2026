@@ -115,4 +115,14 @@ describe("ServicioCompraEntradas - compras válidas", () => {
     expect(resultado.confirmada).toBe(true);
     expect(resultado.tipoPase).toBe("REGULAR");
   });
+
+  test("P10 - el monto total aplica los descuentos por edad", () => {
+    const resultado = servicio.comprar(solicitudValida({
+      cantidad: 4,
+      edades: [35, 10, 2, 65],
+      tipoPase: "REGULAR",
+    }));
+
+    expect(resultado.montoTotal).toBe(20000); // 10000 + 5000 + 0 + 5000
+  });
 });
