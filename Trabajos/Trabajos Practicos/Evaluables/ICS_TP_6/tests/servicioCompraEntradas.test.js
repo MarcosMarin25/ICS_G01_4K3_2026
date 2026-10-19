@@ -86,4 +86,10 @@ describe("ServicioCompraEntradas - compras válidas", () => {
 
     expect(resultado.confirmada).toBe(true);
   });
+
+  test("P06 - permite comprar justo un mes antes", () => {
+    const resultado = servicio.comprar(solicitudValida({ fechaVisita: "2026-11-15" }));
+
+    expect(resultado.confirmada).toBe(true);
+  });
 });
