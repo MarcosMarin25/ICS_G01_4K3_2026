@@ -219,4 +219,9 @@ describe("ServicioCompraEntradas - validaciones", () => {
     expect(() => servicio.comprar(solicitudValida({ fechaVisita: AYER })))
       .toThrow("La fecha de visita no puede ser anterior a hoy");
   });
+
+  test("F06 - rechaza la compra sin fecha de visita", () => {
+    expect(() => servicio.comprar(solicitudValida({ fechaVisita: null })))
+      .toThrow("Debe indicar la fecha de visita");
+  });
 });
