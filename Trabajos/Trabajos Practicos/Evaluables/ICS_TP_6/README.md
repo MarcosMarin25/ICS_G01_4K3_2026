@@ -49,7 +49,7 @@ ICS_TP_6/
 │   ├── servicioCompraEntradas.test.js  P01 a P18 y F01 a F27
 │   └── dobles/                      Stubs, fake y spies (reloj, usuarios, compras, mail, Mercado Pago)
 ├── scripts/servidorWeb.js           Servidor local para `npm run web`
-└── reportes/                        Reporte HTML de las pruebas y resumen de cobertura
+└── reportes/                        Reporte HTML de las pruebas y cobertura (cobertura.txt y cobertura.png)
 ```
 
 ## Documentos

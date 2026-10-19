@@ -248,4 +248,4 @@ En cada refactor las pruebas siguieron pasando. Al final hay 58/58 pruebas, el l
 | D. Compras que deben fallar | 26 | 26 | 0 |
 | **Total** | **58** | **58** | **0** |
 
-**Cobertura** (`npm run test:coverage`): 100% de sentencias, ramas, funciones y líneas en los cinco módulos de `src/logica/` (`calculadoraPrecios.js`, `calendarioParque.js`, `fechas.js`, `servicioCompraEntradas.js` y `valores.js`). **Lint** (`npm run lint`): sin errores.
+**Cobertura** (`npm run test:coverage`): 100% de sentencias (106/106), ramas (53/53), funciones (14/14) y líneas (103/103) en los cinco módulos de `src/logica/` (`calculadoraPrecios.js`, `calendarioParque.js`, `fechas.js`, `servicioCompraEntradas.js` y `valores.js`). Evidencia: [`reportes/cobertura.txt`](reportes/cobertura.txt) y [`reportes/cobertura.png`](reportes/cobertura.png). **Lint** (`npm run lint`): sin errores.
