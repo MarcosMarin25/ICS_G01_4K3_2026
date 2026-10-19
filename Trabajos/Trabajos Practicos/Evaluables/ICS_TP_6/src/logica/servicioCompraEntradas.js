@@ -59,6 +59,9 @@ class ServicioCompraEntradas {
   }
 
   comprar(solicitud) {
+    if (!this.usuarios.estaRegistrado(solicitud.usuario)) {
+      throw new Error("Solo los usuarios registrados pueden comprar entradas");
+    }
     if (!solicitud.fechaVisita) {
       throw new Error("Debe indicar la fecha de visita");
     }
