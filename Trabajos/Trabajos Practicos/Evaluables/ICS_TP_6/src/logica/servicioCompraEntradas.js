@@ -68,6 +68,11 @@ class ServicioCompraEntradas {
     if (fechaVisita > limite) {
       throw new Error("Solo se pueden comprar entradas con hasta un mes de anticipación");
     }
+    const ahora = this.reloj.ahora();
+    const esHoy = fechaVisita.getTime() === hoy.getTime();
+    if (esHoy && ahora.getHours() * 60 + ahora.getMinutes() > 17 * 60 + 30) {
+      throw new Error("Las entradas para hoy se pueden comprar hasta las 17:30");
+    }
 
     const entradas = solicitud.edades.map((edad) => ({
       edad,
