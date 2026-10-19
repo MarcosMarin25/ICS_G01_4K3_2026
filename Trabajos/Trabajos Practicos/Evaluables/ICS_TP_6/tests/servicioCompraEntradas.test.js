@@ -108,4 +108,11 @@ describe("ServicioCompraEntradas - compras válidas", () => {
 
     expect(resultado.confirmada).toBe(true);
   });
+
+  test("P09 - permite comprar con pase regular", () => {
+    const resultado = servicio.comprar(solicitudValida({ tipoPase: "REGULAR" }));
+
+    expect(resultado.confirmada).toBe(true);
+    expect(resultado.tipoPase).toBe("REGULAR");
+  });
 });
