@@ -102,4 +102,10 @@ describe("ServicioCompraEntradas - compras válidas", () => {
     expect(resultado.confirmada).toBe(true);
     expect(resultado.cantidadEntradas).toBe(10);
   });
+
+  test("P08 - permite comprar una sola entrada", () => {
+    const resultado = servicio.comprar(solicitudValida({ cantidad: 1, edades: [25] }));
+
+    expect(resultado.confirmada).toBe(true);
+  });
 });
