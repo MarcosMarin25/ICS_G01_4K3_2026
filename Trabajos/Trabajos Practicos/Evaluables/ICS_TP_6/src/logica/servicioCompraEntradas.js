@@ -1,7 +1,7 @@
 const {
   crearFechaLocal, esFechaExistente, inicioDelDia, mismoDiaDelMesSiguiente, minutosDelDia, MINUTOS_POR_HORA,
 } = require("./fechas");
-const { TIPO_PASE, FORMA_PAGO } = require("./valores");
+const { TIPO_PASE, FORMA_PAGO, contarAdultos } = require("./valores");
 
 // Para visitar el día actual se puede comprar hasta las 17:30 inclusive (R5).
 const HORA_LIMITE_MISMO_DIA = 17;
@@ -10,11 +10,6 @@ const LIMITE_MISMO_DIA_EN_MINUTOS = HORA_LIMITE_MISMO_DIA * MINUTOS_POR_HORA + M
 
 // Un usuario puede comprar como máximo 10 entradas para una misma fecha (CA 7, R6).
 const MAXIMO_ENTRADAS_POR_FECHA = 10;
-
-// Hasta esta edad, un visitante necesita una entrada de adulto para la misma fecha (R9).
-const EDAD_MAXIMA_MENOR = 15;
-
-const contarAdultos = (edades) => edades.filter((edad) => edad > EDAD_MAXIMA_MENOR).length;
 
 const esHoy = (solicitud, { hoy }) => crearFechaLocal(solicitud.fechaVisita).getTime() === hoy.getTime();
 
