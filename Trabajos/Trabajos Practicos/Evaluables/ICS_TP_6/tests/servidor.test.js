@@ -58,8 +58,8 @@ describe("Servidor - mail de confirmación", () => {
 
     expect(asunto).toBe("EcoHarmony Park - Confirmación de compra");
     expect(normalizado).toContain("Compraste 2 entradas VIP para el 20/10/2026.");
-    expect(normalizado).toContain("Visitante 1 (30 años): $ 20.000");
-    expect(normalizado).toContain("Visitante 2 (2 años): sin cargo");
+        expect(normalizado).toContain("Visitante 1 (Adulto, 16 a 59 años): $ 20.000");
+    expect(normalizado).toContain("Visitante 2 (Bebé, hasta 3 años): sin cargo");
     expect(normalizado).toContain("Total: $ 20.000");
   });
 
