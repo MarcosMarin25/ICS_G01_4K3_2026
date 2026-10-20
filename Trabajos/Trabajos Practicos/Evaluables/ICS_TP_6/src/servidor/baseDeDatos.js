@@ -16,6 +16,7 @@ const ESQUEMA = `
     usuario      TEXT    NOT NULL COLLATE NOCASE REFERENCES usuarios (email),
     fecha_visita TEXT    NOT NULL,
     cantidad     INTEGER NOT NULL,
+    adultos      INTEGER NOT NULL DEFAULT 0,
     creada_en    TEXT    NOT NULL DEFAULT (datetime('now', 'localtime'))
   );
 `;
@@ -49,17 +50,24 @@ class RepositorioUsuariosSQLite {
 
 class RepositorioComprasSQLite {
   constructor(bd) {
-    this.insertar = bd.prepare("INSERT INTO compras (usuario, fecha_visita, cantidad) VALUES (?, ?, ?)");
+    this.insertar = bd.prepare(
+      "INSERT INTO compras (usuario, fecha_visita, cantidad, adultos) VALUES (?, ?, ?, ?)");
     this.consultaCantidad = bd.prepare(
       "SELECT COALESCE(SUM(cantidad), 0) AS cantidad FROM compras WHERE usuario = ? AND fecha_visita = ?");
+    this.consultaAdultos = bd.prepare(
+      "SELECT COALESCE(SUM(adultos), 0) AS adultos FROM compras WHERE usuario = ? AND fecha_visita = ?");
   }
 
-  registrar(usuario, fecha, cantidad) {
-    this.insertar.run(usuario, fecha, cantidad);
+  registrar(usuario, fecha, cantidad, adultos = 0) {
+    this.insertar.run(usuario, fecha, cantidad, adultos);
   }
 
   cantidadComprada(usuario, fecha) {
     return this.consultaCantidad.get(usuario, fecha).cantidad;
+  }
+
+  adultosComprados(usuario, fecha) {
+    return this.consultaAdultos.get(usuario, fecha).adultos;
   }
 }
 
