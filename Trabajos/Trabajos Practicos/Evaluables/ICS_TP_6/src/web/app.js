@@ -299,9 +299,12 @@
 
     // Precio por entrada de cada categoría: el descuento antes de elegir el pase, el monto después.
     function actualizarPreciosDeCategorias(tipoPase) {
+      const MAX_ENTRADAS = 10;
+      const totalEntradas = categorias().reduce((suma, cat) => suma + cantidadDe(cat), 0);
       for (const categoria of categorias()) {
         categoria.classList.toggle("con-entradas", cantidadDe(categoria) > 0);
         categoria.querySelector(".contador__boton[data-paso='-1']").disabled = cantidadDe(categoria) === 0;
+        categoria.querySelector(".contador__boton[data-paso='1']").disabled = totalEntradas >= MAX_ENTRADAS;
         const etiqueta = categoria.querySelector(".categoria__precio");
         if (!tipoPase) {
           etiqueta.textContent = etiqueta.dataset.sinPase;
