@@ -140,7 +140,8 @@ const REGLAS = [
  * @property {(usuario: string, fecha: string) => number} cantidadComprada Entradas ya compradas para la fecha.
  *
  * @typedef {Object} ServicioMail
- * @property {(usuario: string) => void} enviarConfirmacion Envía el mail de confirmación.
+ * @property {(usuario: string, compra: Object) => void} enviarConfirmacion Envía el mail de confirmación
+ *   con el detalle de la compra (el mismo resultado que devuelve comprar()).
  *
  * @typedef {Object} PasarelaPago
  * @property {(monto: number) => void} redirigir Redirige al pago con tarjeta por el monto indicado.
@@ -187,8 +188,7 @@ class ServicioCompraEntradas {
     if (solicitud.formaPago === FORMA_PAGO.TARJETA) {
       this.mercadoPago.redirigir(montoTotal);
     }
-    this.mail.enviarConfirmacion(solicitud.usuario);
-    return {
+    const resultado = {
       confirmada: true,
       cantidadEntradas: solicitud.cantidad,
       fechaVisita: solicitud.fechaVisita,
@@ -196,6 +196,8 @@ class ServicioCompraEntradas {
       montoTotal,
       entradas,
     };
+    this.mail.enviarConfirmacion(solicitud.usuario, resultado);
+    return resultado;
   }
 
   /**

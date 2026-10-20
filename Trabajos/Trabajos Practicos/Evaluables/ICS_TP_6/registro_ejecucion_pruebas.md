@@ -284,6 +284,26 @@ Esta sección se agregó para que la interfaz web pueda avisar los errores **en 
 **Resultado final:** 9 de 9 pruebas pasan.
 
 
+## F. Mail de confirmación con el detalle de la compra
+
+Para enviar el mail real, el mail tiene que recibir el detalle de la compra. `ServicioMailEspia` ahora guarda también la compra que recibe y ofrece `compraEnviadaA()`; los métodos anteriores no cambiaron.
+
+| # | Prueba | Esperado | Obtenido en Red | Obtenido en Green | Estrategia | Cambio en el código | Estado |
+|---|---|---|---|---|---|---|---|
+| G01 | Detalle en el mail | El resultado de `comprar()`: 2 entradas VIP, $20.000 y $0, total $20.000 | `undefined` (el mail recibía solo el usuario) | Lo esperado | Implementación obvia | `comprar()` arma el resultado antes de enviar el mail y se lo pasa como segundo parámetro | ✅ Pasa |
+
+**Refactor:** no hizo falta. Se actualizó el JSDoc de `ServicioMail`.
+
+**Resultado final:** 1 de 1 prueba pasa.
+
+
+## G. Integración del servidor
+
+S01 a S12 (`tests/servidor.test.js`) verifican la base SQLite, el mail por SMTP y la API. **No siguieron el ciclo Red → Green**: se escribieron junto con el servidor, porque prueban la conexión con herramientas externas y no reglas de negocio nuevas, que siguen solo en `src/logica/`. Usan una base en memoria y el `jsonTransport` de Nodemailer, que arma el mensaje sin conectarse a la red. El envío real a Brevo se verifica a mano.
+
+**Resultado final:** 12 de 12 pruebas pasan.
+
+
 ## Resumen
 
 | Sección | Pruebas | Pasan | Fallan |
@@ -293,6 +313,8 @@ Esta sección se agregó para que la interfaz web pueda avisar los errores **en 
 | C. Compras que deben pasar | 18 | 18 | 0 |
 | D. Compras que deben fallar | 26 | 26 | 0 |
 | E. Validación por campo | 9 | 9 | 0 |
-| **Total** | **67** | **67** | **0** |
+| F. Mail de confirmación | 1 | 1 | 0 |
+| G. Integración del servidor | 12 | 12 | 0 |
+| **Total** | **80** | **80** | **0** |
 
-**Cobertura** (`npm run test:coverage`): 100% de sentencias (98/98), ramas (31/31), funciones (34/34) y líneas (93/93) en los cinco módulos de `src/logica/` (`calculadoraPrecios.js`, `calendarioParque.js`, `fechas.js`, `servicioCompraEntradas.js` y `valores.js`). Después del refactor de la sección E hay menos ramas y más funciones que antes, porque cada regla de validación pasó a ser una función de la tabla `REGLAS` en lugar de un `if`. Evidencia: [`reportes/cobertura.txt`](reportes/cobertura.txt) y [`reportes/cobertura.png`](reportes/cobertura.png). **Lint** (`npm run lint`): sin errores.
+**Cobertura** (`npm run test:coverage`): 100% de sentencias (99/99), ramas (31/31), funciones (34/34) y líneas (94/94) en los cinco módulos de `src/logica/` (`calculadoraPrecios.js`, `calendarioParque.js`, `fechas.js`, `servicioCompraEntradas.js` y `valores.js`). Después del refactor de la sección E hay menos ramas y más funciones que antes, porque cada regla de validación pasó a ser una función de la tabla `REGLAS` en lugar de un `if`. Evidencia: [`reportes/cobertura.txt`](reportes/cobertura.txt) y [`reportes/cobertura.png`](reportes/cobertura.png). **Lint** (`npm run lint`): sin errores.

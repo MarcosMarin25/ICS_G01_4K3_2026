@@ -7,7 +7,8 @@
   const MODULOS = ["valores", "fechas", "calculadoraPrecios", "calendarioParque", "servicioCompraEntradas"];
 
   // Usuarios registrados de la sesión simulada (el PO permite empezar con la sesión mockeada).
-  const USUARIOS_REGISTRADOS = ["visitante@mail.com", "otro@mail.com"];
+  // Se cargan de la base de datos al iniciar (GET /api/usuarios).
+  const USUARIOS_REGISTRADOS = [];
 
   const formatoPesos = new Intl.NumberFormat("es-AR", {
     style: "currency",
@@ -36,8 +37,9 @@
     return modulos;
   }
 
-  // Dependencias reales del navegador para el servicio. Mercado Pago y el mail son simulados,
-  // como pidió el PO: no hay integración real (ver decisiones_de_diseno.md).
+  // Dependencias del servicio en el navegador, que valida en el momento. La compra la concreta el
+  // servidor (POST /api/compras): la guarda en la base y envía el mail real. Mercado Pago sigue
+  // simulado, como pidió el PO (ver decisiones_de_diseno.md).
   function crearDependencias(logica) {
     const CalendarioParque = logica.calendarioParque;
     const CalculadoraPrecios = logica.calculadoraPrecios;
@@ -338,11 +340,32 @@
 
       if (efectos.destinatarioMail) {
         $("modal-mail-destinatario").textContent = efectos.destinatarioMail;
+        $("modal-mail-titulo").firstChild.textContent = resultado.mail.enviado
+          ? "Mail enviado a "
+          : "No pudimos enviar el mail a ";
+        document.querySelector("#modal-mail p").textContent = resultado.mail.enviado
+          ? "Te enviamos la confirmación con el detalle de tu compra."
+          : `Tu compra quedó registrada igual. Motivo: ${resultado.mail.error}`;
         $("modal-mail").showModal();
       }
     }
 
-    $("formulario").addEventListener("submit", (evento) => {
+    // El servidor concreta la compra con comprar(): la guarda y envía el mail. Si la solicitud
+    // es inválida, responde 400 con el mismo mensaje de error.
+    async function comprarEnElServidor(solicitud) {
+      const respuesta = await fetch("/api/compras", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(solicitud),
+      });
+      const cuerpo = await respuesta.json();
+      if (!respuesta.ok) {
+        throw new Error(cuerpo.error);
+      }
+      return cuerpo;
+    }
+
+    $("formulario").addEventListener("submit", async (evento) => {
       evento.preventDefault();
       intentoComprar = true;
       validarEnElMomento();
@@ -351,9 +374,14 @@
       efectos.destinatarioMail = null;
 
       // comprar() sigue siendo la autoridad final: si la solicitud es inválida, no compra.
+      const solicitud = leerSolicitud();
       let resultado;
       try {
-        resultado = servicio.comprar(leerSolicitud());
+        resultado = await comprarEnElServidor(solicitud);
+        // Se anota también acá, para que el máximo de 10 por fecha se avise en el momento.
+        dependencias.compras.registrar(solicitud.usuario, solicitud.fechaVisita, solicitud.cantidad);
+        efectos.montoPagado = solicitud.formaPago === logica.valores.FORMA_PAGO.TARJETA ? resultado.montoTotal : null;
+        efectos.destinatarioMail = resultado.mail.destinatario;
       } catch (error) {
         $("error").textContent = `${error.message}. Revisá los datos marcados en rojo.`;
         $("error").hidden = false;
@@ -431,8 +459,13 @@
     actualizarResumen();
   }
 
-  cargarLogica()
-    .then(iniciar)
+  async function cargarUsuarios() {
+    const respuesta = await fetch("/api/usuarios");
+    USUARIOS_REGISTRADOS.push(...await respuesta.json());
+  }
+
+  Promise.all([cargarLogica(), cargarUsuarios()])
+    .then(([logica]) => iniciar(logica))
     .catch(() => {
       $("aviso-servidor").hidden = false;
       document.querySelectorAll("button[type='submit']").forEach((boton) => {

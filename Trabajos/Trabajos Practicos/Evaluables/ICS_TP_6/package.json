@@ -42,5 +42,8 @@
         "statements": 100
       }
     }
+  },
+  "dependencies": {
+    "nodemailer": "^7.0.9"
   }
 }

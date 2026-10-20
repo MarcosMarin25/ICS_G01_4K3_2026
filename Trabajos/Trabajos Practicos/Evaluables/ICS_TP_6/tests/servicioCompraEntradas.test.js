@@ -404,3 +404,18 @@ describe("ServicioCompraEntradas - validación por campo", () => {
     }))).toEqual({ fechaVisita: "Fecha de visita inválida" });
   });
 });
+
+describe("ServicioCompraEntradas - mail de confirmación", () => {
+  test("G01 - el mail de confirmación incluye el detalle de la compra", () => {
+    servicio.comprar(solicitudValida({ cantidad: 2, edades: [30, 2] }));
+
+    expect(mail.compraEnviadaA(USUARIO)).toEqual({
+      confirmada: true,
+      cantidadEntradas: 2,
+      fechaVisita: FECHA_ABIERTA,
+      tipoPase: "VIP",
+      montoTotal: 20000,
+      entradas: [{ edad: 30, precio: 20000 }, { edad: 2, precio: 0 }],
+    });
+  });
+});

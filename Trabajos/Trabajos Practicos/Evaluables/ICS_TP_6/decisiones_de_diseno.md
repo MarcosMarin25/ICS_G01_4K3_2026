@@ -30,6 +30,7 @@ Documentos relacionados:
 | ADR 10 | Centralizar los valores válidos y las funciones de fecha |
 | ADR 11 | Interfaz web que reutiliza la lógica sin duplicarla, y que no se prueba con Jest |
 | ADR 12 | Validación por campo para avisar los errores en el momento, con una tabla única de reglas |
+| ADR 13 | Back básico: mail real por SMTP y compras guardadas en SQLite |
 
 ---
 
@@ -375,6 +376,29 @@ La implementación evalúa los rangos de menor a mayor y devuelve el primero que
 
 ---
 
+## ADR 13. Back básico: mail real por SMTP y compras guardadas en SQLite
+
+**Contexto.** Se pidió que el mail de confirmación sea real y que las compras queden guardadas, con los cambios mínimos. Desde el navegador no se puede enviar un mail por SMTP ni escribir en una base de datos.
+
+**Decisión.**
+- **Servidor:** se extiende `scripts/servidorWeb.js`, el mismo de `npm run web`, con una API mínima (`src/servidor/api.js`):
+  - `POST /api/compras`: concreta la compra con la misma clase `ServicioCompraEntradas`, la guarda y envía el mail. Responde 200 con el resultado y el estado del mail, o 400 con el mensaje de error.
+  - `GET /api/usuarios`: los usuarios de la sesión simulada (FAQ 19).
+  
+  No se publica el código de `src/servidor/`.
+- **Base de datos:** SQLite con `node:sqlite`, el módulo que trae Node, así que no agrega dependencias. Tiene dos tablas: `usuarios` (cargados desde `USUARIOS_REGISTRADOS` del `.env`) y `compras` (usuario, fecha, cantidad). Los repositorios cumplen las interfaces sincrónicas del servicio (ADR 2), así que **el servicio no cambió**.
+- **Mail:** Nodemailer por SMTP, con el relay de Brevo configurado en el `.env`. El grupo decidió subir el `.env` con la cuenta de Brevo compartida, para que funcione sin configurar nada, y asumió el riesgo de que la clave quede expuesta en el repositorio. El servicio le pasa al mail el resultado de la compra (G01, con TDD), y el mail informa la cantidad, la fecha, el subtotal de cada entrada y el total (FAQ 18).
+- `comprar()` es sincrónico y el envío no. Por eso la API anota el pedido de confirmación y **envía el mail después de guardar la compra**. Si el mail falla, la compra no se pierde y se informa el motivo (S09).
+- En la página, el navegador sigue validando en el momento con la misma lógica (ADR 11 y 12), pero la compra la hace el servidor. Mercado Pago sigue simulado.
+
+**Alternativas consideradas.**
+- **Express y una biblioteca de SQLite.** Se descartaron para mantener los cambios al mínimo: el servidor de Node que ya había alcanza.
+- **Hacer `comprar()` asincrónico.** Se descartó: obligaba a cambiar todas las pruebas del servicio.
+
+**Consecuencias.** Requiere Node 22.13 o superior. Las pruebas de integración (S01 a S12) no necesitan red ni un archivo de base de datos.
+
+---
+
 ## Diseño de las pruebas
 
 ### Partición de equivalencias y valores límite
@@ -468,8 +492,8 @@ Algunos refactors se **postergaron a propósito** (K04 hasta K05, P01 hasta P10 
 | Qué | Por qué no se prueba con pruebas unitarias | Cómo se probaría |
 |---|---|---|
 | Mercado Pago real | Es un servicio externo: una prueba unitaria no puede depender de la red ni cobrar de verdad. Se reemplaza por `PasarelaMercadoPagoEspia`. | Prueba de integración contra el entorno de pruebas (*sandbox*) de Mercado Pago |
-| Envío real del mail | Es un servicio externo. Se reemplaza por `ServicioMailEspia`. | Prueba de integración con un servidor de correo de prueba |
-| Persistencia real de usuarios y compras | No hay base de datos en esta US. Se reemplaza por un stub y un fake. | Prueba de integración con la base de datos |
+| Envío real del mail | Es un servicio externo. Se reemplaza por `ServicioMailEspia`. | Implementado (ADR 13). Integración con el `jsonTransport` de Nodemailer (S03 a S06, S09); la entrega real a Brevo se verifica a mano |
+| Persistencia real de usuarios y compras | Se reemplaza por un stub y un fake. | Implementado con SQLite (ADR 13). Integración con una base en memoria (S01, S02, S06 a S09) |
 | Interfaz web en `src/web/` (formulario, calendario con días deshabilitados, paleta, fuente Lato, diseño responsive, pantalla simulada de Mercado Pago y modal del mail) | Es comportamiento visual, y no contiene reglas de negocio: usa la lógica de `src/logica/`, que sí se prueba. La lógica que decide qué días están cerrados se prueba en K01 a K05, y el servicio igual rechaza una fecha cerrada por si llega una (F02 a F04). Ver el ADR 11. | Prueba de extremo a extremo (*end-to-end*) en el navegador (Playwright o Cypress) y revisión visual |
 
 El nivel unitario verifica **la lógica de negocio**. La integración con los servicios externos y la interfaz corresponden a otros niveles de prueba.

@@ -47,7 +47,7 @@ Como visitante quiero comprar una entrada para asegurar mi visita al parque
 | El calendario debe mostrar deshabilitados los días cerrados | FAQ 2 | Es comportamiento de la interfaz. La lógica que decide qué días están cerrados sí se prueba (R1, K01 a K05), y el servicio igual rechaza una fecha cerrada por si llega una (F02 a F04). | Calendario propio en la web: cada día se habilita o deshabilita según las mismas reglas de la lógica (`validarCampos()`), sin repetirlas. |
 | Paleta de colores y fuente Lato | FAQ 3 | Es diseño visual. | Paleta oficial `#386641`, `#6A994E`, `#A7C957`, `#F2E8CF`, `#BC4749` en variables CSS, con contraste WCAG AA verificado, y fuente Lato. |
 | Simular Mercado Pago con una pantalla "Mercado Pago Compra Exitosa" | FAQ 4 | Se resuelve en la interfaz. En las pruebas, Mercado Pago se reemplaza por un espía que registra si fue llamado y con qué monto (P01, P02, F22). | Pantalla simulada con el monto pagado. |
-| Simular el mail con un modal "Mail enviado a ..." | FAQ 5 | Se resuelve en la interfaz. En las pruebas, el mail se reemplaza por un espía que registra a quién se envió (P01, P02, F22). | Modal con el mail del usuario de la sesión. |
+| Simular el mail con un modal "Mail enviado a ..." | FAQ 5 | Se resuelve en la interfaz. En las pruebas, el mail se reemplaza por un espía que registra a quién se envió (P01, P02, F22). | El mail se envía **de verdad** por SMTP (Brevo) desde el servidor (G01, S03 a S06, S09), y después el modal muestra "Mail enviado a ..." o el motivo si falló. |
 | Logo de EcoHarmony Park | FAQ 17 | Es diseño visual. | Propuesta del grupo en SVG con la paleta oficial, pendiente de validación del PO. |
 | Sesión y usuario mockeados | FAQ 19 | La autenticación real no es parte de esta US. La regla de negocio (solo usuarios registrados) sí se prueba con un stub (F19, V02). | Sesión simulada con dos usuarios de prueba. |
 | App mobile / web responsive | FAQ 24 | Es diseño visual. | Diseño *mobile first*, verificado a 360 px y a 1280 px. |
@@ -205,6 +205,33 @@ Las pruebas están en el orden sugerido para el ciclo **Red → Green → Refact
 | V07 | El máximo por fecha se informa en la cantidad | El usuario ya compró 7 para el 2026-10-20 y pide 4 más | `{ cantidad: "No se pueden comprar más de 10 entradas para una misma fecha" }` | CA 7, R6 |
 | V08 | Validar no tiene efectos secundarios | Solicitud válida | No se envía el mail, no se redirige y el repositorio sigue en 0 | CA 3, 4 |
 | V09 | El máximo no se evalúa si la fecha es inválida | Fecha `"2026-13-45"` y 11 entradas | `{ fechaVisita: "Fecha de visita inválida" }` (sin error en `cantidad`) | CA 1, 7 |
+
+### F. Mail de confirmación con el detalle de la compra
+
+Se agregó para enviar el mail real: el mail tiene que recibir el detalle de la compra, y no solo el usuario.
+
+| # | Prueba | Datos de entrada | Resultado esperado | Criterio / Regla |
+|---|---|---|---|---|
+| G01 | El mail incluye el detalle de la compra | 2 entradas VIP, edades 30 y 2 | El mail recibe el mismo resultado que devuelve `comprar()`: cantidad 2, fecha, pase VIP, entradas de $20.000 y $0 y total $20.000 | CA 3, CA 8, R8, FAQ 18 |
+
+### G. Integración del servidor (`tests/servidor.test.js`)
+
+No son pruebas unitarias de la lógica: verifican la base SQLite (en memoria), el mail (con un transporte de Nodemailer que no se conecta a la red) y la API.
+
+| # | Prueba | Resultado esperado | Criterio / Regla |
+|---|---|---|---|
+| S01 | Usuario registrado en la base, sin distinguir mayúsculas | Registrado; un desconocido no | CA 9 |
+| S02 | Entradas guardadas por usuario y por fecha | 3 + 4 = 7; otra fecha u otro usuario no cuentan | R6 |
+| S03 | Contenido del mail | Cantidad, fecha, subtotal de cada entrada ("sin cargo" para el menor) y total | CA 3, FAQ 18 |
+| S04 | Envío por SMTP | Un mensaje al usuario, desde el remitente configurado | CA 3 |
+| S05 | SMTP sin configurar | Falla con un mensaje claro | CA 3 |
+| S06 | Compra válida por la API | 200, se guarda y se envía el mail con el detalle | CA 3, CA 8 |
+| S07 | Solicitud inválida por la API | 400 con el mensaje; no se guarda ni se envía | CA 6 |
+| S08 | Máximo de 10 con compras guardadas | 9 guardadas + 2 → 400 | CA 7, R6 |
+| S09 | Falla del mail | La compra queda guardada y se informa el motivo | CA 3 |
+| S10 | Solicitud mal armada | 400 | — |
+| S11 | Usuarios de la sesión simulada | La lista de la base; otra ruta no se atiende | FAQ 19 |
+| S12 | Reloj real por defecto | Una fecha de 2020 se rechaza por anterior a hoy | CA 2 |
 
 ## Parte 2: Pruebas en pseudocódigo
 
@@ -685,6 +712,21 @@ describe("ServicioCompraEntradas - validación por campo", () => {
 });
 ```
 
+### F. Mail de confirmación
+
+```js
+describe("ServicioCompraEntradas - mail de confirmación", () => {
+  test("G01 - el mail de confirmación incluye el detalle de la compra", () => {
+    servicio.comprar(solicitudValida({ cantidad: 2, edades: [30, 2] }));
+
+    expect(mail.compraEnviadaA(USUARIO)).toEqual({
+      confirmada: true, cantidadEntradas: 2, fechaVisita: FECHA_ABIERTA, tipoPase: "VIP",
+      montoTotal: 20000, entradas: [{ edad: 30, precio: 20000 }, { edad: 2, precio: 0 }],
+    });
+  });
+});
+```
+
 
 ## Trazabilidad: criterios y reglas → pruebas
 
@@ -692,7 +734,7 @@ describe("ServicioCompraEntradas - validación por campo", () => {
 |---|---|
 | CA 1. Datos obligatorios (fecha, cantidad, edades, tipo de pase) | P01, P09, P12, F06, F10, F11, F14, F15, F17, F18, F20, F21, F24, F25, F27 |
 | CA 2. Fecha actual o futura | P04, F05 |
-| CA 3. Mail de confirmación | P01, P02, F22 |
+| CA 3. Mail de confirmación | P01, P02, F22, G01; integración: S03 a S06, S09 |
 | CA 4. Redirección a Mercado Pago con tarjeta | P01, P02, F22 |
 | CA 5. Parque abierto en la fecha | F02, F03, F04 |
 | CA 6. Forma de pago efectivo o tarjeta | P01, P02, F01, F23 |
@@ -733,4 +775,6 @@ describe("ServicioCompraEntradas - validación por campo", () => {
 | C. Compras que deben pasar | P01 a P18 | 18 |
 | D. Compras que deben fallar | F01 a F27, sin F16 (retirada) | 26 |
 | E. Validación por campo | V01 a V09 | 9 |
-| **Total** | | **67** |
+| F. Mail de confirmación | G01 | 1 |
+| G. Integración del servidor | S01 a S12 | 12 |
+| **Total** | | **80** |
