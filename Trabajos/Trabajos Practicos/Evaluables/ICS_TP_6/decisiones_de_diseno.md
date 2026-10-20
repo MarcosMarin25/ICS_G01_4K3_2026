@@ -8,7 +8,7 @@ Documentos relacionados:
 
 | Documento | Contenido |
 |---|---|
-| [`pruebas_comprar_entradas.md`](pruebas_comprar_entradas.md) | User Story, criterios de aceptación, reglas del PO, supuestos y las 67 pruebas (en lenguaje natural y en pseudocódigo), con trazabilidad |
+| [`pruebas_comprar_entradas.md`](pruebas_comprar_entradas.md) | User Story, criterios de aceptación, reglas del PO, supuestos y las 89 pruebas (en lenguaje natural y en pseudocódigo), con trazabilidad |
 | [`registro_ejecucion_pruebas.md`](registro_ejecucion_pruebas.md) | Para cada prueba: lo obtenido en Red y en Green, la estrategia usada, el refactor y el commit de cada paso |
 | [`reportes/reporte-pruebas.html`](reportes/reporte-pruebas.html) | Reporte de la última ejecución de `npm test` |
 
@@ -78,8 +78,8 @@ En las pruebas, las dependencias externas se reemplazan por **dobles de prueba**
 |---|---|---|---|
 | `RelojFijo` | **Stub** | Devuelve una fecha y hora fijas, que se pueden cambiar con `fijar()` | Darle al servicio respuestas controladas |
 | `RepositorioUsuariosFalso` | **Stub** | Responde `estaRegistrado()` a partir de una lista fija | Darle al servicio respuestas controladas |
-| `RepositorioComprasFalso` | **Fake** | Repositorio en memoria que funciona de verdad (`registrar()` y `cantidadComprada()`) | Simular la persistencia sin base de datos |
-| `ServicioMailEspia` | **Spy** | Registra a quién se envió la confirmación | Verificar después si se llamó y a quién |
+| `RepositorioComprasFalso` | **Fake** | Repositorio en memoria que funciona de verdad (`registrar()`, `cantidadComprada()` y `adultosComprados()`) | Simular la persistencia sin base de datos |
+| `ServicioMailEspia` | **Spy** | Registra a quién se envió la confirmación y con qué detalle de la compra (`fueEnviadoA()` y `compraEnviadaA()`) | Verificar después si se llamó y a quién |
 | `PasarelaMercadoPagoEspia` | **Spy** | Registra si se pidió la redirección y con qué monto | Verificar después si se llamó y con qué monto |
 
 Diferencias, según Meszaros:
@@ -93,7 +93,7 @@ Diferencias, según Meszaros:
 - **Usar `jest.fn()` y `jest.mock()`.** Se descartó para estos dobles: las clases propias tienen nombre, documentan la interfaz esperada y se pueden reutilizar fuera de Jest.
 
 **Consecuencias.**
-- Las 67 pruebas corren en unos 2 segundos y no necesitan red, base de datos ni configuración.
+- Las 76 pruebas unitarias de la lógica corren en unos 2 segundos y no necesitan red, base de datos ni configuración. Las 13 de integración del servidor (S01 a S13) usan una base SQLite en memoria y un transporte de mail que no se conecta a la red.
 - Se puede cambiar Mercado Pago por otra pasarela, o el proveedor de mail, sin tocar `ServicioCompraEntradas`.
 - La integración real con Mercado Pago y con el mail queda fuera de las pruebas unitarias (ver "Fuera del alcance de las pruebas unitarias").
 
@@ -172,7 +172,7 @@ Diferencias, según Meszaros:
 - **F11** (`cantidad: -1, edades: []`): la cantidad de edades tampoco coincide, pero se espera el error de cantidad.
 - **F20** (`cantidad: 2.5` con 3 edades): se espera el error de número entero. En su Red, el código informaba "Debe indicar la edad de cada visitante", y eso demostró que el orden importa.
 
-**Decisión.** Cinco etapas, en este orden. Las reglas están definidas en la tabla `REGLAS` de `ServicioCompraEntradas`, en ese mismo orden, y `comprar()` lanza el error de la primera que no se cumple:
+**Decisión.** Seis etapas, en este orden. Las reglas están definidas en la tabla `REGLAS` de `ServicioCompraEntradas`, en ese mismo orden, y `comprar()` lanza el error de la primera que no se cumple:
 
 | # | Etapa | Pruebas |
 |---|---|---|
@@ -181,6 +181,7 @@ Diferencias, según Meszaros:
 | 3 | Valores válidos: fecha existente, pase, forma de pago, cantidad entera y ≥ 1, una edad por entrada, edades enteras ≥ 0 | F25, F27, F18, F23, F20, F10, F11, F14, F24, F15, F21 |
 | 4 | Reglas de fecha: no pasada, parque abierto, hasta un mes, 17:30 para hoy | F05, F02, F03, F04, F07, F26, F08 |
 | 5 | Máximo de 10 por usuario y por fecha | F09, F12, F13, F22 |
+| 6 | Menores con una entrada de adulto para la fecha (R9, supuesto del grupo; ADR 14) | F28, F29, F30, F31 |
 
 Al cerrar la sección D, cada etapa quedó en un método privado (`#validarUsuario`, `#validarDatosObligatorios`, etc.), y `comprar()` se leía como una lista de pasos. Al cerrar la sección E, los métodos se reemplazaron por la tabla `REGLAS`, para que `validarCampos()` usara las mismas reglas sin duplicarlas (ADR 12). El orden y los mensajes no cambiaron, y las 58 pruebas anteriores lo garantizan.
 
@@ -188,7 +189,7 @@ Al cerrar la sección D, cada etapa quedó en un método privado (`#validarUsuar
 - **Primero quién compra, después qué compra.** Un usuario no registrado no puede comprar, así que no tiene sentido revisar el resto de la solicitud.
 - **Primero los datos, después las reglas.** Las reglas de negocio consultan el calendario, el reloj y el repositorio. No tiene sentido consultarlos con una fecha que no existe o una cantidad decimal.
 - **La cantidad se valida completa antes que las edades** (F11, F20): sin una cantidad válida no se puede comparar cuántas edades corresponden.
-- **El máximo va al final** porque es la única validación que consulta compras anteriores, y es la más costosa en un sistema real.
+- **El máximo y la regla de menores con un adulto (R9) van al final** porque son las únicas validaciones que consultan compras anteriores, y son las más costosas en un sistema real.
 
 **Alternativas consideradas.**
 - **Validar en el orden de los criterios de aceptación.** Se descartó: ese orden no tiene en cuenta las dependencias entre validaciones, y F11 y F20 fallarían.
@@ -269,11 +270,11 @@ La implementación evalúa los rangos de menor a mayor y devuelve el primero que
 **Contexto.** El PO pide una interfaz web responsive con la fuente Lato y su paleta de colores, una pantalla simulada "Mercado Pago Compra Exitosa" y un modal "Mail enviado a ...". La lógica de negocio ya está en `src/logica/`, probada al 100%, y está escrita en CommonJS (`require` y `module.exports`), porque así la usan Node y Jest.
 
 **Decisión.**
-- **Ubicación y estructura:** la interfaz está en `src/web/` (`index.html`, `estilos.css` y `app.js`). Se abre con `npm run web`, que levanta un servidor local mínimo (`scripts/servidorWeb.js`, sin dependencias, que solo sirve archivos de `src/` y solo escucha en la máquina local), en `http://localhost:8080/src/web/`.
-- **La web no duplica la lógica.** `app.js` tiene un cargador de pocas líneas que lee cada módulo de `src/logica/` con `fetch` y lo ejecuta con su propio `module` y `require`. Así, la página usa exactamente el mismo código que verifican las 67 pruebas.
+- **Ubicación y estructura:** la interfaz está en `src/web/` (`index.html`, `estilos.css` y `app.js`). Se abre con `npm run web`, que levanta el servidor de `scripts/servidorWeb.js` en `http://localhost:8080/src/web/` (si el puerto 8080 está ocupado, usa el 8081). El servidor solo escucha en la máquina local, sirve los archivos de `src/` salvo `src/servidor/`, atiende la API de compras (ADR 13) y el adaptador de Mercado Pago.
+- **La web no duplica la lógica.** `app.js` tiene un cargador de pocas líneas que lee cada módulo de `src/logica/` con `fetch` y lo ejecuta con su propio `module` y `require`. Así, la página usa exactamente el mismo código que verifican las 76 pruebas unitarias.
 - **La validación la hace el servicio, y se ve en el momento.** El formulario tiene `novalidate`. Mientras el usuario completa el formulario, la página llama a `servicio.validarCampos()` (ADR 12) y muestra debajo de cada campo el error que corresponde, con el mismo mensaje que daría `comprar()`:
   - Un campo muestra su error cuando el usuario terminó con él (sale del campo o elige una opción o una fecha). Desde ahí se revalida con cada cambio, así el error desaparece apenas se corrige.
-  - Las edades no se marcan mientras queden campos de edad sin completar.
+  - Los visitantes se cargan con contadores por categoría (ver "Visitantes por categoría"), así que no hay campos de edad individuales.
   - Al tocar Comprar se muestran los errores de todos los campos y el foco va al primero inválido. `comprar()` sigue siendo la autoridad final.
   - Además, el resumen muestra el precio estimado (usando `CalculadoraPrecios`).
 - **Calendario propio con los días no disponibles deshabilitados (FAQ 2).** El `input type="date"` del navegador no permite deshabilitar días sueltos, como los lunes. Por eso la fecha se elige en un calendario propio (`src/web/app.js` y `index.html`):
@@ -283,10 +284,16 @@ La implementación evalúa los rangos de menor a mayor y devuelve el primero que
   - **La validación del servicio no cambia:** si por cualquier motivo llega una fecha no disponible, `comprar()` la rechaza (F02 a F08).
 - **Dependencias del navegador:**
   - El reloj es el real.
-  - La sesión y los usuarios están simulados (FAQ 19: el PO permite la sesión y el usuario mockeados). Los usuarios registrados de prueba son `visitante@mail.com` y `otro@mail.com`, y el encabezado muestra el usuario de la sesión.
-  - Las compras se guardan en memoria mientras la página está abierta.
-  - Para Mercado Pago, el servidor local expone un adaptador contra la API de Checkout Pro Sandbox de Mercado Pago (sandbox_init_point), con fallback automático a la pantalla simulada local si no se provee MP_ACCESS_TOKEN o no hay conexión, sin alterar ServicioCompraEntradas ni las pruebas unitarias gracias a la inversión de dependencias (ADR 2). El mail es una implementación simulada que muestra lo que pide el PO: el modal "Mail enviado a <mail del usuario>" (FAQ 5). El mail del modal es el que `comprar()` le pasa a `mail.enviarConfirmacion()`, es decir, el usuario de la sesión simulada; se verificó con los dos usuarios de prueba.
-- **Campo de edad vacío.** Se envía como `NaN`, y no como `0`, para que el servicio lo rechace ("Edad inválida"). Si se enviara como 0, sería la edad de un bebé, que es válida.
+  - La sesión y los usuarios están simulados (FAQ 19: el PO permite la sesión y el usuario mockeados). Los usuarios registrados se cargan del servidor (`GET /api/usuarios`), que los toma de `USUARIOS_REGISTRADOS` del `.env`, y el encabezado muestra el usuario de la sesión.
+  - Las compras las concreta y guarda el servidor, en SQLite (`POST /api/compras`, ADR 13). El navegador lleva además una copia en memoria de las compras de la sesión, para avisar en el momento el máximo de 10 y la regla de menores con un adulto.
+  - Para Mercado Pago, el servidor local expone un adaptador contra la API de Checkout Pro (`POST /api/mercadopago/preferencia`, que usa el `init_point` de la preferencia o, si falta, el `sandbox_init_point`), con vuelta automática a la pantalla simulada "Mercado Pago Compra Exitosa" (FAQ 4) si no hay `MP_ACCESS_TOKEN` o no hay conexión. `ServicioCompraEntradas` y las pruebas unitarias no cambian, gracias a la inversión de dependencias (ADR 2). La verificación contra el Sandbox es manual (sección H de `pruebas_comprar_entradas.md`).
+  - **Orden entre la compra y el pago:** con tarjeta, la web primero concreta la compra en el servidor (que la guarda y envía el mail) y después crea la preferencia y redirige a Mercado Pago. Si el pago se rechaza en Mercado Pago, la compra ya quedó guardada y el mail ya se envió. Es una limitación conocida: en un sistema real, la compra con tarjeta quedaría pendiente hasta que Mercado Pago confirme el pago.
+  - El mail es real (ADR 13). El modal muestra "Mail enviado a <mail del usuario>" (FAQ 5) con el mail que `comprar()` le pasa a `mail.enviarConfirmacion()`, es decir, el usuario de la sesión simulada. Si el envío falla, el modal lo informa y aclara que la compra quedó registrada.
+- **Visitantes por categoría y edad representativa (CA 1).** La web no pide la edad de cada visitante: tiene un contador por categoría (Adultos, Menores, Bebés y Mayores), y cada categoría tiene una edad representativa en el HTML (`data-edad`: 16, 4, 0 y 60, la menor edad de cada rango). El arreglo `edades` que recibe el servicio se arma repitiendo esa edad tantas veces como indica el contador. La lógica no cambia: sigue exigiendo una edad entera por entrada (F14, F21, F24). Consecuencias:
+  - El precio de cada entrada y la regla de menores con un adulto (R9) son correctos, porque dependen solo de la categoría.
+  - El servicio y la compra guardada reciben la edad representativa, no la edad real de cada visitante. El criterio 1 ("la edad de cada visitante") se cumple a nivel de categoría en la interfaz; la lógica y sus pruebas sí trabajan con edades individuales.
+  - Los rangos de cada categoría quedan escritos en la interfaz y en el mail (`src/servidor/servicioMail.js`), además de en `CalculadoraPrecios`: si el PO cambiara un rango de R3, hay que actualizarlos en esos lugares.
+- **Tope de 10 en los contadores.** La web deshabilita los botones + cuando la suma llega a 10, con una constante propia (`MAX_ENTRADAS` en `app.js`). El servicio igual valida el máximo (F09, F12) y lo informa en el momento con `validarCampos()`. Es una regla repetida en la interfaz, para evitar que el usuario llegue al error.
 - **Paleta oficial del PO (FAQ 3).** Se usa la paleta [386641-6a994e-a7c957-f2e8cf-bc4749](https://coolors.co/palette/386641-6a994e-a7c957-f2e8cf-bc4749), en variables CSS de `:root`. Hasta que apareció el FAQ, la web usaba una paleta provisoria definida por el grupo, que se reemplazó cambiando solo esas variables.
 
   | Variable | Color | Uso |
@@ -326,15 +333,12 @@ La implementación evalúa los rangos de menor a mayor y devuelve el primero que
 - **Toda la lógica de negocio que usa la web ya está probada.** `app.js` no decide nada: arma la solicitud a partir del formulario, llama a `comprar()` y muestra el resultado o el mensaje de error. Probarlo con Jest sería probar el DOM y no reglas de negocio.
 - **Es otro nivel de prueba.** El comportamiento visual (diseño responsive, colores, fuente, la pantalla de Mercado Pago, el modal) se verifica con pruebas de extremo a extremo en un navegador real, por ejemplo con Playwright o Cypress. Esas herramientas exceden el alcance de un TP de TDD unitario (ver "Fuera del alcance de las pruebas unitarias").
 - **La cobertura se mide solo sobre `src/logica/`** (`collectCoverageFrom` en `package.json`). Incluir `src/web/` bajaría la cobertura sin aportar información sobre la calidad de la lógica, y haría fallar el umbral del 100%.
-- **Verificación realizada.** Se verificó en Chrome, en escritorio y con un ancho de celular de 360 px, sin desplazamiento horizontal. Se recorrieron estos flujos:
-  - Enviar el formulario vacío muestra "Debe indicar la fecha de visita".
-  - Con el reloj real del 19/10/2026 (lunes), en el calendario aparecen deshabilitados los días pasados, el 19/10 y el 26/10 (lunes, "El parque está cerrado..."), y del 20/11 en adelante ("Solo se pueden comprar entradas con hasta un mes de anticipación..."). El 20/10 y el 19/11 (límite) se pueden elegir, y no se puede navegar a diciembre.
-  - Tocar un día deshabilitado no lo elige y muestra el motivo. Con el teclado, las flechas recorren los días y cambian de mes, y Enter elige.
-  - Con 11 entradas y una fecha inválida no se marca el máximo; al corregir la fecha aparece en el momento "No se pueden comprar más de 10 entradas para una misma fecha" en la cantidad.
-  - Con una sola edad cargada y dos vacías no se marca nada; al completar con 10.5 aparece "Edad inválida".
-  - Al comprar con datos incompletos se marcan todos los campos con error a la vez y el foco va al primero.
-  - Comprar sin forma de pago muestra "Debe seleccionar una forma de pago".
-  - Una compra con tarjeta de 3 entradas VIP (edades 30, 28 y 2) muestra la pantalla "Mercado Pago Compra Exitosa" por $40.000, después la confirmación "Compraste 3 entradas VIP para el 20/10/2026" y el modal "Mail enviado a visitante@mail.com".
+- **Verificación realizada (20/10/2026, con la interfaz actual).** En Chrome, a 360 px y en escritorio, sin desplazamiento horizontal, con el reloj real (martes 20/10/2026, después de las 17:30):
+  - El formulario tiene cuatro pasos: "¿Cuándo nos visitás?", "Elegí tu pase", "¿Quiénes vienen?" y "¿Cómo pagás?".
+  - En el calendario aparecen deshabilitados el 19/10 ("La fecha de visita no puede ser anterior a hoy"), el 20/10 ("Las entradas para hoy se pueden comprar hasta las 17:30") y el 26/10 ("El parque está cerrado en la fecha seleccionada").
+  - Con pase VIP, al llegar a 10 entradas se deshabilitan todos los botones +. Con 1 adulto y 1 menor, el total es $30.000.
+  - Comprar sin forma de pago muestra "Debe seleccionar una forma de pago" en el aviso y debajo del campo (el servidor responde 400 y no guarda nada).
+  - La compra válida completa (servidor, mail y Mercado Pago) no se volvió a recorrer en esta verificación: habría enviado un mail real, y además el SMTP del `.env` responde "535 Authentication failed" (ver ADR 13). [Pendiente: repetirla con credenciales válidas.]
 
 **Alternativas consideradas.**
 - **Copiar la lógica en `app.js`.** Se descartó: habría dos versiones de las reglas, y la de la web no estaría probada.
@@ -388,15 +392,15 @@ La implementación evalúa los rangos de menor a mayor y devuelve el primero que
   
   No se publica el código de `src/servidor/`.
 - **Base de datos:** SQLite con `node:sqlite`, el módulo que trae Node, así que no agrega dependencias. Tiene dos tablas: `usuarios` (cargados desde `USUARIOS_REGISTRADOS` del `.env`) y `compras` (usuario, fecha, cantidad). Los repositorios cumplen las interfaces sincrónicas del servicio (ADR 2), así que **el servicio no cambió**.
-- **Mail:** Nodemailer por SMTP, con el relay de Brevo configurado en el `.env`. El grupo decidió subir el `.env` con la cuenta de Brevo compartida, para que funcione sin configurar nada, y asumió el riesgo de que la clave quede expuesta en el repositorio. El servicio le pasa al mail el resultado de la compra (G01, con TDD), y el mail informa la cantidad, la fecha, el subtotal de cada entrada y el total (FAQ 18).
+- **Mail:** Nodemailer por SMTP, con el relay de Brevo configurado en el `.env`. El grupo decidió subir el `.env` con la cuenta de Brevo compartida, para que funcione sin configurar nada, y asumió el riesgo de que la clave quede expuesta en el repositorio. Después se agregó `.env` al `.gitignore`, pero el archivo sigue versionado (el `.gitignore` no saca del repositorio un archivo que ya está en él), y el repositorio es público. Al 20/10/2026, Brevo rechaza esa clave ("535 Authentication failed"), así que el envío real de mails no funciona con el `.env` actual. El servicio le pasa al mail el resultado de la compra (G01, con TDD), y el mail informa la cantidad, la fecha, el subtotal de cada entrada y el total (FAQ 18).
 - `comprar()` es sincrónico y el envío no. Por eso la API anota el pedido de confirmación y **envía el mail después de guardar la compra**. Si el mail falla, la compra no se pierde y se informa el motivo (S09).
-- En la página, el navegador sigue validando en el momento con la misma lógica (ADR 11 y 12), pero la compra la hace el servidor. Mercado Pago sigue simulado.
+- En la página, el navegador sigue validando en el momento con la misma lógica (ADR 11 y 12), pero la compra la hace el servidor. Para Mercado Pago, la web usa Checkout Pro cuando hay `MP_ACCESS_TOKEN` y, si no, la pantalla simulada (ADR 11).
 
 **Alternativas consideradas.**
 - **Express y una biblioteca de SQLite.** Se descartaron para mantener los cambios al mínimo: el servidor de Node que ya había alcanza.
 - **Hacer `comprar()` asincrónico.** Se descartó: obligaba a cambiar todas las pruebas del servicio.
 
-**Consecuencias.** Requiere Node 22.13 o superior. Las pruebas de integración (S01 a S12) no necesitan red ni un archivo de base de datos.
+**Consecuencias.** Requiere Node 22.13 o superior. Las pruebas de integración (S01 a S13) no necesitan red ni un archivo de base de datos.
 
 ---
 
@@ -429,6 +433,7 @@ Las pruebas se diseñaron con técnicas de caja negra, a partir de los criterios
 | Horizonte (R4) | Un mes justo | P06 (15/11), P18 (28/02) | F07 (17/11), F26 (02/03) |
 | Fecha actual (CA 2) | Hoy / ayer | P04 (hoy) | F05 (ayer) |
 | Días de apertura (R1) | Domingo / lunes | K02 (domingo) | K03 (lunes) |
+| Menor con adulto (R9) | 16 / 15 años sin adulto | P21 (16: ya es adulto) | F28 (15: menor solo) |
 
 El TP 8/9 (pruebas de caja negra) usa estas mismas técnicas. En este TP ya se aplicaron para diseñar las pruebas de la US implementada.
 
@@ -436,13 +441,13 @@ El TP 8/9 (pruebas de caja negra) usa estas mismas técnicas. En este TP ya se a
 
 - **Patrón AAA (Arrange, Act, Assert):** se prepara el escenario (`reloj.fijar()` y `compras.registrar()`), se ejecuta una sola acción (`servicio.comprar()`) y se verifica el resultado.
 - **Helper `solicitudValida(cambios)`:** devuelve una solicitud válida, y cada prueba cambia **un solo dato**. Así, si una prueba F falla, el motivo es exactamente el dato que cambió.
-- **Un código por prueba** (C, K, P o F) que aparece igual en el diseño, en el test, en el registro y en la trazabilidad.
+- **Un código por prueba** (C, K, P, F, V, G o S) que aparece igual en el diseño, en el test, en el registro y en la trazabilidad.
 
 ### Propiedades FIRST
 
 | Propiedad | Cómo se cumple |
 |---|---|
-| **F**ast (rápidas) | 67 pruebas en unos 2 segundos, sin red ni base de datos (ADR 2) |
+| **F**ast (rápidas) | 89 pruebas en unos 2 segundos, sin red. Las unitarias no usan base de datos; las de integración usan SQLite en memoria (ADR 2 y 13) |
 | **I**ndependent (independientes) | `beforeEach` crea dobles nuevos para cada prueba, y ninguna depende de otra |
 | **R**epeatable (repetibles) | El reloj inyectado (ADR 3) y las fechas locales (ADR 4) dan el mismo resultado cualquier día y en cualquier zona |
 | **S**elf-validating (autoverificables) | Cada prueba pasa o falla con `expect`, sin revisión manual |
@@ -465,7 +470,7 @@ Para pasar a verde se usaron las estrategias de Kent Beck: **fake it** (devolver
 
 ### Pruebas que pasaron sin cambios
 
-18 pruebas pasaron sin tocar el código (por ejemplo K02, P04 a P08 y F11). **No son ciclos Red**, y no se forzó un Red artificial. Son **confirmaciones de borde**: verifican que la generalización hecha antes ya cubre ese valor límite. Igual cumplen una función:
+23 pruebas pasaron sin tocar el código (por ejemplo K02, P04 a P08, F11, P19 y V10). **No son ciclos Red**, y no se forzó un Red artificial. Son **confirmaciones de borde**: verifican que la generalización hecha antes ya cubre ese valor límite. Igual cumplen una función:
 - **En la sección C**, pasaron porque todavía no existían validaciones. Después funcionaron como red de seguridad: al implementar F08 se verificó que P05 (17:30) siguiera pasando, lo que confirma que el código usa `>` y no `>=`.
 - **F22** se verificó con mutación (ADR 5).
 
@@ -492,6 +497,7 @@ Cada paso tiene su commit en la rama `TP_6`, con el sufijo `[RED]`, `[GREEN]` o 
 | D (F27) | `esFechaExistente()` | Lógica de calendario fuera del servicio |
 | D (cierre) | Validaciones en cinco métodos privados y `#emitirEntradas()` | `comprar()` se lee como una lista de pasos (ADR 6) |
 | E (cierre) | Tabla única `REGLAS`, usada por `comprar()` y `validarCampos()` | Las reglas estaban duplicadas; la cobertura había bajado al 96% (ADR 12) |
+| I (S13) | `EDAD_MAXIMA_MENOR` y `contarAdultos()` en `valores.js` | Un solo límite de menor para la calculadora, el servicio y la web (ADR 14) |
 
 Algunos refactors se **postergaron a propósito** (K04 hasta K05, P01 hasta P10 y F25 hasta F27): con un solo caso todavía no se veía la forma de la generalización.
 
@@ -501,7 +507,7 @@ Algunos refactors se **postergaron a propósito** (K04 hasta K05, P01 hasta P10 
 
 | Qué | Por qué no se prueba con pruebas unitarias | Cómo se probaría |
 |---|---|---|
-| Mercado Pago real | Es un servicio externo: una prueba unitaria no puede depender de la red ni cobrar de verdad. Se reemplaza por `PasarelaMercadoPagoEspia`. | Prueba de integración contra el entorno de pruebas (*sandbox*) de Mercado Pago |
+| Mercado Pago real | Es un servicio externo: una prueba unitaria no puede depender de la red ni cobrar de verdad. Se reemplaza por `PasarelaMercadoPagoEspia`. | Verificación manual contra Checkout Pro Sandbox, con las tarjetas de prueba (sección H de `pruebas_comprar_entradas.md`) |
 | Envío real del mail | Es un servicio externo. Se reemplaza por `ServicioMailEspia`. | Implementado (ADR 13). Integración con el `jsonTransport` de Nodemailer (S03 a S06, S09); la entrega real a Brevo se verifica a mano |
 | Persistencia real de usuarios y compras | Se reemplaza por un stub y un fake. | Implementado con SQLite (ADR 13). Integración con una base en memoria (S01, S02, S06 a S09) |
 | Interfaz web en `src/web/` (formulario, calendario con días deshabilitados, paleta, fuente Lato, diseño responsive, pantalla simulada de Mercado Pago y modal del mail) | Es comportamiento visual, y no contiene reglas de negocio: usa la lógica de `src/logica/`, que sí se prueba. La lógica que decide qué días están cerrados se prueba en K01 a K05, y el servicio igual rechaza una fecha cerrada por si llega una (F02 a F04). Ver el ADR 11. | Prueba de extremo a extremo (*end-to-end*) en el navegador (Playwright o Cypress) y revisión visual |
@@ -522,7 +528,7 @@ En el TP 2 el grupo no definió una guía de estilo de código. Para este TP se 
 | Buenas prácticas | `===` (`eqeqeq`), `const` y `let` en lugar de `var` (`no-var`, `prefer-const`), llaves siempre en los `if` (`curly`) |
 | Constantes con nombre | `no-magic-numbers` en `src/`. En `tests/` está desactivada, porque ahí los números son los datos del caso (edades, precios, cantidades) |
 
-`npm run lint` no da errores. La regla `no-magic-numbers` marcó números sueltos en varios Green, y su corrección formó parte del refactor siguiente.
+La regla `no-magic-numbers` marcó números sueltos en varios Green de la lógica, y su corrección formó parte del refactor siguiente. **Al 20/10/2026, `npm run lint` informa 8 errores**, todos en el código del servidor agregado después: `src/servidor/servicioMail.js` (los números 3, 15 y 59 sin nombre, tres `if` sin llaves y falta el salto de línea final) y `tests/servidor.test.js` (sangría). Están pendientes de corrección.
 
 ---
 
@@ -536,12 +542,12 @@ La tabla completa de **criterios de aceptación y reglas del PO → pruebas**, y
 
 | Métrica | Valor |
 |---|---|
-| Pruebas | **67**: 9 de precios (C), 5 de calendario (K), 18 de compras válidas (P), 26 de validaciones (F) y 9 de validación por campo (V) |
-| Resultado | 67 de 67 pasan |
-| Cobertura (`npm run test:coverage`) | **100%** de sentencias, ramas, funciones y líneas en los cinco módulos de `src/logica/`. La interfaz de `src/web/` no se mide (ADR 11) |
-| Lint (`npm run lint`) | Sin errores |
-| Tiempo de ejecución | Unos 2 segundos para las 67 pruebas. La primera corrida tarda más porque incluye la carga inicial de Jest |
-| Ciclos registrados en `TP_6` (secciones B a E) | 39 RED, 39 GREEN, 14 REFACTOR y 19 confirmaciones de borde, cada uno en su commit |
+| Pruebas | **89**: 76 unitarias de la lógica (9 de precios, 5 de calendario, 18 de compras válidas, 26 de validaciones, 9 de validación por campo, 1 del mail y 8 de R9) y 13 de integración del servidor (S01 a S13) |
+| Resultado | 89 de 89 pasan |
+| Cobertura (`npm run test:coverage`) | **100%** en los cinco módulos de `src/logica/`: sentencias 103/103, ramas 33/33, funciones 37/37 y líneas 96/96. La interfaz (`src/web/`) y el servidor (`src/servidor/`) no se miden (ADR 11 y 13) |
+| Lint (`npm run lint`) | 8 errores pendientes en `src/servidor/servicioMail.js` y `tests/servidor.test.js` (ver "Guía de estilo") |
+| Tiempo de ejecución | Unos 2 segundos para las 89 pruebas. La primera corrida tarda más porque incluye la carga inicial de Jest |
+| Ciclos registrados en `TP_6` (secciones B a E e I) | 42 RED, 42 GREEN, 15 REFACTOR y 23 confirmaciones de borde, cada uno en su commit. Las secciones F (G01) y G (S01 a S12) no siguieron el ciclo paso a paso |
 | Sección A | 9 pruebas, con los commits de cada paso en el PR #5 |
 
 **La cobertura al 100% es necesaria, pero no suficiente.** Indica que cada línea y cada rama se ejecutó en alguna prueba, pero no que las aserciones sean buenas. La confianza en la suficiencia de las pruebas viene de la combinación de tres cosas: la **trazabilidad** contra los criterios y las reglas, el diseño con **partición de equivalencias y valores límite**, y la verificación por **mutación** de F22, que mostró que una prueba que pasó sin cambios detecta un defecto real.
