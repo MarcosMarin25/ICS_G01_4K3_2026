@@ -188,6 +188,12 @@ describe("ServicioCompraEntradas - compras válidas", () => {
 
     expect(resultado.confirmada).toBe(true);
   });
+
+  test("P19 - permite comprar un menor junto con un mayor de 60 años", () => {
+    const resultado = servicio.comprar(solicitudValida({ cantidad: 2, edades: [65, 8] }));
+
+    expect(resultado.confirmada).toBe(true);
+  });
 });
 
 describe("ServicioCompraEntradas - validaciones", () => {
