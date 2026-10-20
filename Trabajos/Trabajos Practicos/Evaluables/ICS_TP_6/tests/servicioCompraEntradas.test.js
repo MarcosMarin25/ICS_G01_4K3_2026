@@ -447,6 +447,11 @@ describe("ServicioCompraEntradas - validación por campo", () => {
       edades: Array(11).fill(30),
     }))).toEqual({ fechaVisita: "Fecha de visita inválida" });
   });
+
+  test("V10 - informa en el campo de las edades que un menor necesita una entrada de adulto", () => {
+    expect(servicio.validarCampos(solicitudValida({ cantidad: 1, edades: [8] })))
+      .toEqual({ edades: "Los menores de 16 años necesitan una entrada de adulto para la misma fecha" });
+  });
 });
 
 describe("ServicioCompraEntradas - mail de confirmación", () => {
