@@ -11,6 +11,9 @@ const LIMITE_MISMO_DIA_EN_MINUTOS = HORA_LIMITE_MISMO_DIA * MINUTOS_POR_HORA + M
 // Un usuario puede comprar como máximo 10 entradas para una misma fecha (CA 7, R6).
 const MAXIMO_ENTRADAS_POR_FECHA = 10;
 
+// Hasta esta edad, un visitante necesita una entrada de adulto para la misma fecha (R9).
+const EDAD_MAXIMA_MENOR = 15;
+
 const esHoy = (solicitud, { hoy }) => crearFechaLocal(solicitud.fechaVisita).getTime() === hoy.getTime();
 
 /**
@@ -116,6 +119,14 @@ const REGLAS = [
     seIncumple: (solicitud, { compras }) =>
       compras.cantidadComprada(solicitud.usuario, solicitud.fechaVisita) + solicitud.cantidad
         > MAXIMO_ENTRADAS_POR_FECHA,
+  },
+
+  // 6. Los menores necesitan una entrada de adulto para la misma fecha (R9).
+  {
+    campo: "edades",
+    requiere: ["cantidad"],
+    mensaje: "Los menores de 16 años necesitan una entrada de adulto para la misma fecha",
+    seIncumple: (solicitud) => solicitud.edades.every((edad) => edad <= EDAD_MAXIMA_MENOR),
   },
 ];
 
