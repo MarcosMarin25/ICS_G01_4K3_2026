@@ -370,6 +370,13 @@ describe("ServicioCompraEntradas - validaciones", () => {
     expect(() => servicio.comprar(solicitudValida({ cantidad: 1, edades: [0] })))
       .toThrow("Los menores de 16 años necesitan una entrada de adulto para la misma fecha");
   });
+
+  test("F30 - la entrada de adulto de otra fecha no habilita a un menor solo", () => {
+    servicio.comprar(solicitudValida({ fechaVisita: "2026-10-21", cantidad: 1, edades: [30] }));
+
+    expect(() => servicio.comprar(solicitudValida({ cantidad: 1, edades: [8] })))
+      .toThrow("Los menores de 16 años necesitan una entrada de adulto para la misma fecha");
+  });
 });
 
 describe("ServicioCompraEntradas - validación por campo", () => {
