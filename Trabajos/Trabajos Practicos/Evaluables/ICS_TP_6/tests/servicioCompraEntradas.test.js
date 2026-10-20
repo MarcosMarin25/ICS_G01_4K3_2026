@@ -202,6 +202,12 @@ describe("ServicioCompraEntradas - compras válidas", () => {
 
     expect(resultado.confirmada).toBe(true);
   });
+
+  test("P21 - a los 16 años ya es adulto y puede comprar solo", () => {
+    const resultado = servicio.comprar(solicitudValida({ cantidad: 1, edades: [16] }));
+
+    expect(resultado.confirmada).toBe(true);
+  });
 });
 
 describe("ServicioCompraEntradas - validaciones", () => {
@@ -373,6 +379,13 @@ describe("ServicioCompraEntradas - validaciones", () => {
 
   test("F30 - la entrada de adulto de otra fecha no habilita a un menor solo", () => {
     servicio.comprar(solicitudValida({ fechaVisita: "2026-10-21", cantidad: 1, edades: [30] }));
+
+    expect(() => servicio.comprar(solicitudValida({ cantidad: 1, edades: [8] })))
+      .toThrow("Los menores de 16 años necesitan una entrada de adulto para la misma fecha");
+  });
+
+  test("F31 - la entrada de adulto de otro usuario no habilita a un menor solo", () => {
+    servicio.comprar(solicitudValida({ usuario: OTRO_USUARIO, cantidad: 1, edades: [30] }));
 
     expect(() => servicio.comprar(solicitudValida({ cantidad: 1, edades: [8] })))
       .toThrow("Los menores de 16 años necesitan una entrada de adulto para la misma fecha");
