@@ -351,6 +351,11 @@ describe("ServicioCompraEntradas - validaciones", () => {
     expect(() => servicio.comprar(solicitudValida({ cantidad: 1, edades: [15] })))
       .toThrow("Los menores de 16 años necesitan una entrada de adulto para la misma fecha");
   });
+
+  test("F29 - rechaza la compra de un bebé sin una entrada de adulto para la fecha", () => {
+    expect(() => servicio.comprar(solicitudValida({ cantidad: 1, edades: [0] })))
+      .toThrow("Los menores de 16 años necesitan una entrada de adulto para la misma fecha");
+  });
 });
 
 describe("ServicioCompraEntradas - validación por campo", () => {
