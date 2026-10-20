@@ -202,4 +202,14 @@ describe("Servidor - API", () => {
 
     expect(cuerpo).toEqual({ error: "La fecha de visita no puede ser anterior a hoy" });
   });
+
+  test("S13 - un menor solo se puede comprar si en la base ya hay un adulto para la fecha", async () => {
+    await pedir(new MailServidorEspia(), "POST", "/api/compras", solicitudValida({ cantidad: 1, edades: [30] }));
+    await new Promise((listo) => servidor.close(listo));
+
+    const { estado } = await pedir(new MailServidorEspia(), "POST", "/api/compras",
+      solicitudValida({ cantidad: 1, edades: [8] }));
+
+    expect(estado).toBe(200);
+  });
 });
