@@ -346,6 +346,11 @@ describe("ServicioCompraEntradas - validaciones", () => {
     expect(() => servicio.comprar(solicitudValida({ fechaVisita: "2026-02-30" })))
       .toThrow("Fecha de visita inválida");
   });
+
+  test("F28 - rechaza la compra de un menor sin una entrada de adulto para la fecha", () => {
+    expect(() => servicio.comprar(solicitudValida({ cantidad: 1, edades: [15] })))
+      .toThrow("Los menores de 16 años necesitan una entrada de adulto para la misma fecha");
+  });
 });
 
 describe("ServicioCompraEntradas - validación por campo", () => {
