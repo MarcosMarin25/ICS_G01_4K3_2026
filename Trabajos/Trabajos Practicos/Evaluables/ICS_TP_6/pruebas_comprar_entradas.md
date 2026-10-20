@@ -39,6 +39,7 @@ Como visitante quiero comprar una entrada para asegurar mi visita al parque
 | R6. Máximo de 10 entradas por fecha | Un usuario puede comprar **como máximo 10 entradas para una misma fecha**, sumando todas sus compras para esa fecha. |
 | R7. Menores de hasta 3 años cuentan en el máximo | Los menores que no pagan **entran dentro de las 10** entradas. |
 | R8. Entrada de $0 | A los menores de hasta 3 años se les **emite igual una entrada**, con precio **$0**. |
+| R9. Menores con un adulto (**supuesto del grupo, pendiente de validación del PO**: no está en la US ni en el FAQ) | Una compra con menores necesita una entrada de **adulto*** para esa fecha, en la misma compra o en una compra anterior del **mismo usuario**. |
 
 ### Reglas que no se prueban con pruebas unitarias
 
@@ -232,6 +233,20 @@ No son pruebas unitarias de la lógica: verifican la base SQLite (en memoria), e
 | S10 | Solicitud mal armada | 400 | — |
 | S11 | Usuarios de la sesión simulada | La lista de la base; otra ruta no se atiende | FAQ 19 |
 | S12 | Reloj real por defecto | Una fecha de 2020 se rechaza por anterior a hoy | CA 2 |
+
+### I. Menores con una entrada de adulto (R9)
+
+| # | Prueba | Datos de entrada | Resultado esperado | Regla |
+|---|---|---|---|---|
+| F28 | Un menor solo | 1 entrada, edad 15 | Error "Los menores de 16 años necesitan una entrada de adulto para la misma fecha" | R9 |
+| F29 | Un bebé solo | 1 entrada, edad 0 | El mismo error | R9 |
+| P19 | Menor con un mayor de 60 | Edades [65, 8] | Se confirma | R9 |
+| P20 | Menor solo con un adulto ya comprado | Compra de [30] y después de [8], misma fecha | Se confirma | R9 |
+| P21 | 16 años solo (borde) | Edad 16 | Se confirma: ya es adulto | R9 |
+| F30 | Adulto comprado para otra fecha | [30] el 2026-10-21 y [8] el 2026-10-20 | Error "Los menores de 16 años necesitan una entrada de adulto para la misma fecha" | R9 |
+| F31 | Adulto comprado por otro usuario | Otro usuario compra [30]; el usuario compra [8] | Error "Los menores de 16 años necesitan una entrada de adulto para la misma fecha" | R9 |
+| V10 | Validación por campo | Edades [8] | `{ edades: "Los menores de 16 años necesitan una entrada de adulto para la misma fecha" }` | R9 |
+| S13 | API con la base SQLite | Compra de [30] y después de [8] por la API | 200 | R9 |
 
 ### H. Verificación manual contra el Sandbox de Mercado Pago
 
@@ -791,6 +806,28 @@ describe("ServicioCompraEntradas - mail de confirmación", () => {
 ```
 
 
+### I. Menores con una entrada de adulto
+
+Siguen el mismo patrón que las secciones C, D y E (están en `tests/servicioCompraEntradas.test.js` y S13 en `tests/servidor.test.js`):
+
+```js
+test("F28 - rechaza la compra de un menor sin una entrada de adulto para la fecha", () => {
+  expect(() => servicio.comprar(solicitudValida({ cantidad: 1, edades: [15] })))
+    .toThrow("Los menores de 16 años necesitan una entrada de adulto para la misma fecha");
+});
+
+test("P20 - permite comprar un menor solo si ya compró una entrada de adulto para la fecha", () => {
+  servicio.comprar(solicitudValida({ cantidad: 1, edades: [30] }));
+
+  const resultado = servicio.comprar(solicitudValida({ cantidad: 1, edades: [8] }));
+
+  expect(resultado.confirmada).toBe(true);
+});
+
+// F29, P19, P21, F30, F31 y V10 cambian solo las edades, la fecha o el usuario de la compra previa.
+```
+
+
 ## Trazabilidad: criterios y reglas → pruebas
 
 | Criterio de aceptación / Regla del PO | Pruebas |
@@ -812,6 +849,7 @@ describe("ServicioCompraEntradas - mail de confirmación", () => {
 | R6. Máximo de 10 entradas por fecha | P07, P13, P14, P15, P17, F09, F12, F22 |
 | R7. Menores de hasta 3 años cuentan en el máximo | F13 |
 | R8. Entrada de $0 | C03, C04, P11, P12 |
+| R9. Menores con un adulto (supuesto) | F28 a F31, P19 a P21, V10, S13 |
 
 ### Supuestos de diseño → pruebas
 
@@ -827,7 +865,8 @@ describe("ServicioCompraEntradas - mail de confirmación", () => {
 | La compra válida queda registrada | P15 |
 | Una compra inválida no tiene efectos secundarios | F22 |
 | Valores válidos de tipo de pase y forma de pago | F18, F23 |
-| Validación por campo con las mismas reglas, sin efectos secundarios | V01 a V09 |
+| Validación por campo con las mismas reglas, sin efectos secundarios | V01 a V10 |
+| El adulto se cuenta por usuario y por fecha; adulto desde los 16 años | P20, P21, F30, F31 |
 
 ### Cantidad de pruebas
 
@@ -840,4 +879,5 @@ describe("ServicioCompraEntradas - mail de confirmación", () => {
 | E. Validación por campo | V01 a V09 | 9 |
 | F. Mail de confirmación | G01 | 1 |
 | G. Integración del servidor | S01 a S12 | 12 |
-| **Total** | | **80** |
+| I. Menores con un adulto (R9) | F28 a F31, P19 a P21, V10, S13 | 9 |
+| **Total** | | **89** |

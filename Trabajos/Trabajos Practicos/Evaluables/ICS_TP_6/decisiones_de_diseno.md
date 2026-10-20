@@ -31,6 +31,7 @@ Documentos relacionados:
 | ADR 11 | Interfaz web que reutiliza la lógica sin duplicarla, y que no se prueba con Jest |
 | ADR 12 | Validación por campo para avisar los errores en el momento, con una tabla única de reglas |
 | ADR 13 | Back básico: mail real por SMTP y compras guardadas en SQLite |
+| ADR 14 | Menores con un adulto: el repositorio guarda la cantidad de adultos, no las edades |
 
 ---
 
@@ -399,6 +400,15 @@ La implementación evalúa los rangos de menor a mayor y devuelve el primero que
 
 ---
 
+## ADR 14. Menores con un adulto: el repositorio guarda la cantidad de adultos, no las edades
+
+**Contexto.** El grupo agregó R9: un menor necesita una entrada de adulto para la misma fecha, en la misma compra o en una anterior del mismo usuario. Para las compras anteriores hay que saber si incluían adultos, y hasta ahora solo se guardaba la cantidad.
+
+**Decisión.** `registrar(usuario, fecha, cantidad, adultos)` guarda cuántas entradas son de adulto, y `adultosComprados(usuario, fecha)` las suma, igual que `cantidadComprada()`. **Qué es un adulto lo decide la lógica** (`contarAdultos()` en `valores.js`, con el mismo `EDAD_MAXIMA_MENOR` que usa la calculadora); el repositorio solo guarda un número. En SQLite es la columna `adultos`.
+
+
+---
+
 ## Diseño de las pruebas
 
 ### Partición de equivalencias y valores límite
@@ -518,7 +528,7 @@ En el TP 2 el grupo no definió una guía de estilo de código. Para este TP se 
 
 ## Trazabilidad
 
-La tabla completa de **criterios de aceptación y reglas del PO → pruebas**, y la de **supuestos de diseño → pruebas**, están en [`pruebas_comprar_entradas.md`](pruebas_comprar_entradas.md#trazabilidad-criterios-y-reglas--pruebas). Cada criterio de aceptación (CA 1 a 9) y cada regla del PO (R1 a R8) tiene al menos una prueba.
+La tabla completa de **criterios de aceptación y reglas del PO → pruebas**, y la de **supuestos de diseño → pruebas**, están en [`pruebas_comprar_entradas.md`](pruebas_comprar_entradas.md#trazabilidad-criterios-y-reglas--pruebas). Cada criterio de aceptación (CA 1 a 9), cada regla del PO (R1 a R8) y el supuesto R9 tienen al menos una prueba.
 
 ---
 

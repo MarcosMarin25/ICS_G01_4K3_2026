@@ -304,6 +304,36 @@ S01 a S12 (`tests/servidor.test.js`) verifican la base SQLite, el mail por SMTP 
 **Resultado final:** 12 de 12 pruebas pasan.
 
 
+## I. Menores con una entrada de adulto (R9)
+
+Regla agregada como supuesto del grupo. `RepositorioComprasFalso` y el repositorio SQLite guardan, además de la cantidad, **cuántas entradas son de adulto** y ofrecen `adultosComprados(usuario, fecha)`.
+
+| # | Esperado | Obtenido en Red | Estrategia | Cambio en el código |
+|---|---|---|---|---|
+| F28 | Error "Los menores de 16 años necesitan una entrada de adulto para la misma fecha" | No lanzó error | Implementación obvia | Regla nueva en `REGLAS`: rechaza si todas las edades son ≤ 15 |
+| F29 | El mismo error | Pasó sin cambios | Confirmación de borde | — |
+| P19 | Se confirma | Pasó sin cambios | Confirmación de borde | — |
+| P20 | Se confirma | Error "Los menores de 16 años necesitan una entrada de adulto para la misma fecha" (no miraba compras anteriores) | Triangulación | La compra se registra con su cantidad de adultos y la regla consulta `adultosComprados()` |
+| S13 | 200 | 400 (el repositorio SQLite no tenía `adultosComprados`) | Implementación obvia | Columna `adultos` en `compras` y la consulta |
+| F30, F31, P21, V10 | Lo de la sección I de las pruebas | Pasaron sin cambios | Confirmación de borde | — |
+
+**Refactor:** `EDAD_MAXIMA_MENOR` y `contarAdultos()` pasaron a `valores.js`, para que la calculadora, el servicio y la web usen el mismo límite.
+
+| Paso | RED | GREEN | REFACTOR |
+|---|---|---|---|
+| F28 | `34bf54f` | `9c65f99` | — |
+| F29 | `0fb85a9` (pasó sin cambios) | — | — |
+| P19 | `f9ae436` (pasó sin cambios) | — | — |
+| P20 | `3f97a68` | `26ea64a` | — |
+| S13 | `8ecd596` | `132d905` | `e01c471` |
+| Web | — | `16388f2` | — |
+| F30 | `cc0cd35` (pasó sin cambios) | — | — |
+| F31 y P21 | `7b4b644` (pasaron sin cambios) | — | — |
+| V10 | `a14edd6` (pasó sin cambios) | — | — |
+
+**Resultado final:** 9 de 9 pruebas pasan.
+
+
 ## Resumen
 
 | Sección | Pruebas | Pasan | Fallan |
@@ -315,6 +345,7 @@ S01 a S12 (`tests/servidor.test.js`) verifican la base SQLite, el mail por SMTP 
 | E. Validación por campo | 9 | 9 | 0 |
 | F. Mail de confirmación | 1 | 1 | 0 |
 | G. Integración del servidor | 12 | 12 | 0 |
-| **Total** | **80** | **80** | **0** |
+| I. Menores con un adulto (R9) | 9 | 9 | 0 |
+| **Total** | **89** | **89** | **0** |
 
-**Cobertura** (`npm run test:coverage`): 100% de sentencias (99/99), ramas (31/31), funciones (34/34) y líneas (94/94) en los cinco módulos de `src/logica/` (`calculadoraPrecios.js`, `calendarioParque.js`, `fechas.js`, `servicioCompraEntradas.js` y `valores.js`). Después del refactor de la sección E hay menos ramas y más funciones que antes, porque cada regla de validación pasó a ser una función de la tabla `REGLAS` en lugar de un `if`. Evidencia: [`reportes/cobertura.txt`](reportes/cobertura.txt) y [`reportes/cobertura.png`](reportes/cobertura.png). **Lint** (`npm run lint`): sin errores.
+**Cobertura** (`npm run test:coverage`): 100% de sentencias (103/103), ramas (33/33), funciones (37/37) y líneas (96/96) en los cinco módulos de `src/logica/` (`calculadoraPrecios.js`, `calendarioParque.js`, `fechas.js`, `servicioCompraEntradas.js` y `valores.js`). Después del refactor de la sección E hay menos ramas y más funciones que antes, porque cada regla de validación pasó a ser una función de la tabla `REGLAS` en lugar de un `if`. Evidencia: [`reportes/cobertura.txt`](reportes/cobertura.txt) y [`reportes/cobertura.png`](reportes/cobertura.png). **Lint** (`npm run lint`): sin errores.
