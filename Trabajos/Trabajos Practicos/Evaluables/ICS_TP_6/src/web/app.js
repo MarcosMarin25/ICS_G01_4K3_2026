@@ -394,17 +394,42 @@
         return;
       }
 
-      if (efectos.montoPagado === null) {
+      if (efectos.montoPagado === null || efectos.montoPagado === 0) {
         mostrarConfirmacion(resultado);
         return;
       }
-      $("pantalla-pago-monto").textContent = formatoPesos.format(efectos.montoPagado);
-      $("pantalla-pago").hidden = false;
-      $("volver-del-pago").focus();
-      $("volver-del-pago").onclick = () => {
-        $("pantalla-pago").hidden = true;
-        mostrarConfirmacion(resultado);
-      };
+      // Guardamos el resultado en sessionStorage por si redirigimos afuera (a Mercado Pago Sandbox)
+      sessionStorage.setItem("compraPendiente", JSON.stringify({
+        resultado,
+        destinatarioMail: efectos.destinatarioMail,
+      }));
+
+      fetch("/api/mercadopago/preferencia", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          monto: efectos.montoPagado,
+          cantidadEntradas: resultado.cantidadEntradas,
+          fechaVisita: resultado.fechaVisita,
+          tipoPase: resultado.tipoPase,
+          origen: window.location.origin,
+        }),
+      })
+        .then((res) => (res.ok ? res.json() : Promise.reject()))
+        .then((datos) => {
+          // Redirige al Checkout Pro de Mercado Pago (init_point unificado)
+          window.location.href = datos.initPoint || datos.sandboxUrl;
+        })
+        .catch(() => {
+          // Fallback: si no hay MP_ACCESS_TOKEN o no hay internet, usa la pantalla simulada local
+          $("pantalla-pago-monto").textContent = formatoPesos.format(efectos.montoPagado);
+          $("pantalla-pago").hidden = false;
+          $("volver-del-pago").focus();
+          $("volver-del-pago").onclick = () => {
+            $("pantalla-pago").hidden = true;
+            mostrarConfirmacion(resultado);
+          };
+        });
     });
 
     $("nueva-compra").addEventListener("click", () => {
@@ -457,6 +482,29 @@
       .forEach((opcion) => opcion.addEventListener("change", actualizarResumen));
 
     actualizarResumen();
+
+    // Detectar retorno desde el Sandbox de Mercado Pago
+    const parametrosUrl = new URLSearchParams(window.location.search);
+    const estadoMp = parametrosUrl.get("mp_status") || parametrosUrl.get("status");
+    const guardada = sessionStorage.getItem("compraPendiente");
+    if (estadoMp === "approved" && guardada) {
+      sessionStorage.removeItem("compraPendiente");
+      window.history.replaceState({}, "", window.location.pathname);
+      const { resultado, destinatarioMail } = JSON.parse(guardada);
+      efectos.montoPagado = resultado.montoTotal;
+      efectos.destinatarioMail = destinatarioMail;
+      dependencias.compras.registrar(
+        resultado.usuario || $("usuario").value.trim(),
+        resultado.fechaVisita,
+        resultado.cantidadEntradas,
+      );
+      mostrarConfirmacion(resultado);
+    } else if (estadoMp === "rejected" || estadoMp === "null") {
+      sessionStorage.removeItem("compraPendiente");
+      window.history.replaceState({}, "", window.location.pathname);
+      $("error").textContent = "El pago en Mercado Pago fue cancelado o rechazado. La compra sigue pendiente de pago.";
+      $("error").hidden = false;
+    }
   }
 
   async function cargarUsuarios() {

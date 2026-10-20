@@ -233,6 +233,69 @@ No son pruebas unitarias de la lógica: verifican la base SQLite (en memoria), e
 | S11 | Usuarios de la sesión simulada | La lista de la base; otra ruta no se atiende | FAQ 19 |
 | S12 | Reloj real por defecto | Una fecha de 2020 se rechaza por anterior a hoy | CA 2 |
 
+### H. Verificación manual contra el Sandbox de Mercado Pago
+
+La pasarela externa real no se prueba con pruebas unitarias automatizadas para no depender de la red ni de credenciales externas (ADR 2 y ADR 11). Se verifica manualmente con la pasarela oficial de **Checkout Pro Sandbox** de Mercado Pago (`https://sandbox.mercadopago.com.ar`).
+
+Para simular los diferentes resultados de pago en la pasarela de Mercado Pago, se utilizan las **tarjetas de prueba oficiales para Argentina** y los **prefijos en el nombre del titular**:
+
+#### Tarjetas de prueba (Argentina)
+
+| Tarjeta | Número | Código de seguridad | Fecha de caducidad |
+|---|---|---|---|
+| **Mastercard** | `5031 7557 3453 0604` | `123` | `11/30` |
+| **Visa** | `4509 9535 6623 3704` | `123` | `11/30` |
+| **American Express** | `3711 803032 57522` | `1234` | `11/30` |
+| **Mastercard Débito** | `5287 3383 1025 3304` | `123` | `11/30` |
+| **Visa Débito** | `4002 7686 9439 5619` | `123` | `11/30` |
+
+#### Prefijo en el nombre del titular para forzar el resultado
+
+| Prefijo en Titular | Resultado | Documento de identidad | Comportamiento esperado en la web |
+|---|---|---|---|
+| **`APRO`** | **Pago aprobado** | DNI `12345678` | Redirige a la web con `?mp_status=approved`, registra la compra, muestra el ticket emitido y el modal de mail |
+| **`OTHE`** | Rechazado por error general | DNI `12345678` | Redirige con `?mp_status=rejected` y muestra aviso de pago rechazado |
+| **`CONT`** | Pendiente de pago | — | Redirige con `?mp_status=pending` |
+| **`CALL`** | Rechazado con validación para autorizar | — | Rechazo en la pasarela |
+| **`FUND`** | Rechazado por importe insuficiente | — | Rechazo en la pasarela |
+| **`SECU`** | Rechazado por código de seguridad inválido | — | Rechazo en la pasarela |
+| **`EXPI`** | Rechazado por fecha de vencimiento | — | Rechazo en la pasarela |
+| **`FORM`** | Rechazado por error de formulario | — | Rechazo en la pasarela |
+
+#### Correo electrónico obligatorio en el formulario de tarjeta (Checkout Pro Sandbox)
+
+Al pagar con tarjeta en la pasarela de Mercado Pago (Checkout Pro), el formulario solicita la cantidad de cuotas y el correo para enviar el comprobante:
+> *"¿A dónde enviamos el comprobante de pago? Ingresá tu e-mail"*
+
+**Regla estricta:**
+- **NO ingresar un correo electrónico real** (personal ni registrado previamente en Mercado Pago).
+  - Si se usa un correo personal real, la pasarela de Mercado Pago Sandbox arroja inmediatamente el error:
+    > *"Algo salió mal... Una de las partes con la que intentás hacer el pago es de prueba. Para más información, consultá con el administrador de la cuenta."* (Error interno 145 / `Invalid users involved`). Esto ocurre porque el Sandbox de Mercado Pago prohíbe mezclar credenciales de prueba del vendedor con cuentas de usuarios reales de producción.
+- **SE DEBE usar el correo de una cuenta de prueba de comprador (`@testuser.com`):**
+  1. Debe ser un **usuario de prueba con rol Comprador (Buyer)** generado desde el panel de desarrolladores de Mercado Pago:
+     - Ir a [Mercado Pago Developers > Panel de desarrolladores](https://www.mercadopago.com.ar/developers).
+     - En el menú lateral o dentro de la aplicación, ingresar a **Cuentas de prueba**.
+     - Crear un usuario de prueba para **Argentina** con rol **Comprador** (el correo generado tendrá el formato `test_user_XXXXX@testuser.com`).
+  2. En el campo *"E-mail"* del comprobante de Checkout Pro, ingresar dicho mail de prueba (`test_user_XXXXX@testuser.com`).
+  3. **Verificación de 2 pasos (2FA mock):** Si se inicia sesión con el usuario de prueba o la pasarela pide un código de seguridad por SMS/mail, el código de prueba son los **últimos 6 dígitos del ID numérico** del usuario de prueba (indicado en el panel de desarrolladores).
+
+#### Flujo paso a paso para verificar el pago aprobado (`APRO`)
+
+1. En la web de EcoHarmony Park (`http://localhost:8080/src/web/`), seleccionar tipo de pase, fecha válida (martes a domingo no feriado), visitantes y forma de pago **Mercado Pago**.
+2. Presionar **"Comprar entradas"** → Redirige a Checkout Pro de Mercado Pago.
+3. Elegir la opción **"Nueva tarjeta"** (crédito o débito):
+   - Número de tarjeta: `4509 9535 6623 3704` (Visa Débito/Crédito de prueba).
+   - Nombre y apellido del titular: `APRO Comprador` (el prefijo `APRO` es obligatorio para forzar la aprobación).
+   - Fecha de caducidad: `11/30` (o cualquier fecha futura).
+   - Código de seguridad: `123`.
+   - Documento de identidad: DNI `12345678`.
+4. Seleccionar cuotas: `1 cuota`.
+5. En *"¿A dónde enviamos el comprobante de pago?"*: ingresar el correo del **usuario de prueba de comprador** (`test_user_XXXXX@testuser.com`).
+6. Presionar **"Pagar"**:
+   - Mercado Pago procesa el pago exitosamente y redirige a la web con `?mp_status=approved`.
+   - La aplicación web detecta el retorno aprobado, confirma la compra, emite el ticket y muestra el modal de confirmación por correo.
+
+
 ## Parte 2: Pruebas en pseudocódigo
 
 Las pruebas siguen el formato de Jest: `describe` agrupa las pruebas, `test` define cada una con su descripción y `expect` verifica el resultado. Cada prueba lleva adelante el número que tiene en la Parte 1.

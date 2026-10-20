@@ -9,7 +9,9 @@ const { abrirBaseDeDatos } = require("../src/servidor/baseDeDatos");
 const { crearTransporteSmtp, ServicioMailSmtp, MENSAJE_SIN_CONFIGURAR } = require("../src/servidor/servicioMail");
 const { crearApi } = require("../src/servidor/api");
 
-const PUERTO = 8080;
+const PUERTO_POR_DEFECTO = 8080;
+const PUERTO_ALTERNO = 8081;
+const PUERTO = Number(process.env.PORT) || PUERTO_POR_DEFECTO;
 const RAIZ = path.resolve(__dirname, "..");
 const CARPETA_PUBLICA = path.join(RAIZ, "src");
 const CARPETA_SERVIDOR = path.join(RAIZ, "src", "servidor");
@@ -17,7 +19,13 @@ const PAGINA_INICIAL = "/src/web/";
 const RUTA_BASE_DE_DATOS = path.join(RAIZ, "datos", "ecoharmony.db");
 const USUARIOS_POR_DEFECTO = "visitante@mail.com,otro@mail.com";
 
-// Configuración del mail y de los usuarios en el archivo .env (ver .env.example).
+// Configuración del mail y de los usuarios en .env.local y .env (ver .env.example).
+// .env.local tiene prioridad sobre .env para credenciales privadas que no se suben a git.
+try {
+  process.loadEnvFile(path.join(RAIZ, ".env.local"));
+} catch {
+  // .env.local es opcional
+}
 try {
   process.loadEnvFile(path.join(RAIZ, ".env"));
 } catch {
@@ -34,6 +42,9 @@ const atenderApi = crearApi({
 const HTTP_OK = 200;
 const HTTP_REDIRECCION = 302;
 const HTTP_NO_ENCONTRADO = 404;
+const HTTP_ERROR_INTERNO = 500;
+const HTTP_NO_IMPLEMENTADO = 501;
+const HTTP_BAD_GATEWAY = 502;
 
 const TIPOS_DE_CONTENIDO = {
   ".html": "text/html; charset=utf-8",
@@ -51,6 +62,64 @@ function responderNoEncontrado(respuesta) {
 
 const servidor = http.createServer(async (pedido, respuesta) => {
   const ruta = decodeURIComponent(new URL(pedido.url, "http://localhost").pathname);
+
+  if (pedido.method === "POST" && ruta === "/api/mercadopago/preferencia") {
+    const token = process.env.MP_ACCESS_TOKEN || process.env.TOKEN_MP;
+    if (!token) {
+      respuesta.writeHead(HTTP_NO_IMPLEMENTADO, { "Content-Type": "application/json; charset=utf-8" });
+      respuesta.end(JSON.stringify({ error: "Falta configurar MP_ACCESS_TOKEN" }));
+      return;
+    }
+    let cuerpo = "";
+    pedido.on("data", (pedazo) => {
+      cuerpo += pedazo;
+    });
+    pedido.on("end", async () => {
+      try {
+        const { monto, cantidadEntradas, fechaVisita, tipoPase, origen } = JSON.parse(cuerpo);
+        const respuestaMp = await fetch("https://api.mercadopago.com/checkout/preferences", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            items: [
+              {
+                title: `EcoHarmony Park - ${cantidadEntradas} entrada(s) ${tipoPase} (${fechaVisita})`,
+                quantity: 1,
+                currency_id: "ARS",
+                unit_price: Number(monto),
+              },
+            ],
+            back_urls: {
+              success: `${origen}/src/web/?mp_status=approved`,
+              failure: `${origen}/src/web/?mp_status=rejected`,
+              pending: `${origen}/src/web/?mp_status=pending`,
+            },
+            ...(origen.startsWith("https://") ? { auto_return: "approved" } : {}),
+          }),
+        });
+        const datos = await respuestaMp.json();
+        if (!respuestaMp.ok) {
+          respuesta.writeHead(HTTP_BAD_GATEWAY, { "Content-Type": "application/json; charset=utf-8" });
+          respuesta.end(JSON.stringify({ error: datos.message || "Error al crear preferencia en MP" }));
+          return;
+        }
+        respuesta.writeHead(HTTP_OK, { "Content-Type": "application/json; charset=utf-8" });
+        respuesta.end(JSON.stringify({
+          id: datos.id,
+          sandboxUrl: datos.init_point || datos.sandbox_init_point,
+          initPoint: datos.init_point,
+        }));
+      } catch {
+        respuesta.writeHead(HTTP_ERROR_INTERNO, { "Content-Type": "application/json; charset=utf-8" });
+        respuesta.end(JSON.stringify({ error: "Error interno al conectar con Mercado Pago" }));
+      }
+    });
+    return;
+  }
+
   if (await atenderApi(pedido, respuesta, ruta)) {
     return;
   }
@@ -79,8 +148,22 @@ const servidor = http.createServer(async (pedido, respuesta) => {
   });
 });
 
-servidor.listen(PUERTO, "127.0.0.1", () => {
-  console.log(`EcoHarmony Park - Comprar entradas: http://localhost:${PUERTO}${PAGINA_INICIAL}`);
+let puertoActual = PUERTO;
+
+servidor.on("error", (error) => {
+  if ((error.code === "EACCES" || error.code === "EADDRINUSE") && puertoActual === PUERTO && !process.env.PORT) {
+    puertoActual = PUERTO_ALTERNO;
+    servidor.listen(puertoActual, "127.0.0.1", () => {
+      console.log(`EcoHarmony Park - Comprar entradas: http://localhost:${puertoActual}${PAGINA_INICIAL}`);
+      console.log(`Usuarios registrados: ${usuariosRegistrados.join(", ")}`);
+    });
+  } else {
+    throw error;
+  }
+});
+
+servidor.listen(puertoActual, "127.0.0.1", () => {
+  console.log(`EcoHarmony Park - Comprar entradas: http://localhost:${puertoActual}${PAGINA_INICIAL}`);
   console.log(`Usuarios registrados: ${usuariosRegistrados.join(", ")}`);
 });
 
