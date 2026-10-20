@@ -14,6 +14,8 @@ const MAXIMO_ENTRADAS_POR_FECHA = 10;
 // Hasta esta edad, un visitante necesita una entrada de adulto para la misma fecha (R9).
 const EDAD_MAXIMA_MENOR = 15;
 
+const contarAdultos = (edades) => edades.filter((edad) => edad > EDAD_MAXIMA_MENOR).length;
+
 const esHoy = (solicitud, { hoy }) => crearFechaLocal(solicitud.fechaVisita).getTime() === hoy.getTime();
 
 /**
@@ -124,9 +126,11 @@ const REGLAS = [
   // 6. Los menores necesitan una entrada de adulto para la misma fecha (R9).
   {
     campo: "edades",
-    requiere: ["cantidad"],
+    requiere: ["cantidad", "usuario", "fechaVisita"],
     mensaje: "Los menores de 16 años necesitan una entrada de adulto para la misma fecha",
-    seIncumple: (solicitud) => solicitud.edades.every((edad) => edad <= EDAD_MAXIMA_MENOR),
+    seIncumple: (solicitud, { compras }) =>
+      contarAdultos(solicitud.edades) === 0
+        && compras.adultosComprados(solicitud.usuario, solicitud.fechaVisita) === 0,
   },
 ];
 
@@ -147,8 +151,11 @@ const REGLAS = [
  * @property {(usuario: string) => boolean} estaRegistrado Indica si el usuario está registrado.
  *
  * @typedef {Object} RepositorioCompras
- * @property {(usuario: string, fecha: string, cantidad: number) => void} registrar Guarda una compra.
+ * @property {(usuario: string, fecha: string, cantidad: number, adultos: number) => void} registrar
+ *   Guarda una compra con su cantidad de entradas y cuántas son de adultos (R9).
  * @property {(usuario: string, fecha: string) => number} cantidadComprada Entradas ya compradas para la fecha.
+ * @property {(usuario: string, fecha: string) => number} adultosComprados Entradas de adulto ya compradas
+ *   para la fecha (R9).
  *
  * @typedef {Object} ServicioMail
  * @property {(usuario: string, compra: Object) => void} enviarConfirmacion Envía el mail de confirmación
@@ -195,7 +202,8 @@ class ServicioCompraEntradas {
     const entradas = this.#emitirEntradas(solicitud);
     const montoTotal = entradas.reduce((total, entrada) => total + entrada.precio, 0);
 
-    this.compras.registrar(solicitud.usuario, solicitud.fechaVisita, solicitud.cantidad);
+    this.compras.registrar(
+      solicitud.usuario, solicitud.fechaVisita, solicitud.cantidad, contarAdultos(solicitud.edades));
     if (solicitud.formaPago === FORMA_PAGO.TARJETA) {
       this.mercadoPago.redirigir(montoTotal);
     }
