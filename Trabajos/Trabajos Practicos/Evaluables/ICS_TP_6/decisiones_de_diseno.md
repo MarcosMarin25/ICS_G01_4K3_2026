@@ -316,7 +316,7 @@ La implementación evalúa los rangos de menor a mayor y devuelve el primero que
 
 - **Logo (FAQ 17): propuesta del grupo, pendiente de validación del PO.** El FAQ no define un logo, así que el grupo diseñó uno en SVG con la paleta oficial: una vuelta al mundo con cabinas en los colores de la paleta. Está en `src/web/logo.svg` (logo completo, con el nombre) y `src/web/icono.svg` (solo el ícono), con versiones en imagen (`logo.jpg` e `icono.png`). El encabezado usa `icono.svg`, que tiene fondo blanco y se lee bien sobre el verde, junto al nombre del parque; el mismo ícono es el de la pestaña del navegador. El servidor local sirve los tipos `image/svg+xml`, `image/png` e `image/jpeg`.
   La fuente es Lato (Google Fonts) en todo el sitio. El diseño es *mobile first*:
-  - **Formulario:** está dividido en cuatro pasos numerados (fecha, visitantes, pase y forma de pago), con tarjetas seleccionables y botones − y + para la cantidad.
+  - **Formulario:** está dividido en cuatro pasos numerados (fecha, pase, visitantes y forma de pago; el pase va antes para que cada categoría de visitantes ya muestre su precio), con tarjetas seleccionables y botones − y + para la cantidad.
   - **Celular:** se muestra en una sola columna, con una barra fija abajo que deja siempre a mano el total y el botón Comprar.
   - **Escritorio (desde 900 px de ancho):** se muestra en dos columnas, y el resumen, con forma de entrada, queda fijo al costado.
   - **Otros detalles:** los colores derivados (bordes y fondos suaves) se obtienen mezclando la paleta con `color-mix`, sin agregar colores nuevos, y las animaciones se desactivan si el sistema pide reducir el movimiento.

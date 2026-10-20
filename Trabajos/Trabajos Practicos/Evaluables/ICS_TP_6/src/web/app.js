@@ -90,7 +90,7 @@
     return elegido ? elegido.value : null;
   }
 
-  // Filas de categorías de edad del paso 2 (Adultos, Menores, Bebés, Mayores).
+  // Filas de categorías de edad del paso 3 (Adultos, Menores, Bebés, Mayores).
   const categorias = () => [...document.querySelectorAll(".categoria")];
   const cantidadDe = (categoria) => Number(categoria.querySelector(".contador__valor").value);
 
