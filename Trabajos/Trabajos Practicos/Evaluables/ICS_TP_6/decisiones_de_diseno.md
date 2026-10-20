@@ -470,7 +470,7 @@ Para pasar a verde se usaron las estrategias de Kent Beck: **fake it** (devolver
 
 ### Pruebas que pasaron sin cambios
 
-23 pruebas pasaron sin tocar el código (por ejemplo K02, P04 a P08, F11, P19 y V10). **No son ciclos Red**, y no se forzó un Red artificial. Son **confirmaciones de borde**: verifican que la generalización hecha antes ya cubre ese valor límite. Igual cumplen una función:
+25 pruebas pasaron sin tocar el código (por ejemplo K02, P04 a P08, F11, P19 y V10), registradas en 23 commits: F29 no lleva la etiqueta en su mensaje, y F31 y P21 comparten un commit. **No son ciclos Red**, y no se forzó un Red artificial. Son **confirmaciones de borde**: verifican que la generalización hecha antes ya cubre ese valor límite. Igual cumplen una función:
 - **En la sección C**, pasaron porque todavía no existían validaciones. Después funcionaron como red de seguridad: al implementar F08 se verificó que P05 (17:30) siguiera pasando, lo que confirma que el código usa `>` y no `>=`.
 - **F22** se verificó con mutación (ADR 5).
 
@@ -547,7 +547,7 @@ La tabla completa de **criterios de aceptación y reglas del PO → pruebas**, y
 | Cobertura (`npm run test:coverage`) | **100%** en los cinco módulos de `src/logica/`: sentencias 103/103, ramas 33/33, funciones 37/37 y líneas 96/96. La interfaz (`src/web/`) y el servidor (`src/servidor/`) no se miden (ADR 11 y 13) |
 | Lint (`npm run lint`) | 8 errores pendientes en `src/servidor/servicioMail.js` y `tests/servidor.test.js` (ver "Guía de estilo") |
 | Tiempo de ejecución | Unos 2 segundos para las 89 pruebas. La primera corrida tarda más porque incluye la carga inicial de Jest |
-| Ciclos registrados en `TP_6` (secciones B a E e I) | 42 RED, 42 GREEN, 15 REFACTOR y 23 confirmaciones de borde, cada uno en su commit. Las secciones F (G01) y G (S01 a S12) no siguieron el ciclo paso a paso |
+| Ciclos registrados en `TP_6` (secciones B a E e I) | 42 RED, 42 GREEN y 15 REFACTOR, cada uno en su commit, más 23 commits de confirmaciones de borde (25 pruebas). Las secciones F (G01) y G (S01 a S12) no siguieron el ciclo paso a paso |
 | Sección A | 9 pruebas, con los commits de cada paso en el PR #5 |
 
 **La cobertura al 100% es necesaria, pero no suficiente.** Indica que cada línea y cada rama se ejecutó en alguna prueba, pero no que las aserciones sean buenas. La confianza en la suficiencia de las pruebas viene de la combinación de tres cosas: la **trazabilidad** contra los criterios y las reglas, el diseño con **partición de equivalencias y valores límite**, y la verificación por **mutación** de F22, que mostró que una prueba que pasó sin cambios detecta un defecto real.
