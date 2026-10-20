@@ -3,3 +3,4 @@ coverage/
 datos/
 .env.local
 .env.*.local
+.env
