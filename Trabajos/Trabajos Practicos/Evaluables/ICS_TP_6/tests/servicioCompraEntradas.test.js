@@ -194,6 +194,14 @@ describe("ServicioCompraEntradas - compras válidas", () => {
 
     expect(resultado.confirmada).toBe(true);
   });
+
+  test("P20 - permite comprar un menor solo si ya compró una entrada de adulto para la fecha", () => {
+    servicio.comprar(solicitudValida({ cantidad: 1, edades: [30] }));
+
+    const resultado = servicio.comprar(solicitudValida({ cantidad: 1, edades: [8] }));
+
+    expect(resultado.confirmada).toBe(true);
+  });
 });
 
 describe("ServicioCompraEntradas - validaciones", () => {
