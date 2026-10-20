@@ -54,11 +54,13 @@
         calculadora: new CalculadoraPrecios(),
         usuarios: { estaRegistrado: (usuario) => USUARIOS_REGISTRADOS.includes(usuario) },
         compras: {
-          registrar(usuario, fecha, cantidad) {
+          registrar(usuario, fecha, cantidad, adultos = 0) {
             const clave = `${usuario}|${fecha}`;
-            compras.set(clave, (compras.get(clave) ?? 0) + cantidad);
+            const anterior = compras.get(clave) ?? { cantidad: 0, adultos: 0 };
+            compras.set(clave, { cantidad: anterior.cantidad + cantidad, adultos: anterior.adultos + adultos });
           },
-          cantidadComprada: (usuario, fecha) => compras.get(`${usuario}|${fecha}`) ?? 0,
+          cantidadComprada: (usuario, fecha) => compras.get(`${usuario}|${fecha}`)?.cantidad ?? 0,
+          adultosComprados: (usuario, fecha) => compras.get(`${usuario}|${fecha}`)?.adultos ?? 0,
         },
         mail: {
           enviarConfirmacion(usuario) {
@@ -137,10 +139,12 @@
   }
 
   // Para cada campo de la solicitud: el elemento que muestra su error y los que se marcan como inválidos.
+  // tocadoCon: el campo que, al tocarse, muestra también este error (las edades salen de los contadores).
   const CAMPOS = {
     usuario: { error: "error-usuario", marcar: () => [$("usuario")] },
     fechaVisita: { error: "error-fechaVisita", marcar: () => [$("calendario")] },
     cantidad: { error: "error-cantidad", marcar: () => [$("campo-cantidad")] },
+    edades: { error: "error-edades", marcar: () => [$("campo-cantidad")], tocadoCon: "cantidad" },
     tipoPase: { error: "error-tipoPase", marcar: () => [$("campo-tipoPase")] },
     formaPago: { error: "error-formaPago", marcar: () => [$("campo-formaPago")] },
   };
@@ -273,21 +277,30 @@
     dibujarCalendario();
 
     function debeMostrarse(campo) {
-      return intentoComprar || tocados.has(campo);
+      return intentoComprar || tocados.has(CAMPOS[campo].tocadoCon ?? campo);
     }
 
     // Los mensajes salen de servicio.validarCampos(): las mismas reglas que comprar(), probadas con Jest.
     function validarEnElMomento() {
       const errores = servicio.validarCampos(leerSolicitud());
+      // Un elemento puede mostrar los errores de varios campos (cantidad y edades): es inválido si alguno falla.
+      const marcados = new Map();
       for (const [campo, { error, marcar }] of Object.entries(CAMPOS)) {
         const visible = debeMostrarse(campo);
         const mensaje = visible ? errores[campo] : undefined;
         $(error).textContent = mensaje ?? "";
         $(error).hidden = !mensaje;
         for (const elemento of marcar()) {
-          elemento.setAttribute("aria-invalid", mensaje ? "true" : "false");
-          elemento.classList.toggle("es-valido", visible && !mensaje && elemento.tagName === "INPUT");
+          const anterior = marcados.get(elemento) ?? { visible: false, invalido: false };
+          marcados.set(elemento, {
+            visible: anterior.visible || visible,
+            invalido: anterior.invalido || Boolean(mensaje),
+          });
         }
+      }
+      for (const [elemento, { visible, invalido }] of marcados) {
+        elemento.setAttribute("aria-invalid", invalido ? "true" : "false");
+        elemento.classList.toggle("es-valido", visible && !invalido && elemento.tagName === "INPUT");
       }
       return errores;
     }
@@ -378,8 +391,9 @@
       let resultado;
       try {
         resultado = await comprarEnElServidor(solicitud);
-        // Se anota también acá, para que el máximo de 10 por fecha se avise en el momento.
-        dependencias.compras.registrar(solicitud.usuario, solicitud.fechaVisita, solicitud.cantidad);
+        // Se anota también acá, para que el máximo de 10 y los adultos de la fecha se avisen en el momento.
+        dependencias.compras.registrar(solicitud.usuario, solicitud.fechaVisita, solicitud.cantidad,
+          logica.valores.contarAdultos(solicitud.edades));
         efectos.montoPagado = solicitud.formaPago === logica.valores.FORMA_PAGO.TARJETA ? resultado.montoTotal : null;
         efectos.destinatarioMail = resultado.mail.destinatario;
       } catch (error) {
@@ -497,6 +511,7 @@
         resultado.usuario || $("usuario").value.trim(),
         resultado.fechaVisita,
         resultado.cantidadEntradas,
+        logica.valores.contarAdultos(resultado.entradas.map((entrada) => entrada.edad)),
       );
       mostrarConfirmacion(resultado);
     } else if (estadoMp === "rejected" || estadoMp === "null") {

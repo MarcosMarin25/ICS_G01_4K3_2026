@@ -133,7 +133,7 @@
           <h2 id="paso-2" class="paso__titulo"><span class="paso__numero" aria-hidden="true">3</span>¿Quiénes vienen?</h2>
           <!-- Una fila por categoría de edad. data-edad es una edad representativa de la categoría:
                el precio solo depende del rango (R3), así que el servicio recibe esa edad por cada entrada. -->
-          <div class="campo" id="campo-cantidad" role="group" aria-labelledby="paso-2" aria-describedby="error-cantidad">
+          <div class="campo" id="campo-cantidad" role="group" aria-labelledby="paso-2" aria-describedby="error-cantidad error-edades">
             <ul class="categorias">
               <li class="categoria" data-edad="16" data-nombre="Adultos">
                 <div class="categoria__texto">
@@ -180,8 +180,9 @@
                 </div>
               </li>
             </ul>
-            <p class="campo__ayuda">Hasta 10 entradas por fecha. Los bebés también llevan entrada (de $0) y cuentan en el máximo.</p>
+            <p class="campo__ayuda">Hasta 10 entradas por fecha. Los bebés también llevan entrada (de $0) y cuentan en el máximo. Los menores de 16 años necesitan una entrada de adulto o mayor para la misma fecha.</p>
             <p id="error-cantidad" class="campo__error" aria-live="polite" hidden></p>
+            <p id="error-edades" class="campo__error" aria-live="polite" hidden></p>
           </div>
         </section>
 
