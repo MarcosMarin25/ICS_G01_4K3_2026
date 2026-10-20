@@ -12,12 +12,19 @@ function fechaLegible(texto) {
   return `${dia}/${mes}/${anio}`;
 }
 
+function nombreCategoria(edad) {
+  if (edad <= 3) return "Bebé, hasta 3 años";
+  if (edad <= 15) return "Menor, 4 a 15 años";
+  if (edad <= 59) return "Adulto, 16 a 59 años";
+  return "Mayor, 60 años o más";
+}
+
 // Arma el mail con lo que pide la US y el FAQ 18: cantidad de entradas, fecha, el detalle de cada
 // entrada con su subtotal y el total. Recibe el resultado de comprar().
 function armarMailConfirmacion({ cantidadEntradas, fechaVisita, tipoPase, entradas, montoTotal }) {
   const pase = tipoPase === TIPO_PASE.VIP ? "VIP" : "regulares";
   const lineas = entradas.map(({ edad, precio }, i) =>
-    `Visitante ${i + 1} (${edad} años): ${precio === 0 ? "sin cargo" : formatoPesos.format(precio)}`);
+    `Visitante ${i + 1} (${nombreCategoria(edad)}): ${precio === 0 ? "sin cargo" : formatoPesos.format(precio)}`);
   return {
     asunto: "EcoHarmony Park - Confirmación de compra",
     texto: [
