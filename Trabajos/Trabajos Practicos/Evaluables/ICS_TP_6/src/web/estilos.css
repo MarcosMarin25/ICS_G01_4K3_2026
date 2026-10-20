@@ -560,25 +560,80 @@ fieldset[aria-invalid="true"] .opcion:not(:has(input:checked)) {
   outline-offset: 1px;
 }
 
-/* Edades */
-#campo-edades {
-  margin-top: 20px;
-  padding-top: 18px;
-  border-top: 1px dashed var(--color-borde);
+/* Categorías de edad: una fila por categoría con su contador */
+.categorias {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1.5px solid var(--color-borde);
+  border-radius: var(--radio-chico);
+  transition: border-color 0.15s;
 }
 
-.edades {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
-  gap: 10px;
+#campo-cantidad[aria-invalid="true"] .categorias {
+  border-color: var(--color-error);
 }
 
-.edades label {
-  display: block;
-  margin-bottom: 4px;
-  font-size: 0.8rem;
+.categoria {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+.categoria + .categoria {
+  border-top: 1px solid var(--color-borde);
+}
+
+.categoria.con-entradas {
+  background: var(--color-primario-suave);
+}
+
+.categoria__texto {
+  min-width: 0;
+}
+
+.categoria__nombre {
+  font-size: 1.05rem;
   font-weight: 700;
+}
+
+.categoria__detalle {
+  font-size: 0.875rem;
   color: var(--color-texto-suave);
+}
+
+.categoria__precio {
+  font-weight: 700;
+  color: var(--color-primario);
+}
+
+.contador--categoria {
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.contador--categoria .contador__boton {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  font-size: 1.25rem;
+  line-height: 1;
+  border-radius: 50%;
+}
+
+.contador--categoria .contador__boton:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.contador__valor {
+  min-width: 1.5ch;
+  font-size: 1.25rem;
+  font-weight: 900;
+  text-align: center;
 }
 
 /* ---------- Opciones seleccionables ---------- */
@@ -675,22 +730,6 @@ fieldset[aria-invalid="true"] .opcion:not(:has(input:checked)) {
 .opcion:has(input:focus-visible) {
   outline: 3px solid var(--color-acento);
   outline-offset: 2px;
-}
-
-.descuentos {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 14px 0 0;
-  padding: 0;
-  list-style: none;
-  font-size: 0.85rem;
-}
-
-.descuentos li {
-  padding: 4px 12px;
-  background: var(--color-acento-suave);
-  border-radius: 999px;
 }
 
 /* ---------- Botones ---------- */
@@ -1087,14 +1126,6 @@ fieldset[aria-invalid="true"] .opcion:not(:has(input:checked)) {
   color: var(--color-texto-suave);
 }
 
-/* ---------- Pie ---------- */
-.pie {
-  padding: 20px 0 calc(var(--alto-barra-movil) + 20px);
-  font-size: 0.85rem;
-  text-align: center;
-  color: var(--color-texto-suave);
-}
-
 /* ---------- Animaciones ---------- */
 @keyframes subir {
   from { opacity: 0; transform: translateY(16px); }
@@ -1158,9 +1189,5 @@ fieldset[aria-invalid="true"] .opcion:not(:has(input:checked)) {
 
   .barra-movil {
     display: none;
-  }
-
-  .pie {
-    padding-bottom: 24px;
   }
 }

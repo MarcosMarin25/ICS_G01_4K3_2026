@@ -9,10 +9,6 @@
   // Usuarios registrados de la sesión simulada (el PO permite empezar con la sesión mockeada).
   const USUARIOS_REGISTRADOS = ["visitante@mail.com", "otro@mail.com"];
 
-  // Límite de campos de edad que se dibujan, para no generar cientos si se escribe un número enorme.
-  // El límite real de 10 entradas lo valida el servicio.
-  const MAXIMO_CAMPOS_EDAD = 20;
-
   const formatoPesos = new Intl.NumberFormat("es-AR", {
     style: "currency",
     currency: "ARS",
@@ -92,61 +88,47 @@
     return elegido ? elegido.value : null;
   }
 
+  // Filas de categorías de edad del paso 2 (Adultos, Menores, Bebés, Mayores).
+  const categorias = () => [...document.querySelectorAll(".categoria")];
+  const cantidadDe = (categoria) => Number(categoria.querySelector(".contador__valor").value);
+
+  function nombreDeCategoria(edad) {
+    return categorias().find((categoria) => Number(categoria.dataset.edad) === edad)?.dataset.nombre ?? `${edad} años`;
+  }
+
+  // Cada entrada lleva la edad representativa de su categoría: el precio solo depende del rango de edad.
   function leerEdades() {
-    // Un campo vacío no es "edad 0" (que es válida): se manda NaN para que el servicio lo rechace.
-    return [...document.querySelectorAll("#edades input")]
-      .map((campo) => (campo.value === "" ? NaN : Number(campo.value)));
+    return categorias().flatMap((categoria) =>
+      Array(cantidadDe(categoria)).fill(Number(categoria.dataset.edad)));
   }
 
   function leerSolicitud() {
+    const edades = leerEdades();
     return {
       usuario: $("usuario").value.trim(),
       fechaVisita: $("fecha").value || null,
-      cantidad: Number($("cantidad").value),
-      edades: leerEdades(),
+      cantidad: edades.length,
+      edades,
       tipoPase: valorElegido("tipoPase"),
       formaPago: valorElegido("formaPago"),
     };
   }
 
-  function dibujarCamposDeEdad() {
-    const cantidad = Number($("cantidad").value);
-    const anteriores = leerEdades();
-    const contenedor = $("edades");
-    contenedor.replaceChildren();
-
-    const hayCampos = Number.isInteger(cantidad) && cantidad >= 1 && cantidad <= MAXIMO_CAMPOS_EDAD;
-    $("campo-edades").hidden = !hayCampos;
-    if (!hayCampos) {
-      return;
-    }
-    for (let i = 0; i < cantidad; i++) {
-      const id = `edad-${i + 1}`;
-      const envoltorio = document.createElement("div");
-      const etiqueta = document.createElement("label");
-      etiqueta.htmlFor = id;
-      etiqueta.textContent = `Visitante ${i + 1}`;
-      const campo = document.createElement("input");
-      campo.id = id;
-      campo.type = "number";
-      campo.min = "0";
-      campo.step = "1";
-      campo.inputMode = "numeric";
-      if (!Number.isNaN(anteriores[i]) && anteriores[i] !== undefined) {
-        campo.value = anteriores[i];
-      }
-      envoltorio.append(etiqueta, campo);
-      contenedor.append(envoltorio);
-    }
-  }
-
+  // Agrupa las entradas por categoría: "Adultos × 2   $20.000".
   function dibujarDetalle(lista, entradas) {
-    lista.replaceChildren(...entradas.map((entrada, i) => {
+    const grupos = new Map();
+    for (const { edad, precio } of entradas) {
+      const grupo = grupos.get(edad) ?? { cantidad: 0, subtotal: 0 };
+      grupo.cantidad += 1;
+      grupo.subtotal += precio;
+      grupos.set(edad, grupo);
+    }
+    lista.replaceChildren(...[...grupos].map(([edad, { cantidad, subtotal }]) => {
       const item = document.createElement("li");
       const nombre = document.createElement("span");
-      nombre.textContent = `Visitante ${i + 1} (${entrada.edad} años)`;
+      nombre.textContent = `${nombreDeCategoria(edad)} × ${cantidad}`;
       const precio = document.createElement("span");
-      precio.textContent = formatoPesos.format(entrada.precio);
+      precio.textContent = formatoPesos.format(subtotal);
       item.append(nombre, precio);
       return item;
     }));
@@ -156,8 +138,7 @@
   const CAMPOS = {
     usuario: { error: "error-usuario", marcar: () => [$("usuario")] },
     fechaVisita: { error: "error-fechaVisita", marcar: () => [$("calendario")] },
-    cantidad: { error: "error-cantidad", marcar: () => [$("cantidad")] },
-    edades: { error: "error-edades", marcar: () => [...document.querySelectorAll("#edades input"), $("campo-edades")] },
+    cantidad: { error: "error-cantidad", marcar: () => [$("campo-cantidad")] },
     tipoPase: { error: "error-tipoPase", marcar: () => [$("campo-tipoPase")] },
     formaPago: { error: "error-formaPago", marcar: () => [$("campo-formaPago")] },
   };
@@ -289,16 +270,8 @@
 
     dibujarCalendario();
 
-    function hayEdadesVacias() {
-      return [...document.querySelectorAll("#edades input")].some((campo) => campo.value === "");
-    }
-
     function debeMostrarse(campo) {
-      if (intentoComprar) {
-        return true;
-      }
-      // Las edades no se marcan mientras queden campos de edad sin completar.
-      return tocados.has(campo) && !(campo === "edades" && hayEdadesVacias());
+      return intentoComprar || tocados.has(campo);
     }
 
     // Los mensajes salen de servicio.validarCampos(): las mismas reglas que comprar(), probadas con Jest.
@@ -322,11 +295,26 @@
       validarEnElMomento();
     }
 
+    // Precio por entrada de cada categoría: el descuento antes de elegir el pase, el monto después.
+    function actualizarPreciosDeCategorias(tipoPase) {
+      for (const categoria of categorias()) {
+        categoria.classList.toggle("con-entradas", cantidadDe(categoria) > 0);
+        categoria.querySelector(".contador__boton[data-paso='-1']").disabled = cantidadDe(categoria) === 0;
+        const etiqueta = categoria.querySelector(".categoria__precio");
+        if (!tipoPase) {
+          etiqueta.textContent = etiqueta.dataset.sinPase;
+          continue;
+        }
+        const precio = calculadora.precioEntrada(Number(categoria.dataset.edad), tipoPase);
+        etiqueta.textContent = precio === 0 ? "Gratis" : `${formatoPesos.format(precio)} c/u`;
+      }
+    }
+
     function actualizarResumen() {
       const { edades, tipoPase } = leerSolicitud();
-      const edadesValidas = edades.filter((edad) => Number.isInteger(edad) && edad >= 0);
+      actualizarPreciosDeCategorias(tipoPase);
       const entradas = tipoPase
-        ? edadesValidas.map((edad) => ({ edad, precio: calculadora.precioEntrada(edad, tipoPase) }))
+        ? edades.map((edad) => ({ edad, precio: calculadora.precioEntrada(edad, tipoPase) }))
         : [];
       dibujarDetalle($("detalle"), entradas);
       $("resumen-vacio").hidden = entradas.length > 0;
@@ -372,7 +360,7 @@
         const primerInvalido = document.querySelector("#formulario [aria-invalid='true']");
         const destino = primerInvalido?.tagName === "INPUT"
           ? primerInvalido
-          : primerInvalido?.querySelector("input");
+          : primerInvalido?.querySelector("input, .contador__boton[data-paso='1']");
         destino?.scrollIntoView({ behavior: "smooth", block: "center" });
         destino?.focus({ preventScroll: true });
         return;
@@ -397,6 +385,9 @@
       $("formulario").reset();
       // En un input hidden, asignar value cambia también el valor por defecto: reset() no lo borra.
       $("fecha").value = "";
+      categorias().forEach((categoria) => {
+        categoria.querySelector(".contador__valor").value = 0;
+      });
       $("fecha-elegida").textContent = "Elegí un día disponible.";
       mesVisible = primerMes;
       dibujarCalendario();
@@ -404,7 +395,6 @@
       intentoComprar = false;
       $("error").hidden = true;
       $("usuario-sesion").textContent = $("usuario").value;
-      dibujarCamposDeEdad();
       actualizarResumen();
       validarEnElMomento();
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -417,8 +407,6 @@
     // Cuándo se considera que el usuario terminó con cada campo.
     $("usuario").addEventListener("focusout", () => tocar("usuario"));
     $("fecha").addEventListener("change", () => tocar("fechaVisita"));
-    $("cantidad").addEventListener("focusout", () => tocar("cantidad"));
-    $("edades").addEventListener("focusout", () => tocar("edades"));
     document.querySelectorAll("input[name='tipoPase']")
       .forEach((opcion) => opcion.addEventListener("change", () => tocar("tipoPase")));
     document.querySelectorAll("input[name='formaPago']")
@@ -427,23 +415,20 @@
     $("usuario").addEventListener("input", () => {
       $("usuario-sesion").textContent = $("usuario").value.trim() || "(sin usuario)";
     });
-    $("cantidad").addEventListener("input", () => {
-      dibujarCamposDeEdad();
-      actualizarResumen();
-      validarEnElMomento();
-    });
-    // Botones − y +: solo ayudan a cargar la cantidad; el máximo de 10 lo valida el servicio.
-    document.querySelectorAll(".contador__boton").forEach((boton) => {
+    // Botones − y + de cada categoría: no bajan de 0; el máximo de 10 por fecha lo valida el servicio.
+    document.querySelectorAll(".categoria .contador__boton").forEach((boton) => {
       boton.addEventListener("click", () => {
-        const actual = Number($("cantidad").value) || 0;
-        $("cantidad").value = Math.max(1, actual + Number(boton.dataset.paso));
-        $("cantidad").dispatchEvent(new Event("input", { bubbles: true }));
+        const categoria = boton.closest(".categoria");
+        const valor = categoria.querySelector(".contador__valor");
+        valor.value = Math.max(0, cantidadDe(categoria) + Number(boton.dataset.paso));
+        actualizarResumen();
         tocar("cantidad");
       });
     });
-    $("edades").addEventListener("input", actualizarResumen);
     document.querySelectorAll("input[name='tipoPase']")
       .forEach((opcion) => opcion.addEventListener("change", actualizarResumen));
+
+    actualizarResumen();
   }
 
   cargarLogica()

@@ -103,21 +103,58 @@
 
         <section class="paso tarjeta" aria-labelledby="paso-2">
           <h2 id="paso-2" class="paso__titulo"><span class="paso__numero" aria-hidden="true">2</span>¿Quiénes vienen?</h2>
-          <div class="campo">
-            <label for="cantidad">Cantidad de entradas</label>
-            <div class="contador">
-              <button type="button" class="contador__boton" data-paso="-1" aria-label="Una entrada menos">−</button>
-              <input id="cantidad" name="cantidad" type="number" min="1" max="10" step="1" inputmode="numeric" placeholder="0" aria-describedby="error-cantidad">
-              <button type="button" class="contador__boton" data-paso="1" aria-label="Una entrada más">+</button>
-            </div>
-            <p class="campo__ayuda">Los menores de hasta 3 años también llevan entrada (de $0) y cuentan en el máximo.</p>
+          <!-- Una fila por categoría de edad. data-edad es una edad representativa de la categoría:
+               el precio solo depende del rango (R3), así que el servicio recibe esa edad por cada entrada. -->
+          <div class="campo" id="campo-cantidad" role="group" aria-labelledby="paso-2" aria-describedby="error-cantidad">
+            <ul class="categorias">
+              <li class="categoria" data-edad="16" data-nombre="Adultos">
+                <div class="categoria__texto">
+                  <p class="categoria__nombre">Adultos</p>
+                  <p class="categoria__detalle">16 a 59 años · <span class="categoria__precio" data-sin-pase="Precio completo"></span></p>
+                </div>
+                <div class="contador contador--categoria">
+                  <button type="button" class="contador__boton" data-paso="-1" aria-label="Un adulto menos">−</button>
+                  <output class="contador__valor" aria-live="polite">0</output>
+                  <button type="button" class="contador__boton" data-paso="1" aria-label="Un adulto más">+</button>
+                </div>
+              </li>
+              <li class="categoria" data-edad="4" data-nombre="Menores">
+                <div class="categoria__texto">
+                  <p class="categoria__nombre">Menores</p>
+                  <p class="categoria__detalle">4 a 15 años · <span class="categoria__precio" data-sin-pase="50% off"></span></p>
+                </div>
+                <div class="contador contador--categoria">
+                  <button type="button" class="contador__boton" data-paso="-1" aria-label="Un menor menos">−</button>
+                  <output class="contador__valor" aria-live="polite">0</output>
+                  <button type="button" class="contador__boton" data-paso="1" aria-label="Un menor más">+</button>
+                </div>
+              </li>
+              <li class="categoria" data-edad="0" data-nombre="Bebés">
+                <div class="categoria__texto">
+                  <p class="categoria__nombre">Bebés</p>
+                  <p class="categoria__detalle">Hasta 3 años · <span class="categoria__precio" data-sin-pase="Gratis"></span></p>
+                </div>
+                <div class="contador contador--categoria">
+                  <button type="button" class="contador__boton" data-paso="-1" aria-label="Un bebé menos">−</button>
+                  <output class="contador__valor" aria-live="polite">0</output>
+                  <button type="button" class="contador__boton" data-paso="1" aria-label="Un bebé más">+</button>
+                </div>
+              </li>
+              <li class="categoria" data-edad="60" data-nombre="Mayores">
+                <div class="categoria__texto">
+                  <p class="categoria__nombre">Mayores</p>
+                  <p class="categoria__detalle">60 años o más · <span class="categoria__precio" data-sin-pase="50% off"></span></p>
+                </div>
+                <div class="contador contador--categoria">
+                  <button type="button" class="contador__boton" data-paso="-1" aria-label="Un mayor menos">−</button>
+                  <output class="contador__valor" aria-live="polite">0</output>
+                  <button type="button" class="contador__boton" data-paso="1" aria-label="Un mayor más">+</button>
+                </div>
+              </li>
+            </ul>
+            <p class="campo__ayuda">Hasta 10 entradas por fecha. Los bebés también llevan entrada (de $0) y cuentan en el máximo.</p>
             <p id="error-cantidad" class="campo__error" aria-live="polite" hidden></p>
           </div>
-          <fieldset class="campo" id="campo-edades" aria-describedby="error-edades" hidden>
-            <legend>Edad de cada visitante</legend>
-            <div id="edades" class="edades"></div>
-            <p id="error-edades" class="campo__error" aria-live="polite" hidden></p>
-          </fieldset>
         </section>
 
         <section class="paso tarjeta" aria-labelledby="paso-3">
@@ -144,11 +181,6 @@
                 <svg class="opcion__check" aria-hidden="true"><use href="#i-check"/></svg>
               </label>
             </div>
-            <ul class="descuentos">
-              <li><strong>Hasta 3 años:</strong> gratis</li>
-              <li><strong>Hasta 15 años:</strong> 50% off</li>
-              <li><strong>Desde 60 años:</strong> 50% off</li>
-            </ul>
             <p id="error-tipoPase" class="campo__error" aria-live="polite" hidden></p>
           </fieldset>
         </section>
@@ -191,7 +223,7 @@
             <h2 id="resumen-titulo">Tu compra</h2>
           </div>
           <div class="ticket__cuerpo" aria-live="polite">
-            <p id="resumen-vacio" class="resumen__vacio">Completá la cantidad, las edades y el pase para ver el precio.</p>
+            <p id="resumen-vacio" class="resumen__vacio">Sumá entradas y elegí el pase para ver el precio.</p>
             <ul id="detalle" class="detalle"></ul>
           </div>
           <div class="ticket__pie">
@@ -229,12 +261,6 @@
       </div>
     </section>
   </main>
-
-  <footer class="pie">
-    <div class="contenedor">
-      <p>EcoHarmony Park · TP 6 de Ingeniería y Calidad de Software, UTN FRC 2026</p>
-    </div>
-  </footer>
 
   <!-- Pantalla simulada de Mercado Pago (no hay integración real: ver decisiones_de_diseno.md). -->
   <section id="pantalla-pago" class="pantalla-pago" hidden>
