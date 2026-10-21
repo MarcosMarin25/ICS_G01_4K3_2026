@@ -382,13 +382,23 @@
     }
 
     // Con el pago aprobado en Mercado Pago, el servidor confirma la compra: la guarda y envía el mail.
+    // Mientras tanto se muestra un aviso, porque guardar la compra y enviar el mail tarda unos segundos.
     function confirmarPagoAprobado(solicitud) {
+      const disposicion = $("formulario").closest(".disposicion");
+      const aviso = document.createElement("p");
+      aviso.className = "aviso aviso--info";
+      aviso.setAttribute("role", "status");
+      aviso.textContent = "Confirmando tu pago y enviando el mail de confirmación…";
+      disposicion.before(aviso);
+      disposicion.hidden = true;
       comprarEnElServidor(solicitud)
         .then(mostrarConfirmacion)
         .catch((error) => {
+          disposicion.hidden = false;
           $("error").textContent = `No se pudo confirmar la compra: ${error.message}.`;
           $("error").hidden = false;
-        });
+        })
+        .finally(() => aviso.remove());
     }
 
     $("formulario").addEventListener("submit", async (evento) => {

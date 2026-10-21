@@ -809,6 +809,13 @@ fieldset[aria-invalid="true"] .opcion:not(:has(input:checked)) {
   border-left: 5px solid var(--color-error);
 }
 
+/* Aviso mientras se confirma el pago al volver de Mercado Pago. */
+.aviso--info {
+  color: var(--color-primario);
+  background: color-mix(in srgb, var(--color-primario) 8%, var(--color-superficie));
+  border: 1px solid color-mix(in srgb, var(--color-primario) 30%, transparent);
+}
+
 .aviso--error .icono {
   margin-top: 2px;
 }
