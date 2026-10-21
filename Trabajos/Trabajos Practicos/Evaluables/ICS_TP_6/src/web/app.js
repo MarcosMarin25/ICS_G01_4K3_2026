@@ -539,8 +539,8 @@
       sessionStorage.removeItem("compraPendiente");
       window.history.replaceState({}, "", window.location.pathname);
       $("error").textContent = estadoMp === "pending"
-        ? "El pago quedó pendiente en Mercado Pago, así que la compra no se confirmó."
-        : "El pago en Mercado Pago fue cancelado o rechazado, así que la compra no se confirmó.";
+        ? "El pago quedó pendiente en Mercado Pago. La compra no se confirmó."
+        : "El pago en Mercado Pago fue cancelado o rechazado. La compra no se confirmó.";
       $("error").hidden = false;
     }
   }
