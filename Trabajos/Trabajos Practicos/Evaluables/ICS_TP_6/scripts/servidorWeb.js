@@ -97,7 +97,8 @@ const servidor = http.createServer(async (pedido, respuesta) => {
               failure: `${origen}/src/web/?mp_status=rejected`,
               pending: `${origen}/src/web/?mp_status=pending`,
             },
-            ...(origen.startsWith("https://") ? { auto_return: "approved" } : {}),
+            // "all": Mercado Pago vuelve solo a la web también cuando el pago queda pendiente.
+            ...(origen.startsWith("https://") ? { auto_return: "all" } : {}),
           }),
         });
         const datos = await respuestaMp.json();

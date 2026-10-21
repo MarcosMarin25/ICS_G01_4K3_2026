@@ -381,6 +381,16 @@
       return cuerpo;
     }
 
+    // Con el pago aprobado en Mercado Pago, el servidor confirma la compra: la guarda y envía el mail.
+    function confirmarPagoAprobado(solicitud) {
+      comprarEnElServidor(solicitud)
+        .then(mostrarConfirmacion)
+        .catch((error) => {
+          $("error").textContent = `No se pudo confirmar la compra: ${error.message}.`;
+          $("error").hidden = false;
+        });
+    }
+
     $("formulario").addEventListener("submit", async (evento) => {
       evento.preventDefault();
       intentoComprar = true;
@@ -391,14 +401,24 @@
 
       // comprar() sigue siendo la autoridad final: si la solicitud es inválida, no compra.
       const solicitud = leerSolicitud();
+      const conTarjeta = solicitud.formaPago === logica.valores.FORMA_PAGO.TARJETA;
       let resultado;
       try {
-        resultado = await comprarEnElServidor(solicitud);
-        // Se anota también acá, para que el máximo de 10 y los adultos de la fecha se avisen en el momento.
-        dependencias.compras.registrar(solicitud.usuario, solicitud.fechaVisita, solicitud.cantidad,
-          logica.valores.contarAdultos(solicitud.edades));
-        efectos.montoPagado = solicitud.formaPago === logica.valores.FORMA_PAGO.TARJETA ? resultado.montoTotal : null;
-        efectos.destinatarioMail = resultado.mail.destinatario;
+        // Con tarjeta, acá solo se valida y se calcula el total (servicio.comprar() del navegador no
+        // guarda nada en la base): el servidor guarda la compra y envía el mail recién cuando
+        // Mercado Pago aprueba el pago, salvo que no haya nada que pagar.
+        resultado = conTarjeta ? servicio.comprar(solicitud) : await comprarEnElServidor(solicitud);
+        if (conTarjeta && resultado.montoTotal === 0) {
+          resultado = await comprarEnElServidor(solicitud);
+        }
+        // Se anota también acá, para que el máximo de 10 y los adultos de la fecha se avisen en el momento
+        // (con tarjeta ya lo anotó servicio.comprar()).
+        if (!conTarjeta) {
+          dependencias.compras.registrar(solicitud.usuario, solicitud.fechaVisita, solicitud.cantidad,
+            logica.valores.contarAdultos(solicitud.edades));
+        }
+        efectos.montoPagado = conTarjeta ? resultado.montoTotal : null;
+        efectos.destinatarioMail = resultado.mail?.destinatario ?? solicitud.usuario;
       } catch (error) {
         $("error").textContent = `${error.message}. Revisá los datos marcados en rojo.`;
         $("error").hidden = false;
@@ -419,6 +439,7 @@
       sessionStorage.setItem("compraPendiente", JSON.stringify({
         resultado,
         destinatarioMail: efectos.destinatarioMail,
+        solicitud, // para confirmar la compra en el servidor cuando Mercado Pago apruebe el pago
       }));
 
       fetch("/api/mercadopago/preferencia", {
@@ -444,7 +465,7 @@
           $("volver-del-pago").focus();
           $("volver-del-pago").onclick = () => {
             $("pantalla-pago").hidden = true;
-            mostrarConfirmacion(resultado);
+            confirmarPagoAprobado(solicitud);
           };
         });
     });
@@ -507,20 +528,19 @@
     if (estadoMp === "approved" && guardada) {
       sessionStorage.removeItem("compraPendiente");
       window.history.replaceState({}, "", window.location.pathname);
-      const { resultado, destinatarioMail } = JSON.parse(guardada);
+      const { resultado, destinatarioMail, solicitud } = JSON.parse(guardada);
       efectos.montoPagado = resultado.montoTotal;
       efectos.destinatarioMail = destinatarioMail;
-      dependencias.compras.registrar(
-        resultado.usuario || $("usuario").value.trim(),
-        resultado.fechaVisita,
-        resultado.cantidadEntradas,
-        logica.valores.contarAdultos(resultado.entradas.map((entrada) => entrada.edad)),
-      );
-      mostrarConfirmacion(resultado);
-    } else if (estadoMp === "rejected" || estadoMp === "null") {
+      dependencias.compras.registrar(solicitud.usuario, solicitud.fechaVisita, solicitud.cantidad,
+        logica.valores.contarAdultos(solicitud.edades));
+      confirmarPagoAprobado(solicitud);
+    } else if (estadoMp === "rejected" || estadoMp === "null" || estadoMp === "pending") {
+      // Sin pago aprobado la compra no se confirma: no se guarda ni se envía el mail.
       sessionStorage.removeItem("compraPendiente");
       window.history.replaceState({}, "", window.location.pathname);
-      $("error").textContent = "El pago en Mercado Pago fue cancelado o rechazado. La compra sigue pendiente de pago.";
+      $("error").textContent = estadoMp === "pending"
+        ? "El pago quedó pendiente en Mercado Pago, así que la compra no se confirmó."
+        : "El pago en Mercado Pago fue cancelado o rechazado, así que la compra no se confirmó.";
       $("error").hidden = false;
     }
   }
