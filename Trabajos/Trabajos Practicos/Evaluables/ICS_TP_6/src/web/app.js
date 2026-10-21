@@ -6,9 +6,11 @@
   const RUTA_LOGICA = "../logica/";
   const MODULOS = ["valores", "fechas", "calculadoraPrecios", "calendarioParque", "servicioCompraEntradas"];
 
-  // Usuarios registrados de la sesión simulada (el PO permite empezar con la sesión mockeada).
-  // Se cargan de la base de datos al iniciar (GET /api/usuarios).
+  // Usuarios registrados y usuario logueado de la sesión simulada (el PO permite empezar con la
+  // sesión mockeada). Se cargan del servidor al iniciar (GET /api/usuarios y GET /api/sesion):
+  // el usuario logueado es el USUARIO_LOGUEADO del .env.
   const USUARIOS_REGISTRADOS = [];
+  const sesion = { usuario: null };
 
   const formatoPesos = new Intl.NumberFormat("es-AR", {
     style: "currency",
@@ -109,7 +111,7 @@
   function leerSolicitud() {
     const edades = leerEdades();
     return {
-      usuario: $("usuario").value.trim(),
+      usuario: sesion.usuario,
       fechaVisita: $("fecha").value || null,
       cantidad: edades.length,
       edades,
@@ -141,7 +143,6 @@
   // Para cada campo de la solicitud: el elemento que muestra su error y los que se marcan como inválidos.
   // tocadoCon: el campo que, al tocarse, muestra también este error (las edades salen de los contadores).
   const CAMPOS = {
-    usuario: { error: "error-usuario", marcar: () => [$("usuario")] },
     fechaVisita: { error: "error-fechaVisita", marcar: () => [$("calendario")] },
     cantidad: { error: "error-cantidad", marcar: () => [$("campo-cantidad")] },
     edades: { error: "error-edades", marcar: () => [$("campo-cantidad")], tocadoCon: "cantidad" },
@@ -495,7 +496,6 @@
       tocados.clear();
       intentoComprar = false;
       $("error").hidden = true;
-      $("usuario-sesion").textContent = $("usuario").value;
       actualizarResumen();
       validarEnElMomento();
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -506,16 +506,12 @@
     $("formulario").addEventListener("change", validarEnElMomento);
 
     // Cuándo se considera que el usuario terminó con cada campo.
-    $("usuario").addEventListener("focusout", () => tocar("usuario"));
     $("fecha").addEventListener("change", () => tocar("fechaVisita"));
     document.querySelectorAll("input[name='tipoPase']")
       .forEach((opcion) => opcion.addEventListener("change", () => tocar("tipoPase")));
     document.querySelectorAll("input[name='formaPago']")
       .forEach((opcion) => opcion.addEventListener("change", () => tocar("formaPago")));
 
-    $("usuario").addEventListener("input", () => {
-      $("usuario-sesion").textContent = $("usuario").value.trim() || "(sin usuario)";
-    });
     // Botones − y + de cada categoría: no bajan de 0; el máximo de 10 por fecha lo valida el servicio.
     document.querySelectorAll(".categoria .contador__boton").forEach((boton) => {
       boton.addEventListener("click", () => {
@@ -558,6 +554,8 @@
   async function cargarUsuarios() {
     const respuesta = await fetch("/api/usuarios");
     USUARIOS_REGISTRADOS.push(...await respuesta.json());
+    sesion.usuario = (await (await fetch("/api/sesion")).json()).usuario;
+    $("usuario-sesion").textContent = sesion.usuario;
   }
 
   Promise.all([cargarLogica(), cargarUsuarios()])

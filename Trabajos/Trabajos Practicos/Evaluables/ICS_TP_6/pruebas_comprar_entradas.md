@@ -50,7 +50,7 @@ Como visitante quiero comprar una entrada para asegurar mi visita al parque
 | Simular Mercado Pago con una pantalla "Mercado Pago Compra Exitosa" | FAQ 4 | Se resuelve en la interfaz. En las pruebas, Mercado Pago se reemplaza por un espía que registra si fue llamado y con qué monto (P01, P02, F22). | Pantalla simulada con el monto pagado. |
 | Simular el mail con un modal "Mail enviado a ..." | FAQ 5 | Se resuelve en la interfaz. En las pruebas, el mail se reemplaza por un espía que registra a quién se envió (P01, P02, F22). | El mail se envía **de verdad** por SMTP (Brevo) desde el servidor (G01, S03 a S06, S09), y después el modal muestra "Mail enviado a ..." o el motivo si falló. |
 | Logo de EcoHarmony Park | FAQ 17 | Es diseño visual. | Propuesta del grupo en SVG con la paleta oficial, pendiente de validación del PO. |
-| Sesión y usuario mockeados | FAQ 19 | La autenticación real no es parte de esta US. La regla de negocio (solo usuarios registrados) sí se prueba con un stub (F19, V02). | Sesión simulada con dos usuarios de prueba. |
+| Sesión y usuario mockeados | FAQ 19 | La autenticación real no es parte de esta US. La regla de negocio (solo usuarios registrados) sí se prueba con un stub (F19, V02). | Sesión simulada: el usuario logueado es el `USUARIO_LOGUEADO` del `.env` (cada integrante pone el suyo en `.env.local`), la página lo muestra como "Sesión: ..." y el servidor hace la compra a su nombre (S14, S15). |
 | App mobile / web responsive | FAQ 24 | Es diseño visual. | Diseño *mobile first*, verificado a 360 px y a 1280 px. |
 | Solo DNI | — | No aplica: esta US no pide documento. Es de "Inscribirme a actividad". | — |
 
@@ -233,6 +233,8 @@ No son pruebas unitarias de la lógica: verifican la base SQLite (en memoria), e
 | S10 | Solicitud mal armada | 400 | — |
 | S11 | Usuarios de la sesión simulada | La lista de la base; otra ruta no se atiende | FAQ 19 |
 | S12 | Reloj real por defecto | Una fecha de 2020 se rechaza por anterior a hoy | CA 2 |
+| S14 | Usuario logueado de la sesión | `GET /api/sesion` informa el `USUARIO_LOGUEADO` | FAQ 19 |
+| S15 | Compra a nombre del usuario logueado | Aunque la solicitud diga otro usuario, se guarda y se envía el mail al logueado | CA 3, CA 9, FAQ 19 |
 
 ### I. Menores con una entrada de adulto (R9)
 
@@ -878,6 +880,6 @@ test("P20 - permite comprar un menor solo si ya compró una entrada de adulto pa
 | D. Compras que deben fallar | F01 a F27, sin F16 (retirada) | 26 |
 | E. Validación por campo | V01 a V09 | 9 |
 | F. Mail de confirmación | G01 | 1 |
-| G. Integración del servidor | S01 a S12 | 12 |
+| G. Integración del servidor | S01 a S12, S14 y S15 | 14 |
 | I. Menores con un adulto (R9) | F28 a F31, P19 a P21, V10, S13 | 9 |
-| **Total** | | **89** |
+| **Total** | | **91** |

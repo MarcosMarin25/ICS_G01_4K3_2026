@@ -109,10 +109,15 @@ describe("Servidor - API", () => {
   }
 
   let servidor;
+  let usuarioLogueado; // USUARIO_LOGUEADO del .env; null si no está configurado
+
+  beforeEach(() => {
+    usuarioLogueado = null;
+  });
 
   // Levanta la API en un puerto libre y hace el pedido con fetch. Con reloj null, usa el real.
   async function pedir(mail, metodo, ruta, cuerpo, reloj = new RelojFijo("2026-10-15T10:00")) {
-    const atenderApi = crearApi(reloj ? { bd, mail, reloj } : { bd, mail });
+    const atenderApi = crearApi(reloj ? { bd, mail, reloj, usuarioLogueado } : { bd, mail, usuarioLogueado });
     servidor = http.createServer(async (pedido, respuesta) => {
       if (!await atenderApi(pedido, respuesta, new URL(pedido.url, "http://localhost").pathname)) {
         respuesta.writeHead(404);
@@ -211,5 +216,25 @@ describe("Servidor - API", () => {
       solicitudValida({ cantidad: 1, edades: [8] }));
 
     expect(estado).toBe(200);
+  });
+
+  test("S14 - informa el usuario logueado de la sesión", async () => {
+    usuarioLogueado = "otro@mail.com";
+
+    const sesion = await pedir(new MailServidorEspia(), "GET", "/api/sesion");
+
+    expect(sesion).toEqual({ estado: 200, cuerpo: { usuario: "otro@mail.com" } });
+  });
+
+  test("S15 - la compra se hace a nombre del usuario logueado, aunque la solicitud diga otro", async () => {
+    usuarioLogueado = "otro@mail.com";
+    const mail = new MailServidorEspia();
+
+    const { estado } = await pedir(mail, "POST", "/api/compras", solicitudValida({ usuario: USUARIO }));
+
+    expect(estado).toBe(200);
+    expect(mail.enviados[0].destinatario).toBe("otro@mail.com");
+    expect(new RepositorioComprasSQLite(bd).cantidadComprada("otro@mail.com", FECHA_ABIERTA)).toBe(2);
+    expect(new RepositorioComprasSQLite(bd).cantidadComprada(USUARIO, FECHA_ABIERTA)).toBe(0);
   });
 });

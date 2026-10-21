@@ -299,9 +299,9 @@ Para enviar el mail real, el mail tiene que recibir el detalle de la compra. `Se
 
 ## G. Integración del servidor
 
-S01 a S12 (`tests/servidor.test.js`) verifican la base SQLite, el mail por SMTP y la API. **No siguieron el ciclo Red → Green**: se escribieron junto con el servidor, porque prueban la conexión con herramientas externas y no reglas de negocio nuevas, que siguen solo en `src/logica/`. Usan una base en memoria y el `jsonTransport` de Nodemailer, que arma el mensaje sin conectarse a la red. El envío real a Brevo se verifica a mano.
+S01 a S12 (`tests/servidor.test.js`) verifican la base SQLite, el mail por SMTP y la API. **No siguieron el ciclo Red → Green**: se escribieron junto con el servidor, porque prueban la conexión con herramientas externas y no reglas de negocio nuevas, que siguen solo en `src/logica/`. Usan una base en memoria y el `jsonTransport` de Nodemailer, que arma el mensaje sin conectarse a la red. El envío real a Brevo se verifica a mano. S14 y S15 se agregaron al reemplazar el campo de mail por el usuario logueado de la sesión (`USUARIO_LOGUEADO`).
 
-**Resultado final:** 12 de 12 pruebas pasan.
+**Resultado final:** 14 de 14 pruebas pasan.
 
 
 ## I. Menores con una entrada de adulto (R9)
@@ -344,8 +344,8 @@ Regla agregada como supuesto del grupo. `RepositorioComprasFalso` y el repositor
 | D. Compras que deben fallar | 26 | 26 | 0 |
 | E. Validación por campo | 9 | 9 | 0 |
 | F. Mail de confirmación | 1 | 1 | 0 |
-| G. Integración del servidor | 12 | 12 | 0 |
+| G. Integración del servidor | 14 | 14 | 0 |
 | I. Menores con un adulto (R9) | 9 | 9 | 0 |
-| **Total** | **89** | **89** | **0** |
+| **Total** | **91** | **91** | **0** |
 
 **Cobertura** (`npm run test:coverage`): 100% de sentencias (103/103), ramas (33/33), funciones (37/37) y líneas (96/96) en los cinco módulos de `src/logica/` (`calculadoraPrecios.js`, `calendarioParque.js`, `fechas.js`, `servicioCompraEntradas.js` y `valores.js`). Después del refactor de la sección E hay menos ramas y más funciones que antes, porque cada regla de validación pasó a ser una función de la tabla `REGLAS` en lugar de un `if`. Evidencia: [`reportes/cobertura.txt`](reportes/cobertura.txt) y [`reportes/cobertura.png`](reportes/cobertura.png). **Lint** (`npm run lint`): sin errores.

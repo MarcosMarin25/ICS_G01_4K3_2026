@@ -8,7 +8,7 @@ Implementación con **TDD (Red → Green → Refactor)** de la User Story:
 
 | | |
 |---|---|
-| Pruebas | **89 de 89** pasan (Jest): 76 unitarias de la lógica y 13 de integración del servidor |
+| Pruebas | **91 de 91** pasan (Jest): 76 unitarias de la lógica y 15 de integración del servidor |
 | Cobertura | **100%** de sentencias, ramas, funciones y líneas en `src/logica/` |
 | Lint | Sin errores (ESLint) |
 | Evidencia del ciclo | Un commit por cada paso RED, GREEN y REFACTOR en la rama `TP_6` |
@@ -30,6 +30,14 @@ npm install
 2. En Brevo, verificá un remitente (*Senders, Domains & Dedicated IPs* → *Senders*) y ponelo en `MAIL_REMITENTE`.
 3. En *SMTP & API* → *SMTP*, copiá el *Login* en `SMTP_USUARIO` y generá una *SMTP key* para `SMTP_CLAVE`.
 4. Agregá tu mail en `USUARIOS_REGISTRADOS`, para comprar con él y recibir la confirmación.
+
+**Usuario logueado.** El login no es parte de esta US (FAQ 19), así que la sesión está simulada: el usuario logueado es el de `USUARIO_LOGUEADO`, y la página lo muestra arriba como "Sesión: ...". Las compras se hacen a su nombre y el mail de confirmación le llega a él. Cada uno pone su mail en su `.env.local`, que no se sube a git y tiene prioridad sobre `.env`:
+
+```
+USUARIO_LOGUEADO=tu-mail@gmail.com
+```
+
+Si ese mail no está en `USUARIOS_REGISTRADOS`, se da de alta solo. Después de cambiarlo hay que reiniciar el servidor.
 
 Si tenías una base de antes de la regla de menores con un adulto (R9), borrá `datos/ecoharmony.db`: se vuelve a crear con la columna nueva.
 
@@ -73,7 +81,7 @@ En PowerShell se usa `npm.cmd` en lugar de `npm` si aparece el error "la ejecuci
 
 | Comando | Qué hace |
 |---|---|
-| `npm test` | Corre las 89 pruebas y genera [`reportes/reporte-pruebas.html`](reportes/reporte-pruebas.html) |
+| `npm test` | Corre las 91 pruebas y genera [`reportes/reporte-pruebas.html`](reportes/reporte-pruebas.html) |
 | `npm run test:coverage` | Corre las pruebas con cobertura (exige 100%) y genera `coverage/` |
 | `npm run lint` | Verifica la guía de estilo con ESLint |
 | `npm run web` | Levanta el servidor y la interfaz web en http://localhost:8080/src/web/ |
@@ -105,7 +113,7 @@ ICS_TP_6/
 
 | Documento | Contenido |
 |---|---|
-| [`pruebas_comprar_entradas.md`](pruebas_comprar_entradas.md) | Criterios de aceptación, reglas del PO, supuestos, las 89 pruebas en lenguaje natural y en pseudocódigo, y la trazabilidad |
+| [`pruebas_comprar_entradas.md`](pruebas_comprar_entradas.md) | Criterios de aceptación, reglas del PO, supuestos, las 91 pruebas en lenguaje natural y en pseudocódigo, y la trazabilidad |
 | [`registro_ejecucion_pruebas.md`](registro_ejecucion_pruebas.md) | Para cada prueba: lo obtenido en Red y en Green, la estrategia usada, el refactor y el commit de cada paso |
 | [`decisiones_de_diseno.md`](decisiones_de_diseno.md) | Decisiones de diseño en formato ADR, diseño de las pruebas, proceso TDD y métricas |
 | [`reportes/reporte-pruebas.html`](reportes/reporte-pruebas.html) | Reporte de la última ejecución de las pruebas |

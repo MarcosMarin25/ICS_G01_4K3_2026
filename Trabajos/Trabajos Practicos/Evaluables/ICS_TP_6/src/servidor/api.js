@@ -1,5 +1,6 @@
-// API del servidor: comprar entradas (POST /api/compras) y usuarios de la sesión simulada
-// (GET /api/usuarios). Usa la misma clase ServicioCompraEntradas, con la base de datos real.
+// API del servidor: comprar entradas (POST /api/compras), el usuario logueado (GET /api/sesion)
+// y los usuarios registrados (GET /api/usuarios). Usa la misma clase ServicioCompraEntradas,
+// con la base de datos real.
 const ServicioCompraEntradas = require("../logica/servicioCompraEntradas");
 const CalendarioParque = require("../logica/calendarioParque");
 const CalculadoraPrecios = require("../logica/calculadoraPrecios");
@@ -29,8 +30,10 @@ async function leerJson(pedido) {
  * @param {import("node:sqlite").DatabaseSync} dependencias.bd
  * @param {{ enviarConfirmacion: (destinatario: string, compra: Object) => Promise<void> }} dependencias.mail
  * @param {{ ahora: () => Date }} [dependencias.reloj] Se inyecta en las pruebas (ADR 3).
+ * @param {string|null} [dependencias.usuarioLogueado] Mail del usuario de la sesión (USUARIO_LOGUEADO del .env,
+ *   FAQ 19). Si está, las compras se hacen siempre a su nombre, aunque la solicitud diga otro usuario.
  */
-function crearApi({ bd, mail, reloj = RELOJ_REAL }) {
+function crearApi({ bd, mail, reloj = RELOJ_REAL, usuarioLogueado = null }) {
   const usuarios = new RepositorioUsuariosSQLite(bd);
   const compras = new RepositorioComprasSQLite(bd);
   const calendario = new CalendarioParque();
@@ -48,7 +51,11 @@ function crearApi({ bd, mail, reloj = RELOJ_REAL }) {
 
     let resultado;
     try {
-      resultado = servicio.comprar(await leerJson(pedido));
+      const solicitud = await leerJson(pedido);
+      if (usuarioLogueado) {
+        solicitud.usuario = usuarioLogueado;
+      }
+      resultado = servicio.comprar(solicitud);
     } catch (error) {
       // Un TypeError o un SyntaxError son una solicitud mal armada, no una regla de negocio.
       const malFormada = error instanceof TypeError || error instanceof SyntaxError;
@@ -68,6 +75,10 @@ function crearApi({ bd, mail, reloj = RELOJ_REAL }) {
   }
 
   return async function atenderApi(pedido, respuesta, ruta) {
+    if (pedido.method === "GET" && ruta === "/api/sesion") {
+      responderJson(respuesta, HTTP_OK, { usuario: usuarioLogueado });
+      return true;
+    }
     if (pedido.method === "GET" && ruta === "/api/usuarios") {
       responderJson(respuesta, HTTP_OK, usuarios.listar());
       return true;

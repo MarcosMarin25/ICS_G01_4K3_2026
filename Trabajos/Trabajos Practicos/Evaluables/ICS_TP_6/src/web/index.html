@@ -35,7 +35,7 @@
       </p>
       <p class="sesion">
         <span class="sesion__punto" aria-hidden="true"></span>
-        <span>Sesión simulada: <strong id="usuario-sesion">visitante@mail.com</strong></span>
+        <span>Sesión: <strong id="usuario-sesion"></strong></span>
       </p>
     </div>
     <div class="contenedor portada__contenido">
@@ -66,13 +66,7 @@
 
         <section class="paso tarjeta" aria-labelledby="paso-1">
           <h2 id="paso-1" class="paso__titulo"><span class="paso__numero" aria-hidden="true">1</span>¿Cuándo nos visitás?</h2>
-          <div class="campos-dos">
-            <div class="campo">
-              <label for="usuario">Usuario</label>
-              <input id="usuario" name="usuario" type="email" value="visitante@mail.com" autocomplete="email" aria-describedby="error-usuario">
-              <p class="campo__ayuda">De prueba: visitante@mail.com u otro@mail.com.</p>
-              <p id="error-usuario" class="campo__error" aria-live="polite" hidden></p>
-            </div>
+          <div>
             <div class="campo">
               <p class="campo__etiqueta" id="fecha-etiqueta">Fecha de visita</p>
               <!-- Valor elegido en el calendario, en formato AAAA-MM-DD. -->

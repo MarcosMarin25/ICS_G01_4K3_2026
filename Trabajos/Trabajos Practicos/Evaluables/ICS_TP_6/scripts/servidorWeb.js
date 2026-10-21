@@ -33,10 +33,17 @@ try {
 }
 const usuariosRegistrados = (process.env.USUARIOS_REGISTRADOS ?? USUARIOS_POR_DEFECTO)
   .split(",").map((email) => email.trim()).filter(Boolean);
+// Usuario logueado de la sesión simulada (FAQ 19): cada uno pone su mail en USUARIO_LOGUEADO
+// de su .env.local. Se da de alta como registrado para que pueda comprar.
+const usuarioLogueado = process.env.USUARIO_LOGUEADO?.trim() || usuariosRegistrados[0];
+if (!usuariosRegistrados.includes(usuarioLogueado)) {
+  usuariosRegistrados.push(usuarioLogueado);
+}
 const transporte = crearTransporteSmtp(process.env);
 const atenderApi = crearApi({
   bd: abrirBaseDeDatos(RUTA_BASE_DE_DATOS, usuariosRegistrados),
   mail: new ServicioMailSmtp({ transporte, remitente: process.env.MAIL_REMITENTE }),
+  usuarioLogueado,
 });
 
 const HTTP_OK = 200;
@@ -156,7 +163,7 @@ servidor.on("error", (error) => {
     puertoActual = PUERTO_ALTERNO;
     servidor.listen(puertoActual, "127.0.0.1", () => {
       console.log(`EcoHarmony Park - Comprar entradas: http://localhost:${puertoActual}${PAGINA_INICIAL}`);
-      console.log(`Usuarios registrados: ${usuariosRegistrados.join(", ")}`);
+      console.log(`Usuarios registrados: ${usuariosRegistrados.join(", ")} · Sesión: ${usuarioLogueado}`);
     });
   } else {
     throw error;
@@ -165,7 +172,7 @@ servidor.on("error", (error) => {
 
 servidor.listen(puertoActual, "127.0.0.1", () => {
   console.log(`EcoHarmony Park - Comprar entradas: http://localhost:${puertoActual}${PAGINA_INICIAL}`);
-  console.log(`Usuarios registrados: ${usuariosRegistrados.join(", ")}`);
+  console.log(`Usuarios registrados: ${usuariosRegistrados.join(", ")} · Sesión: ${usuarioLogueado}`);
 });
 
 // Verifica las credenciales SMTP al arrancar, para no enterarse recién en la primera compra.
