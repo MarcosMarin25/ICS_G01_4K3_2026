@@ -33,7 +33,41 @@ npm install
 
 Si tenías una base de antes de la regla de menores con un adulto (R9), borrá `datos/ecoharmony.db`: se vuelve a crear con la columna nueva.
 
-Sin el `.env`, la compra se guarda igual y la página avisa que el mail no se pudo enviar. Mercado Pago sigue simulado.
+Sin el `.env`, la compra se guarda igual y la página avisa que el mail no se pudo enviar. Sin `MP_ACCESS_TOKEN`, el pago con tarjeta usa la pantalla simulada de Mercado Pago.
+
+## Abrir la web con HTTPS (para probar Mercado Pago)
+
+Mercado Pago solo vuelve solo a la web después de pagar (`auto_return`) si la página es `https://`. Con `http://localhost` el pago funciona, pero hay que tocar "Volver al sitio". Para tener HTTPS sin tocar el código se usa un túnel gratuito de Cloudflare:
+
+1. Instalar `cloudflared`, una sola vez:
+
+   ```bash
+   winget install Cloudflare.cloudflared
+   ```
+
+2. Poner el Access Token de prueba de Mercado Pago en un archivo `.env.local` (no se sube a git y tiene prioridad sobre `.env`):
+
+   ```
+   MP_ACCESS_TOKEN=APP_USR-...
+   ```
+
+3. Levantar el servidor y fijarse en qué puerto quedó (8080, o 8081 si el 8080 está ocupado):
+
+   ```bash
+   npm.cmd run web
+   ```
+
+4. En otra terminal, abrir el túnel a ese puerto. Hay que usar `127.0.0.1` y no `localhost`, porque el servidor solo escucha en IPv4:
+
+   ```bash
+   cloudflared tunnel --url http://127.0.0.1:8080
+   ```
+
+5. Abrir la dirección `https://....trycloudflare.com` que muestra, agregándole `/src/web/`. La dirección cambia cada vez que se abre el túnel, y mientras está abierto cualquiera con el link puede entrar.
+
+6. Pagar en una **ventana de incógnito**, con el mail de un **comprador de prueba** (`test_user_...@testuser.com`) y las tarjetas de prueba de la sección H de [`pruebas_comprar_entradas.md`](pruebas_comprar_entradas.md). Con una sesión o un mail reales de Mercado Pago aparece el error "Una de las partes con la que intentás hacer el pago es de prueba".
+
+En PowerShell se usa `npm.cmd` en lugar de `npm` si aparece el error "la ejecución de scripts está deshabilitada".
 
 ## Comandos
 
