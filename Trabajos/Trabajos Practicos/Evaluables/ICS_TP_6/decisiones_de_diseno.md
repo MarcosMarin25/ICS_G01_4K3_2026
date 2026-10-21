@@ -8,7 +8,7 @@ Documentos relacionados:
 
 | Documento | Contenido |
 |---|---|
-| [`pruebas_comprar_entradas.md`](pruebas_comprar_entradas.md) | User Story, criterios de aceptación, reglas del PO, supuestos y las 89 pruebas (en lenguaje natural y en pseudocódigo), con trazabilidad |
+| [`pruebas_comprar_entradas.md`](pruebas_comprar_entradas.md) | User Story, criterios de aceptación, reglas del PO, supuestos y las 91 pruebas (en lenguaje natural y en pseudocódigo), con trazabilidad |
 | [`registro_ejecucion_pruebas.md`](registro_ejecucion_pruebas.md) | Para cada prueba: lo obtenido en Red y en Green, la estrategia usada, el refactor y el commit de cada paso |
 | [`reportes/reporte-pruebas.html`](reportes/reporte-pruebas.html) | Reporte de la última ejecución de `npm test` |
 
@@ -447,7 +447,7 @@ El TP 8/9 (pruebas de caja negra) usa estas mismas técnicas. En este TP ya se a
 
 | Propiedad | Cómo se cumple |
 |---|---|
-| **F**ast (rápidas) | 89 pruebas en unos 2 segundos, sin red. Las unitarias no usan base de datos; las de integración usan SQLite en memoria (ADR 2 y 13) |
+| **F**ast (rápidas) | 91 pruebas en unos 2 segundos, sin red. Las unitarias no usan base de datos; las de integración usan SQLite en memoria (ADR 2 y 13) |
 | **I**ndependent (independientes) | `beforeEach` crea dobles nuevos para cada prueba, y ninguna depende de otra |
 | **R**epeatable (repetibles) | El reloj inyectado (ADR 3) y las fechas locales (ADR 4) dan el mismo resultado cualquier día y en cualquier zona |
 | **S**elf-validating (autoverificables) | Cada prueba pasa o falla con `expect`, sin revisión manual |
@@ -528,7 +528,7 @@ En el TP 2 el grupo no definió una guía de estilo de código. Para este TP se 
 | Buenas prácticas | `===` (`eqeqeq`), `const` y `let` en lugar de `var` (`no-var`, `prefer-const`), llaves siempre en los `if` (`curly`) |
 | Constantes con nombre | `no-magic-numbers` en `src/`. En `tests/` está desactivada, porque ahí los números son los datos del caso (edades, precios, cantidades) |
 
-La regla `no-magic-numbers` marcó números sueltos en varios Green de la lógica, y su corrección formó parte del refactor siguiente. **Al 20/10/2026, `npm run lint` informa 8 errores**, todos en el código del servidor agregado después: `src/servidor/servicioMail.js` (los números 3, 15 y 59 sin nombre, tres `if` sin llaves y falta el salto de línea final) y `tests/servidor.test.js` (sangría). Están pendientes de corrección.
+La regla `no-magic-numbers` marcó números sueltos en varios Green de la lógica, y su corrección formó parte del refactor siguiente. Los números mágicos en el armado del mail y la sangría del test de integración se corrigieron exportando las constantes de edad desde `src/logica/valores.js`. `npm run lint` pasa sin errores.
 
 ---
 
@@ -542,12 +542,12 @@ La tabla completa de **criterios de aceptación y reglas del PO → pruebas**, y
 
 | Métrica | Valor |
 |---|---|
-| Pruebas | **89**: 76 unitarias de la lógica (9 de precios, 5 de calendario, 18 de compras válidas, 26 de validaciones, 9 de validación por campo, 1 del mail y 8 de R9) y 13 de integración del servidor (S01 a S13) |
-| Resultado | 89 de 89 pasan |
+| Pruebas | **91**: 76 unitarias de la lógica (9 de precios, 5 de calendario, 18 de compras válidas, 26 de validaciones, 9 de validación por campo, 1 del mail y 8 de R9) y 15 de integración del servidor (S01 a S15) |
+| Resultado | 91 de 91 pasan |
 | Cobertura (`npm run test:coverage`) | **100%** en los cinco módulos de `src/logica/`: sentencias 103/103, ramas 33/33, funciones 37/37 y líneas 96/96. La interfaz (`src/web/`) y el servidor (`src/servidor/`) no se miden (ADR 11 y 13) |
-| Lint (`npm run lint`) | 8 errores pendientes en `src/servidor/servicioMail.js` y `tests/servidor.test.js` (ver "Guía de estilo") |
-| Tiempo de ejecución | Unos 2 segundos para las 89 pruebas. La primera corrida tarda más porque incluye la carga inicial de Jest |
-| Ciclos registrados en `TP_6` (secciones B a E e I) | 42 RED, 42 GREEN y 15 REFACTOR, cada uno en su commit, más 23 commits de confirmaciones de borde (25 pruebas). Las secciones F (G01) y G (S01 a S12) no siguieron el ciclo paso a paso |
+| Lint (`npm run lint`) | Sin errores (0 errores y 0 advertencias) |
+| Tiempo de ejecución | Unos 2 segundos para las 91 pruebas. La primera corrida tarda más porque incluye la carga inicial de Jest |
+| Ciclos registrados en `TP_6` (secciones B a E e I) | 42 RED, 42 GREEN y 15 REFACTOR, cada uno en su commit, más 23 commits de confirmaciones de borde (25 pruebas). Las secciones F (G01) y G (S01 a S15) no siguieron el ciclo paso a paso |
 | Sección A | 9 pruebas, con los commits de cada paso en el PR #5 |
 
 **La cobertura al 100% es necesaria, pero no suficiente.** Indica que cada línea y cada rama se ejecutó en alguna prueba, pero no que las aserciones sean buenas. La confianza en la suficiencia de las pruebas viene de la combinación de tres cosas: la **trazabilidad** contra los criterios y las reglas, el diseño con **partición de equivalencias y valores límite**, y la verificación por **mutación** de F22, que mostró que una prueba que pasó sin cambios detecta un defecto real.

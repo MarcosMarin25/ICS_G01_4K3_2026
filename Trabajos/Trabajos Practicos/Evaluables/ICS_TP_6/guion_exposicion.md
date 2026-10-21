@@ -16,7 +16,7 @@ Duración objetivo: **12 minutos** de exposición más preguntas. Conviene repar
 ## Antes de la exposición (lista de control)
 
 - [ ] `npm install` hecho en la máquina que se va a usar.
-- [ ] `npm test` da 67 de 67, `npm run test:coverage` da 100% y `npm run lint` no da errores.
+- [ ] `npm test` da 91 de 91, `npm run test:coverage` da 100% y `npm run lint` no da errores.
 - [ ] La rama de la demo creada y probada (ver el bloque 4).
 - [ ] La terminal y el editor con letra grande (mínimo 18 pt) y el tema claro, porque se lee mejor en el proyector.
 - [ ] Abiertos en pestañas: `pruebas_comprar_entradas.md`, `decisiones_de_diseno.md`, `reportes/reporte-pruebas.html`, `reportes/cobertura.png` y la web (`npm run web`).
@@ -30,7 +30,7 @@ Duración objetivo: **12 minutos** de exposición más preguntas. Conviene repar
 > COMO visitante QUIERO comprar una entrada PARA asegurar mi visita al parque.
 
 Puntos para decir:
-- Son 9 criterios de aceptación y 8 reglas aclaradas por el PO (R1 a R8): días de apertura, precios, descuentos por edad, horizonte de un mes, límite de las 17:30, máximo de 10 por fecha, los menores cuentan en el máximo y la entrada de $0.
+- Son 9 criterios de aceptación y 8 reglas aclaradas por el PO (R1 a R8) más el supuesto R9 (menores con un adulto): días de apertura, precios, descuentos por edad, horizonte de un mes, límite de las 17:30, máximo de 10 por fecha, los menores cuentan en el máximo, la entrada de $0 y menores con entrada de adulto.
 - Antes de programar se encontraron y se resolvieron ambigüedades, que quedaron escritas como **supuestos**:
   - "No mayor a 10" (criterio) contra "menor a 10" (prueba de usuario): se tomó ≤ 10.
   - La edad mínima es 0 (un bebé no paga) y no hay edad máxima, porque el PO no la define.
@@ -41,7 +41,7 @@ Puntos para decir:
 ## 2. Cómo se diseñaron las pruebas (2 min)
 
 Puntos para decir:
-- **Las 67 pruebas se diseñaron antes de programar**, en lenguaje natural y en pseudocódigo, con técnicas de caja negra: **partición de equivalencias** y **valores límite**. Son las mismas técnicas del TP 8/9.
+- **Las 91 pruebas (76 unitarias de lógica y 15 de integración)** se diseñaron en lenguaje natural y en pseudocódigo, con técnicas de caja negra: **partición de equivalencias** y **valores límite**. Son las mismas técnicas del TP 8/9.
 - En cada borde se prueban los dos lados. Mostrar la tabla de "Diseño de las pruebas" en `decisiones_de_diseno.md`. Ejemplos para decir en voz alta:
   - 3 años paga $0 y 4 años paga la mitad (C04 y C05).
   - A las 17:30 se puede comprar para hoy, y a las 17:31 no (P05 y F08).
@@ -86,7 +86,7 @@ Puntos para decir:
 ```bash
 git switch TP_6
 git switch -c demo-tdd
-npm test            # 67 de 67
+npm test            # 91 de 91
 ```
 
 La demo se hace en la rama `demo-tdd`, así no afecta la entrega. Ensayarla completa al menos una vez y después volver a empezar: `git switch TP_6`, `git branch -D demo-tdd` y repetir la preparación.

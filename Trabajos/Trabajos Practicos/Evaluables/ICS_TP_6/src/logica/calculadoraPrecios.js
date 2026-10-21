@@ -1,13 +1,11 @@
-const { TIPO_PASE, EDAD_MAXIMA_MENOR } = require("./valores");
+const { TIPO_PASE, EDAD_MAXIMA_GRATIS, EDAD_MAXIMA_MENOR, EDAD_MINIMA_MAYOR } = require("./valores");
 
 const PRECIO_REGULAR = 10000;
 const PRECIO_VIP = 20000;
 
-const EDAD_MAXIMA_GRATIS = 3;
-const EDAD_MINIMA_MAYOR = 60;
-
 const PORCENTAJE_DESCUENTO = 50;
 const PORCENTAJE_TOTAL = 100;
+
 
 // Devuelve el precio de una entrada según la edad del visitante y el tipo de pase.
 class CalculadoraPrecios {

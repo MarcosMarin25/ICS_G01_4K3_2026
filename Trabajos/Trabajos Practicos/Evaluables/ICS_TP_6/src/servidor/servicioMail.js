@@ -1,6 +1,6 @@
 // Envío real del mail de confirmación por SMTP (por ejemplo, el relay de Brevo), con Nodemailer.
 const nodemailer = require("nodemailer");
-const { TIPO_PASE } = require("../logica/valores");
+const { TIPO_PASE, EDAD_MAXIMA_GRATIS, EDAD_MAXIMA_MENOR, EDAD_MINIMA_MAYOR } = require("../logica/valores");
 
 const PUERTO_SMTP = 587; // STARTTLS
 const MENSAJE_SIN_CONFIGURAR = "El envío de mails no está configurado: completá las variables SMTP_* del archivo .env";
@@ -13,11 +13,18 @@ function fechaLegible(texto) {
 }
 
 function nombreCategoria(edad) {
-  if (edad <= 3) return "Bebé, hasta 3 años";
-  if (edad <= 15) return "Menor, 4 a 15 años";
-  if (edad <= 59) return "Adulto, 16 a 59 años";
+  if (edad <= EDAD_MAXIMA_GRATIS) {
+    return "Bebé, hasta 3 años";
+  }
+  if (edad <= EDAD_MAXIMA_MENOR) {
+    return "Menor, 4 a 15 años";
+  }
+  if (edad < EDAD_MINIMA_MAYOR) {
+    return "Adulto, 16 a 59 años";
+  }
   return "Mayor, 60 años o más";
 }
+
 
 // Arma el mail con lo que pide la US y el FAQ 18: cantidad de entradas, fecha, el detalle de cada
 // entrada con su subtotal y el total. Recibe el resultado de comprar().
