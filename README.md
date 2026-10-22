@@ -112,6 +112,7 @@ ICS_G01_4K3_2026
 |--------------|------------|--------------------------------------|
 | **LB-G01-1** | 01/09/2026 | Entrega de TP4 - Herramientas de SCM |
 | **LB-G01-2** | 24/09/2026 | Entrega de TP7 - Dinámica de Scrum   |
+| **LB-G01-3** | 21/10/2026 | Entrega de TP6 - TDD (Comprar entradas) |
  
 **Formato de Identificación de Líneas Base**:  
 LB-G01-`<NroLineaBase>`
