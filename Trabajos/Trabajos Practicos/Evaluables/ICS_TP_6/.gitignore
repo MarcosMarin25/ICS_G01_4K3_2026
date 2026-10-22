@@ -1,0 +1,6 @@
+node_modules/
+coverage/
+datos/
+.env.local
+.env.*.local
+.env

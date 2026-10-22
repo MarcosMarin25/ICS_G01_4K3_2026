@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 140" width="420" height="140" role="img" aria-label="EcoHarmony Park">
+  <!-- Logo de EcoHarmony Park: vuelta al mundo con la paleta coolors.co/palette/386641-6a994e-a7c957-f2e8cf-bc4749 -->
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Lato:wght@700;900&amp;display=swap");
+    .titulo { font-family: "Lato", system-ui, sans-serif; font-weight: 900; font-size: 44px; }
+    .subtitulo { font-family: "Lato", system-ui, sans-serif; font-weight: 700; font-size: 18px; letter-spacing: 8px; }
+  </style>
+
+  <!-- Patas de la estructura (verde medio) -->
+  <g stroke="#6A994E" stroke-width="5" stroke-linecap="round">
+    <line x1="70" y1="60" x2="42" y2="126"/>
+    <line x1="70" y1="60" x2="98" y2="126"/>
+  </g>
+
+  <!-- Rueda (verde oscuro) -->
+  <g fill="none" stroke="#386641" stroke-linecap="round">
+    <circle cx="70" cy="60" r="46" stroke-width="4"/>
+    <circle cx="70" cy="60" r="30" stroke-width="2" stroke="#A7C957"/>
+    <g stroke-width="2.5">
+      <line x1="24" y1="60" x2="116" y2="60"/>
+      <line x1="70" y1="14" x2="70" y2="106"/>
+      <line x1="37.5" y1="27.5" x2="102.5" y2="92.5"/>
+      <line x1="37.5" y1="92.5" x2="102.5" y2="27.5"/>
+    </g>
+  </g>
+
+  <!-- Cabinas colgando de la rueda (crema y verde claro, alternadas) -->
+  <g stroke="#386641" stroke-width="1.5">
+    <line x1="116" y1="60" x2="116" y2="63"/>
+    <line x1="102.5" y1="92.5" x2="102.5" y2="95.5"/>
+    <line x1="70" y1="106" x2="70" y2="109"/>
+    <line x1="37.5" y1="92.5" x2="37.5" y2="95.5"/>
+    <line x1="24" y1="60" x2="24" y2="63"/>
+    <line x1="37.5" y1="27.5" x2="37.5" y2="30.5"/>
+    <line x1="70" y1="14" x2="70" y2="17"/>
+    <line x1="102.5" y1="27.5" x2="102.5" y2="30.5"/>
+  </g>
+  <g>
+    <rect x="109" y="63" width="14" height="11" rx="3" fill="#F2E8CF" stroke="#386641" stroke-width="1.5"/>
+    <rect x="95.5" y="95.5" width="14" height="11" rx="3" fill="#A7C957"/>
+    <rect x="63" y="109" width="14" height="11" rx="3" fill="#F2E8CF" stroke="#386641" stroke-width="1.5"/>
+    <rect x="30.5" y="95.5" width="14" height="11" rx="3" fill="#A7C957"/>
+    <rect x="17" y="63" width="14" height="11" rx="3" fill="#F2E8CF" stroke="#386641" stroke-width="1.5"/>
+    <rect x="30.5" y="30.5" width="14" height="11" rx="3" fill="#A7C957"/>
+    <rect x="63" y="17" width="14" height="11" rx="3" fill="#F2E8CF" stroke="#386641" stroke-width="1.5"/>
+    <rect x="95.5" y="30.5" width="14" height="11" rx="3" fill="#A7C957"/>
+  </g>
+
+  <!-- Eje central -->
+  <circle cx="70" cy="60" r="7" fill="#BC4749" stroke="#386641" stroke-width="2"/>
+
+  <!-- Pasto -->
+  <line x1="12" y1="128" x2="128" y2="128" stroke="#386641" stroke-width="5" stroke-linecap="round"/>
+
+  <!-- Nombre -->
+  <text x="146" y="74" class="titulo"><tspan fill="#6A994E">Eco</tspan><tspan fill="#386641">Harmony</tspan></text>
+  <text x="149" y="106" class="subtitulo" fill="#F2E8CF" stroke="#386641" stroke-width="1" paint-order="stroke">PARK</text>
+</svg>

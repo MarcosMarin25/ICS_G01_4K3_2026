@@ -1,0 +1,470 @@
+const ServicioCompraEntradas = require("../src/logica/servicioCompraEntradas");
+const CalendarioParque = require("../src/logica/calendarioParque");
+const CalculadoraPrecios = require("../src/logica/calculadoraPrecios");
+const RelojFijo = require("./dobles/relojFijo");
+const RepositorioUsuariosFalso = require("./dobles/repositorioUsuariosFalso");
+const RepositorioComprasFalso = require("./dobles/repositorioComprasFalso");
+const ServicioMailEspia = require("./dobles/servicioMailEspia");
+const PasarelaMercadoPagoEspia = require("./dobles/pasarelaMercadoPagoEspia");
+
+const AHORA = "2026-10-15T10:00"; // jueves
+const HOY = "2026-10-15";
+const AYER = "2026-10-14";
+const FECHA_ABIERTA = "2026-10-20"; // martes
+const FECHA_CERRADA = "2026-10-19"; // lunes
+const USUARIO = "visitante@mail.com";
+const OTRO_USUARIO = "otro@mail.com";
+
+let reloj;
+let compras;
+let mail;
+let mercadoPago;
+let servicio;
+
+beforeEach(() => {
+  reloj = new RelojFijo(AHORA);
+  compras = new RepositorioComprasFalso(); // arranca sin compras previas
+  mail = new ServicioMailEspia();
+  mercadoPago = new PasarelaMercadoPagoEspia();
+
+  servicio = new ServicioCompraEntradas({
+    reloj,
+    calendario: new CalendarioParque(),
+    calculadora: new CalculadoraPrecios(),
+    usuarios: new RepositorioUsuariosFalso([USUARIO, OTRO_USUARIO]),
+    compras,
+    mail,
+    mercadoPago,
+  });
+});
+
+// Devuelve una solicitud válida. Cada prueba cambia solo el dato que le interesa.
+function solicitudValida(cambios = {}) {
+  return {
+    usuario: USUARIO,
+    fechaVisita: FECHA_ABIERTA,
+    cantidad: 3,
+    edades: [30, 28, 8],
+    tipoPase: "VIP",
+    formaPago: "TARJETA",
+    ...cambios,
+  };
+}
+
+describe("ServicioCompraEntradas - compras válidas", () => {
+  test("P01 - una compra válida con tarjeta redirige a Mercado Pago y envía el mail", () => {
+    const resultado = servicio.comprar(solicitudValida());
+
+    expect(resultado.confirmada).toBe(true);
+    expect(mercadoPago.fueLlamadaConMonto(50000)).toBe(true); // 20000 + 20000 + 10000
+    expect(mail.fueEnviadoA(USUARIO)).toBe(true);
+  });
+
+  test("P02 - una compra en efectivo envía el mail y no redirige a Mercado Pago", () => {
+    const resultado = servicio.comprar(solicitudValida({ formaPago: "EFECTIVO" }));
+
+    expect(resultado.confirmada).toBe(true);
+    expect(mercadoPago.fueLlamada()).toBe(false);
+    expect(mail.fueEnviadoA(USUARIO)).toBe(true);
+  });
+
+  test("P03 - al finalizar informa la cantidad de entradas y la fecha", () => {
+    const resultado = servicio.comprar(solicitudValida());
+
+    expect(resultado.cantidadEntradas).toBe(3);
+    expect(resultado.fechaVisita).toBe(FECHA_ABIERTA);
+  });
+
+  test("P04 - permite comprar para hoy antes de las 17:30", () => {
+    const resultado = servicio.comprar(solicitudValida({ fechaVisita: HOY })); // reloj en 10:00
+
+    expect(resultado.confirmada).toBe(true);
+  });
+
+  test("P05 - permite comprar para hoy justo a las 17:30", () => {
+    reloj.fijar("2026-10-15T17:30");
+
+    const resultado = servicio.comprar(solicitudValida({ fechaVisita: HOY }));
+
+    expect(resultado.confirmada).toBe(true);
+  });
+
+  test("P06 - permite comprar justo un mes antes", () => {
+    const resultado = servicio.comprar(solicitudValida({ fechaVisita: "2026-11-15" }));
+
+    expect(resultado.confirmada).toBe(true);
+  });
+
+  test("P07 - permite comprar 10 entradas", () => {
+    const resultado = servicio.comprar(solicitudValida({
+      cantidad: 10,
+      edades: [30, 30, 30, 30, 30, 10, 10, 10, 10, 10],
+    }));
+
+    expect(resultado.confirmada).toBe(true);
+    expect(resultado.cantidadEntradas).toBe(10);
+  });
+
+  test("P08 - permite comprar una sola entrada", () => {
+    const resultado = servicio.comprar(solicitudValida({ cantidad: 1, edades: [25] }));
+
+    expect(resultado.confirmada).toBe(true);
+  });
+
+  test("P09 - permite comprar con pase regular", () => {
+    const resultado = servicio.comprar(solicitudValida({ tipoPase: "REGULAR" }));
+
+    expect(resultado.confirmada).toBe(true);
+    expect(resultado.tipoPase).toBe("REGULAR");
+  });
+
+  test("P10 - el monto total aplica los descuentos por edad", () => {
+    const resultado = servicio.comprar(solicitudValida({
+      cantidad: 4,
+      edades: [35, 10, 2, 65],
+      tipoPase: "REGULAR",
+    }));
+
+    expect(resultado.montoTotal).toBe(20000); // 10000 + 5000 + 0 + 5000
+  });
+
+  test("P11 - un menor de hasta 3 años recibe una entrada de $0", () => {
+    const resultado = servicio.comprar(solicitudValida({ cantidad: 2, edades: [30, 2] }));
+
+    expect(resultado.entradas.length).toBe(2);
+    expect(resultado.entradas[0].precio).toBe(20000);
+    expect(resultado.entradas[1].precio).toBe(0);
+  });
+
+  test("P12 - acepta una edad de 0 años y emite su entrada de $0", () => {
+    const resultado = servicio.comprar(solicitudValida({ cantidad: 2, edades: [30, 0] }));
+
+    expect(resultado.confirmada).toBe(true);
+    expect(resultado.entradas[1].precio).toBe(0);
+  });
+
+  test("P13 - permite varias compras que suman 10 entradas para la misma fecha", () => {
+    compras.registrar(USUARIO, FECHA_ABIERTA, 7);
+
+    const resultado = servicio.comprar(solicitudValida()); // 3 entradas más
+
+    expect(resultado.confirmada).toBe(true);
+  });
+
+  test("P14 - el máximo de 10 se cuenta por fecha", () => {
+    compras.registrar(USUARIO, FECHA_ABIERTA, 10);
+
+    const resultado = servicio.comprar(solicitudValida({ fechaVisita: "2026-10-21" }));
+
+    expect(resultado.confirmada).toBe(true);
+  });
+
+  test("P15 - la compra confirmada queda registrada", () => {
+    servicio.comprar(solicitudValida()); // 3 entradas para FECHA_ABIERTA
+
+    expect(compras.cantidadComprada(USUARIO, FECHA_ABIERTA)).toBe(3);
+  });
+
+  test("P16 - permite comprar para mañana después de las 17:30", () => {
+    reloj.fijar("2026-10-15T18:00");
+
+    const resultado = servicio.comprar(solicitudValida({ fechaVisita: "2026-10-16" }));
+
+    expect(resultado.confirmada).toBe(true);
+  });
+
+  test("P17 - las compras de otro usuario no cuentan en el máximo de 10", () => {
+    compras.registrar(OTRO_USUARIO, FECHA_ABIERTA, 10);
+
+    const resultado = servicio.comprar(solicitudValida()); // 3 entradas para USUARIO
+
+    expect(resultado.confirmada).toBe(true);
+  });
+
+  test("P18 - a fin de mes permite comprar hasta el último día del mes siguiente", () => {
+    reloj.fijar("2027-01-31T10:00");
+
+    const resultado = servicio.comprar(solicitudValida({ fechaVisita: "2027-02-28" }));
+
+    expect(resultado.confirmada).toBe(true);
+  });
+
+  test("P19 - permite comprar un menor junto con un mayor de 60 años", () => {
+    const resultado = servicio.comprar(solicitudValida({ cantidad: 2, edades: [65, 8] }));
+
+    expect(resultado.confirmada).toBe(true);
+  });
+
+  test("P20 - permite comprar un menor solo si ya compró una entrada de adulto para la fecha", () => {
+    servicio.comprar(solicitudValida({ cantidad: 1, edades: [30] }));
+
+    const resultado = servicio.comprar(solicitudValida({ cantidad: 1, edades: [8] }));
+
+    expect(resultado.confirmada).toBe(true);
+  });
+
+  test("P21 - a los 16 años ya es adulto y puede comprar solo", () => {
+    const resultado = servicio.comprar(solicitudValida({ cantidad: 1, edades: [16] }));
+
+    expect(resultado.confirmada).toBe(true);
+  });
+});
+
+describe("ServicioCompraEntradas - validaciones", () => {
+  test("F01 - rechaza la compra sin forma de pago", () => {
+    expect(() => servicio.comprar(solicitudValida({ formaPago: null })))
+      .toThrow("Debe seleccionar una forma de pago");
+  });
+
+  test("F02 - rechaza la compra para un lunes", () => {
+    expect(() => servicio.comprar(solicitudValida({ fechaVisita: FECHA_CERRADA })))
+      .toThrow("El parque está cerrado en la fecha seleccionada");
+  });
+
+  test("F03 - rechaza la compra para el 25 de diciembre", () => {
+    reloj.fijar("2026-12-20T10:00");
+
+    expect(() => servicio.comprar(solicitudValida({ fechaVisita: "2026-12-25" })))
+      .toThrow("El parque está cerrado en la fecha seleccionada");
+  });
+
+  test("F04 - rechaza la compra para el 1 de enero", () => {
+    reloj.fijar("2026-12-20T10:00");
+
+    expect(() => servicio.comprar(solicitudValida({ fechaVisita: "2027-01-01" })))
+      .toThrow("El parque está cerrado en la fecha seleccionada");
+  });
+
+  test("F05 - rechaza una fecha pasada", () => {
+    expect(() => servicio.comprar(solicitudValida({ fechaVisita: AYER })))
+      .toThrow("La fecha de visita no puede ser anterior a hoy");
+  });
+
+  test("F06 - rechaza la compra sin fecha de visita", () => {
+    expect(() => servicio.comprar(solicitudValida({ fechaVisita: null })))
+      .toThrow("Debe indicar la fecha de visita");
+  });
+
+  test("F07 - rechaza una fecha con más de un mes de anticipación", () => {
+    expect(() => servicio.comprar(solicitudValida({ fechaVisita: "2026-11-17" })))
+      .toThrow("Solo se pueden comprar entradas con hasta un mes de anticipación");
+  });
+
+  test("F08 - rechaza comprar para hoy después de las 17:30", () => {
+    reloj.fijar("2026-10-15T17:31");
+
+    expect(() => servicio.comprar(solicitudValida({ fechaVisita: HOY })))
+      .toThrow("Las entradas para hoy se pueden comprar hasta las 17:30");
+  });
+
+  test("F09 - rechaza más de 10 entradas", () => {
+    expect(() => servicio.comprar(solicitudValida({
+      cantidad: 11,
+      edades: Array(11).fill(30),
+    }))).toThrow("No se pueden comprar más de 10 entradas para una misma fecha");
+  });
+
+  test("F10 - rechaza una cantidad de 0 entradas", () => {
+    expect(() => servicio.comprar(solicitudValida({ cantidad: 0, edades: [] })))
+      .toThrow("La cantidad de entradas debe ser al menos 1");
+  });
+
+  test("F11 - rechaza una cantidad negativa", () => {
+    expect(() => servicio.comprar(solicitudValida({ cantidad: -1, edades: [] })))
+      .toThrow("La cantidad de entradas debe ser al menos 1");
+  });
+
+  test("F12 - rechaza varias compras que superan 10 entradas para la misma fecha", () => {
+    compras.registrar(USUARIO, FECHA_ABIERTA, 7);
+
+    expect(() => servicio.comprar(solicitudValida({
+      cantidad: 4,
+      edades: [30, 28, 8, 40],
+    }))).toThrow("No se pueden comprar más de 10 entradas para una misma fecha");
+  });
+
+  test("F13 - los menores de hasta 3 años cuentan en el máximo de 10", () => {
+    compras.registrar(USUARIO, FECHA_ABIERTA, 9);
+
+    expect(() => servicio.comprar(solicitudValida({ cantidad: 2, edades: [30, 2] })))
+      .toThrow("No se pueden comprar más de 10 entradas para una misma fecha");
+  });
+
+  test("F14 - rechaza la compra si falta la edad de algún visitante", () => {
+    expect(() => servicio.comprar(solicitudValida({ cantidad: 3, edades: [30, 28] })))
+      .toThrow("Debe indicar la edad de cada visitante");
+  });
+
+  test("F15 - rechaza una edad negativa", () => {
+    expect(() => servicio.comprar(solicitudValida({ edades: [30, -1, 8] })))
+      .toThrow("Edad inválida");
+  });
+
+  // F16 retirada: la edad 0 pasó a ser válida (ver P12).
+
+  test("F17 - rechaza la compra sin tipo de pase", () => {
+    expect(() => servicio.comprar(solicitudValida({ tipoPase: null })))
+      .toThrow("Debe indicar el tipo de pase");
+  });
+
+  test("F18 - rechaza un tipo de pase inválido", () => {
+    expect(() => servicio.comprar(solicitudValida({ tipoPase: "PREMIUM" })))
+      .toThrow("El tipo de pase debe ser VIP o regular");
+  });
+
+  test("F19 - rechaza la compra de un usuario no registrado", () => {
+    expect(() => servicio.comprar(solicitudValida({ usuario: "desconocido@mail.com" })))
+      .toThrow("Solo los usuarios registrados pueden comprar entradas");
+  });
+
+  test("F20 - rechaza una cantidad de entradas decimal (flotante)", () => {
+    expect(() => servicio.comprar(solicitudValida({ cantidad: 2.5 })))
+      .toThrow("La cantidad de entradas debe ser un número entero");
+  });
+
+  test("F21 - rechaza una edad decimal (flotante)", () => {
+    expect(() => servicio.comprar(solicitudValida({ edades: [30, 10.5, 8] })))
+      .toThrow("Edad inválida");
+  });
+
+  test("F22 - una compra rechazada no envía el mail, no redirige ni registra la compra", () => {
+    compras.registrar(USUARIO, FECHA_ABIERTA, 7);
+
+    expect(() => servicio.comprar(solicitudValida({
+      cantidad: 4,
+      edades: [30, 28, 8, 40],
+    }))).toThrow("No se pueden comprar más de 10 entradas para una misma fecha");
+
+    expect(mail.fueEnviadoA(USUARIO)).toBe(false);
+    expect(mercadoPago.fueLlamada()).toBe(false);
+    expect(compras.cantidadComprada(USUARIO, FECHA_ABIERTA)).toBe(7);
+  });
+
+  test("F23 - rechaza una forma de pago inválida", () => {
+    expect(() => servicio.comprar(solicitudValida({ formaPago: "CHEQUE" })))
+      .toThrow("La forma de pago debe ser tarjeta o efectivo");
+  });
+
+  test("F24 - rechaza la compra si sobran edades", () => {
+    expect(() => servicio.comprar(solicitudValida({ cantidad: 3, edades: [30, 28, 8, 40] })))
+      .toThrow("Debe indicar la edad de cada visitante");
+  });
+
+  test("F25 - rechaza una fecha de visita con mes o día fuera de rango", () => {
+    expect(() => servicio.comprar(solicitudValida({ fechaVisita: "2026-13-45" })))
+      .toThrow("Fecha de visita inválida");
+  });
+
+  test("F26 - a fin de mes rechaza una fecha posterior al último día del mes siguiente", () => {
+    reloj.fijar("2027-01-31T10:00");
+
+    expect(() => servicio.comprar(solicitudValida({ fechaVisita: "2027-03-02" })))
+      .toThrow("Solo se pueden comprar entradas con hasta un mes de anticipación");
+  });
+
+  test("F27 - rechaza una fecha de visita que no existe", () => {
+    expect(() => servicio.comprar(solicitudValida({ fechaVisita: "2026-02-30" })))
+      .toThrow("Fecha de visita inválida");
+  });
+
+  test("F28 - rechaza la compra de un menor sin una entrada de adulto para la fecha", () => {
+    expect(() => servicio.comprar(solicitudValida({ cantidad: 1, edades: [15] })))
+      .toThrow("Los menores de 16 años necesitan una entrada de adulto para la misma fecha");
+  });
+
+  test("F29 - rechaza la compra de un bebé sin una entrada de adulto para la fecha", () => {
+    expect(() => servicio.comprar(solicitudValida({ cantidad: 1, edades: [0] })))
+      .toThrow("Los menores de 16 años necesitan una entrada de adulto para la misma fecha");
+  });
+
+  test("F30 - la entrada de adulto de otra fecha no habilita a un menor solo", () => {
+    servicio.comprar(solicitudValida({ fechaVisita: "2026-10-21", cantidad: 1, edades: [30] }));
+
+    expect(() => servicio.comprar(solicitudValida({ cantidad: 1, edades: [8] })))
+      .toThrow("Los menores de 16 años necesitan una entrada de adulto para la misma fecha");
+  });
+
+  test("F31 - la entrada de adulto de otro usuario no habilita a un menor solo", () => {
+    servicio.comprar(solicitudValida({ usuario: OTRO_USUARIO, cantidad: 1, edades: [30] }));
+
+    expect(() => servicio.comprar(solicitudValida({ cantidad: 1, edades: [8] })))
+      .toThrow("Los menores de 16 años necesitan una entrada de adulto para la misma fecha");
+  });
+});
+
+describe("ServicioCompraEntradas - validación por campo", () => {
+  test("V01 - una solicitud válida no tiene errores por campo", () => {
+    expect(servicio.validarCampos(solicitudValida())).toEqual({});
+  });
+
+  test("V02 - informa si el usuario no está registrado", () => {
+    expect(servicio.validarCampos(solicitudValida({ usuario: "desconocido@mail.com" })))
+      .toEqual({ usuario: "Solo los usuarios registrados pueden comprar entradas" });
+  });
+
+  test("V03 - informa a la vez los errores de varios campos", () => {
+    expect(servicio.validarCampos(solicitudValida({ tipoPase: null, formaPago: "CHEQUE" })))
+      .toEqual({
+        tipoPase: "Debe indicar el tipo de pase",
+        formaPago: "La forma de pago debe ser tarjeta o efectivo",
+      });
+  });
+
+  test("V04 - informa las reglas de fecha en el campo de la fecha", () => {
+    expect(servicio.validarCampos(solicitudValida({ fechaVisita: FECHA_CERRADA })))
+      .toEqual({ fechaVisita: "El parque está cerrado en la fecha seleccionada" });
+  });
+
+  test("V05 - informa una edad inválida en el campo de las edades", () => {
+    expect(servicio.validarCampos(solicitudValida({ edades: [30, -1, 8] })))
+      .toEqual({ edades: "Edad inválida" });
+  });
+
+  test("V06 - no compara las edades si la cantidad es inválida", () => {
+    expect(servicio.validarCampos(solicitudValida({ cantidad: 2.5 })))
+      .toEqual({ cantidad: "La cantidad de entradas debe ser un número entero" });
+  });
+
+  test("V07 - informa el máximo por fecha en el campo de la cantidad", () => {
+    compras.registrar(USUARIO, FECHA_ABIERTA, 7);
+
+    expect(servicio.validarCampos(solicitudValida({ cantidad: 4, edades: [30, 28, 8, 40] })))
+      .toEqual({ cantidad: "No se pueden comprar más de 10 entradas para una misma fecha" });
+  });
+
+  test("V08 - validar los campos no registra la compra, no envía el mail ni redirige", () => {
+    servicio.validarCampos(solicitudValida());
+
+    expect(mail.fueEnviadoA(USUARIO)).toBe(false);
+    expect(mercadoPago.fueLlamada()).toBe(false);
+    expect(compras.cantidadComprada(USUARIO, FECHA_ABIERTA)).toBe(0);
+  });
+
+  test("V09 - no evalúa el máximo por fecha si la fecha es inválida", () => {
+    expect(servicio.validarCampos(solicitudValida({
+      fechaVisita: "2026-13-45",
+      cantidad: 11,
+      edades: Array(11).fill(30),
+    }))).toEqual({ fechaVisita: "Fecha de visita inválida" });
+  });
+
+  test("V10 - informa en el campo de las edades que un menor necesita una entrada de adulto", () => {
+    expect(servicio.validarCampos(solicitudValida({ cantidad: 1, edades: [8] })))
+      .toEqual({ edades: "Los menores de 16 años necesitan una entrada de adulto para la misma fecha" });
+  });
+});
+
+describe("ServicioCompraEntradas - mail de confirmación", () => {
+  test("G01 - el mail de confirmación incluye el detalle de la compra", () => {
+    servicio.comprar(solicitudValida({ cantidad: 2, edades: [30, 2] }));
+
+    expect(mail.compraEnviadaA(USUARIO)).toEqual({
+      confirmada: true,
+      cantidadEntradas: 2,
+      fechaVisita: FECHA_ABIERTA,
+      tipoPase: "VIP",
+      montoTotal: 20000,
+      entradas: [{ edad: 30, precio: 20000 }, { edad: 2, precio: 0 }],
+    });
+  });
+});

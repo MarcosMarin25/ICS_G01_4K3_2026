@@ -1,0 +1,15 @@
+Cobertura de src/logica/ - npm run test:coverage - 2026-10-20
+
+Test Suites: 4 passed, 4 total
+Tests:       91 passed, 91 total
+
+---------------------------|---------|----------|---------|---------|-------------------
+File                       | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+---------------------------|---------|----------|---------|---------|-------------------
+All files                  |     100 |      100 |     100 |     100 |                   
+ calculadoraPrecios.js     |     100 |      100 |     100 |     100 |                   
+ calendarioParque.js       |     100 |      100 |     100 |     100 |                   
+ fechas.js                 |     100 |      100 |     100 |     100 |                   
+ servicioCompraEntradas.js |     100 |      100 |     100 |     100 |                   
+ valores.js                |     100 |      100 |     100 |     100 |                   
+---------------------------|---------|----------|---------|---------|-------------------
