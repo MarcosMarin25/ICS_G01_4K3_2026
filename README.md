@@ -114,6 +114,7 @@ ICS_G01_4K3_2026
 | **LB-G01-2** | 24/09/2026 | Entrega de TP7 - Dinámica de Scrum   |
 | **LB-G01-3** | 21/10/2026 | Entrega de TP6 - TDD (Comprar entradas) |
 | **LB-G01-4** | 05/11/2026 | Entrega de TP10 - Lean y Kanban |
+| **LB-G01-5** | 12/11/2026 | Entrega de TP12 - Design Thinking |
  
 **Formato de Identificación de Líneas Base**:  
 LB-G01-`<NroLineaBase>`
