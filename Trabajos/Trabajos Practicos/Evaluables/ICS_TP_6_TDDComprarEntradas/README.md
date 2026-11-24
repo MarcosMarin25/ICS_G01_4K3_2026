@@ -18,7 +18,7 @@ Implementación con **TDD (Red → Green → Refactor)** de la User Story:
 Requiere [Node.js](https://nodejs.org/) 22.13 o superior (trae SQLite incorporado).
 
 ```bash
-cd "Trabajos/Trabajos Practicos/Evaluables/ICS_TP_6"
+cd "Trabajos/Trabajos Practicos/Evaluables/ICS_TP_6_TDDComprarEntradas"
 npm install
 ```
 
@@ -89,7 +89,7 @@ En PowerShell se usa `npm.cmd` en lugar de `npm` si aparece el error "la ejecuci
 ## Estructura
 
 ```
-ICS_TP_6/
+ICS_TP_6_TDDComprarEntradas/
 ├── src/
 │   ├── logica/                      Lógica de negocio (probada al 100%)
 │   │   ├── calculadoraPrecios.js    Precio de una entrada según la edad y el pase
@@ -121,7 +121,7 @@ ICS_TP_6/
 ## Cómo ver el ciclo TDD en el historial
 
 ```bash
-git log --oneline -- "Trabajos/Trabajos Practicos/Evaluables/ICS_TP_6"
+git log --oneline -- "Trabajos/Trabajos Practicos/Evaluables/ICS_TP_6_TDDComprarEntradas"
 ```
 
 Cada paso tiene su commit, con el sufijo `[RED]`, `[GREEN]` o `[REFACTOR]`, o con "(pasa sin cambios)" en las confirmaciones de borde. Para ver el código en un paso puntual, por ejemplo el Red de K03: `git show 1940ef0`. El registro de ejecución tiene la tabla de commits de cada sección. La sección A (`CalculadoraPrecios`) se mergeó con *squash* desde el [PR #5](https://github.com/MarcosMarin25/ICS_G01_4K3_2026/pull/5), y sus commits paso a paso están en ese PR.

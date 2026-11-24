@@ -175,7 +175,7 @@ Contar la trampa de UTC: `new Date("2026-10-19")` da domingo en Argentina.
 ## 5. Evidencia (2 min)
 
 ```bash
-git log --oneline -- "Trabajos/Trabajos Practicos/Evaluables/ICS_TP_6" | head -20
+git log --oneline -- "Trabajos/Trabajos Practicos/Evaluables/ICS_TP_6_TDDComprarEntradas" | head -20
 npm test
 npm run test:coverage
 npm run lint

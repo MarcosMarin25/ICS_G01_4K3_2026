@@ -68,6 +68,7 @@ ICS_G01_4K3_2026
 | Programa de Asignatura | `ICS_ProgramaAsignatura_2026.pdf` | `ICS_G01_4K3_2026\Programa\` |
 | Templates | `ICS_Template_<Nombre>.[docx\|xlsx]` | `ICS_G01_4K3_2026\Templates\` |
 | Trabajos Prácticos Evaluables | `ICS_TP_<Nro>_<Titulo>.[pdf\|docx\|xlsx]` | `ICS_G01_4K3_2026\Trabajos\Trabajos Practicos\Evaluables\` |
+| Trabajos Prácticos Evaluables - Código fuente | `ICS_TP_<Nro>_<Titulo>\` (carpeta) | `ICS_G01_4K3_2026\Trabajos\Trabajos Practicos\Evaluables\` |
 | Trabajos Prácticos No Evaluables | `ICS_TPNE_<Nro>_<Titulo>.pdf` | `ICS_G01_4K3_2026\Trabajos\Trabajos Practicos\No Evaluables\` |
 | Trabajos de Investigación Grupal | `ICS_TIG_<Titulo>.pdf` | `ICS_G01_4K3_2026\Trabajos\Trabajos de Investigacion Grupal\` |
 | Pautas e Información | `ICS_PAUTA_<Nombre>.pdf` | `ICS_G01_4K3_2026\Pautas e Informacion\` |
@@ -100,7 +101,7 @@ ICS_G01_4K3_2026
 | `<Nombre>`/`<Título>`/`<Tema>` | Nombre o titulo del documento                                 |
 | `<Extension>`       | Extensión del archivo.                                                   |
 | `<Nro>`             | Número de trabajo Práctico relacionado (Evaluable o No Evaluable).       |
-| `<NroUnidad>`       | Número de unidad según programa de la asignatura                         |
+| `<NroUnidad>`       | Número de unidad según programa de la asignatura. Si el documento abarca varias unidades, se encadenan en orden: `U1_U2_U3`. |
 
 
 
